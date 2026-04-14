@@ -32,7 +32,7 @@
             overflow-y: scroll; 
         }
 
-        /* CUSTOM SCROLLBAR */
+        /* --- CUSTOM SCROLLBAR --- */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -47,6 +47,7 @@
             background: rgba(255, 255, 255, 0.3);
         }
 
+        /* --- CUSTOM CURSOR --- */
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
@@ -54,12 +55,34 @@
             line-height: 1.7;
             -webkit-font-smoothing: antialiased;
             position: relative;
+            cursor: none; /* Hide default cursor */
+        }
+        
+        a, button, input, textarea, img, video, audio, .accordion-header {
+            cursor: none; /* Hide default cursor on interactive elements */
         }
 
-        a {
-            text-decoration: none;
-            color: var(--text-main);
-            transition: var(--transition);
+        .cursor-dot, .cursor-outline {
+            position: fixed;
+            top: 0; 
+            left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .cursor-dot {
+            width: 6px; 
+            height: 6px;
+            background-color: var(--text-main);
+        }
+
+        .cursor-outline {
+            width: 30px; 
+            height: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: width 0.2s, height 0.2s, border-color 0.2s, background-color 0.2s;
         }
 
         /* --- BACKGROUND AMBIENT GLOW EFFECTS --- */
@@ -86,6 +109,87 @@
             width: 600px;
             height: 600px;
             background: rgba(0, 200, 255, 0.15);
+        }
+
+        /* --- LIGHTBOX STYLES --- */
+        .lightbox {
+            position: fixed;
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .lightbox.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .lightbox-content {
+            max-width: 90%;
+            max-height: 90vh;
+            border-radius: 4px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+
+        .lightbox.active .lightbox-content {
+            transform: scale(1);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            color: white;
+            font-size: 40px;
+            font-weight: 300;
+            transition: color 0.3s;
+        }
+
+        .lightbox-close:hover {
+            color: var(--text-muted);
+        }
+
+        /* --- BACK TO TOP BUTTON --- */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--text-main);
+            color: var(--bg-color);
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition);
+            z-index: 99;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            background: #ffffff;
         }
 
         /* --- SPLIT SCREEN LAYOUT --- */
@@ -221,7 +325,6 @@
             color: var(--text-muted);
             padding: 0.4rem 1rem;
             border-radius: 20px;
-            cursor: pointer;
             font-family: inherit;
             font-size: 0.8rem;
             transition: var(--transition);
@@ -258,7 +361,6 @@
             background: none;
             border: none;
             color: var(--text-main);
-            cursor: pointer;
             text-align: left;
             font-family: inherit;
             transition: padding-left 0.3s ease, padding-right 0.3s ease;
@@ -369,7 +471,6 @@
             border-radius: 6px;
             border: 1px solid var(--border-color);
             transition: transform 0.3s ease, border-color 0.3s ease;
-            cursor: pointer;
         }
 
         .art-gallery img:hover {
@@ -408,8 +509,60 @@
             border-radius: 4px;
         }
 
+        /* Contact Form Styles */
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1.2rem;
+            width: 100%;
+        }
+
+        .contact-form input, .contact-form textarea {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .contact-form input:focus, .contact-form textarea:focus {
+            outline: none;
+            border-color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .submit-btn {
+            align-self: flex-start;
+            padding: 0.8rem 2rem;
+            background: var(--text-main);
+            color: var(--bg-color);
+            border: none;
+            border-radius: 30px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
         /* --- RESPONSIVE MOBILE --- */
         @media (max-width: 900px) {
+            body { cursor: auto; } /* Disable custom cursor on mobile */
+            a, button, input, textarea, img, video, audio, .accordion-header { cursor: auto; }
+            .cursor-dot, .cursor-outline { display: none; }
+            
             .layout-wrapper {
                 flex-direction: column;
             }
@@ -438,10 +591,23 @@
             .art-gallery {
                 grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
             }
+            .form-row {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
+
+    <div class="cursor-dot" data-cursor-dot></div>
+    <div class="cursor-outline" data-cursor-outline></div>
+
+    <div id="lightbox" class="lightbox">
+        <span class="lightbox-close">&times;</span>
+        <img id="lightbox-img" class="lightbox-content" src="" alt="Expanded Art">
+    </div>
+
+    <button id="back-to-top" class="back-to-top">↑</button>
 
     <div class="ambient-glow glow-1"></div>
     <div class="ambient-glow glow-2"></div>
@@ -458,6 +624,7 @@
                 <nav class="nav-links">
                     <a href="#portfolio" class="nav-link active">Portfolio</a>
                     <a href="#extras" class="nav-link">Beyond the Resume</a>
+                    <a href="#contact" class="nav-link">Contact</a>
                 </nav>
             </div>
 
@@ -640,6 +807,25 @@
                 <h2 class="section-title">Beyond the Resume</h2>
 
                 <div class="accordion-list">
+                    
+                    <div class="accordion-item">
+                        <button class="accordion-header">
+                            <div class="accordion-title-box">
+                                <h3>Obsidian Vault</h3>
+                                <span class="accordion-role">Personal Knowledge Management</span>
+                            </div>
+                            <span class="accordion-icon">+</span>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="accordion-inner">
+                                I use Obsidian as my "second brain," maintaining a sprawling vault of interlinked notes. It is where I synthesize my reading across philosophy, macroeconomics, and history, allowing me to find unexpected connections between different academic disciplines and brainstorm ideas for my essays. 
+                                
+                                <div class="media-wrapper">
+                                    <img src="assets/obsidian-graph.png" alt="A screenshot of my interconnected Obsidian Vault Graph View" style="opacity: 0.8;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="accordion-item">
                         <button class="accordion-header">
@@ -651,7 +837,7 @@
                         </button>
                         <div class="accordion-content">
                             <div class="accordion-inner">
-                                Outside of academics, I am an avid artist. I was selected for the California State Summer School for the Arts (CSSSA), a rigorous, month-long conservatory at CalArts pursuing intensive studio training. I also won 3rd Place in the Congressional Art Competition, showcasing original artistic work to the U.S. House of Representatives. Below is a small portfolio of my art.
+                                Outside of academics, I am an avid artist. I was selected for the California State Summer School for the Arts (CSSSA), a rigorous, month-long conservatory at CalArts pursuing intensive studio training. I also won 3rd Place in the Congressional Art Competition, showcasing original artistic work to the U.S. House of Representatives.
                                 
                                 <div class="art-gallery">
                                     <img src="assets/art/Dry Season.jpg" alt="Dry Season">
@@ -678,7 +864,7 @@
                         </button>
                         <div class="accordion-content">
                             <div class="accordion-inner">
-                                I manage a private violin studio, teaching weekly one-on-one lessons to local students and creating individualized practice plans. Also, below is a sample of my compositions.
+                                I manage a private violin studio, teaching weekly one-on-one lessons to local students and creating individualized practice plans. I also organize a student ensemble to rehearse and busk my original violin quartet compositions in front of local businesses, donating our proceeds to international charities.
                                 
                                 <div class="audio-gallery">
                                     <div class="audio-track">
@@ -710,33 +896,126 @@
                 </div>
             </section>
 
+            <section id="contact">
+                <h2 class="section-title">Get in Touch</h2>
+                <form class="contact-form" onsubmit="event.preventDefault(); alert('Message feature ready to be connected to a backend service like Formspree!');">
+                    <div class="form-row">
+                        <input type="text" placeholder="Your Name" required>
+                        <input type="email" placeholder="Your Email" required>
+                    </div>
+                    <textarea rows="5" placeholder="Your Message" required></textarea>
+                    <button type="submit" class="submit-btn">Send Message</button>
+                </form>
+            </section>
+
         </main>
     </div>
 
     <script>
-        // Parallax Ambient Glow
+        // --- Custom Cursor Logic ---
+        const cursorDot = document.querySelector('[data-cursor-dot]');
+        const cursorOutline = document.querySelector('[data-cursor-outline]');
+
+        window.addEventListener('mousemove', function(e) {
+            const posX = e.clientX;
+            const posY = e.clientY;
+            
+            cursorDot.style.left = `${posX}px`;
+            cursorDot.style.top = `${posY}px`;
+
+            // Animate the outline to smoothly trail the dot
+            cursorOutline.animate({
+                left: `${posX}px`,
+                top: `${posY}px`
+            }, { duration: 500, fill: "forwards" });
+        });
+
+        // Expand cursor on hover
+        const interactiveElements = document.querySelectorAll('a, button, input, textarea, .accordion-header, .art-gallery img');
+        interactiveElements.forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursorOutline.style.width = '50px';
+                cursorOutline.style.height = '50px';
+                cursorOutline.style.borderColor = 'var(--text-main)';
+                cursorOutline.style.backgroundColor = 'rgba(255,255,255,0.05)';
+            });
+            el.addEventListener('mouseleave', () => {
+                cursorOutline.style.width = '30px';
+                cursorOutline.style.height = '30px';
+                cursorOutline.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+                cursorOutline.style.backgroundColor = 'transparent';
+            });
+        });
+
+        // --- Lightbox Logic ---
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const lightboxClose = document.querySelector('.lightbox-close');
+        const artImages = document.querySelectorAll('.art-gallery img');
+
+        artImages.forEach(img => {
+            img.addEventListener('click', () => {
+                lightboxImg.src = img.src;
+                lightbox.classList.add('active');
+            });
+        });
+
+        lightboxClose.addEventListener('click', () => {
+            lightbox.classList.remove('active');
+        });
+
+        lightbox.addEventListener('click', (e) => {
+            if (e.target !== lightboxImg) {
+                lightbox.classList.remove('active');
+            }
+        });
+
+        // --- Back to Top Arrow Logic ---
+        const backToTopBtn = document.getElementById('back-to-top');
+        
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // --- Scrolling & Parallax Logic ---
         const glow1 = document.querySelector('.glow-1');
         const glow2 = document.querySelector('.glow-2');
 
         window.addEventListener('scroll', () => {
             const scrollY = window.scrollY;
+            
+            // Parallax Ambient Glow
             glow1.style.transform = `translateY(${scrollY * 0.1}px) translateX(${scrollY * 0.05}px)`;
             glow2.style.transform = `translateY(${scrollY * -0.05}px) translateX(${scrollY * -0.02}px)`;
             
+            // Back to top visibility
+            if (scrollY > 400) {
+                backToTopBtn.classList.add('visible');
+            } else {
+                backToTopBtn.classList.remove('visible');
+            }
+
             // Simple ScrollSpy for Sidebar Links
             const extrasSection = document.getElementById('extras');
+            const contactSection = document.getElementById('contact');
             const navLinks = document.querySelectorAll('.nav-link');
 
-            if(window.scrollY >= extrasSection.offsetTop - 200) {
+            if(window.scrollY >= contactSection.offsetTop - 300) {
+                navLinks[0].classList.remove('active');
+                navLinks[1].classList.remove('active');
+                navLinks[2].classList.add('active');
+            } else if(window.scrollY >= extrasSection.offsetTop - 300) {
                 navLinks[0].classList.remove('active');
                 navLinks[1].classList.add('active');
+                navLinks[2].classList.remove('active');
             } else {
                 navLinks[0].classList.add('active');
                 navLinks[1].classList.remove('active');
+                navLinks[2].classList.remove('active');
             }
         });
 
-        // Accordion Logic (Applied to all accordions)
+        // --- Accordion Logic ---
         const accordionHeaders = document.querySelectorAll('.accordion-header');
         
         accordionHeaders.forEach(header => {
@@ -759,7 +1038,7 @@
             });
         });
 
-        // Project Filtering Logic (Scoped ONLY to Portfolio list so it doesn't hide Hobbies)
+        // --- Project Filtering Logic ---
         const filterBtns = document.querySelectorAll('.filter-btn');
         const portfolioItems = document.querySelectorAll('#portfolio-list .accordion-item');
 
