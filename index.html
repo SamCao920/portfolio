@@ -6,18 +6,63 @@
     <title>Sam Cao &#26361;&#26041;&#28304; | Portfolio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200..900&display=swap" rel="stylesheet">
     <style>
+        @font-face {
+            font-family: 'Editor';
+            src: url('fonts/Editor-Regular-BF647813f3bddb5.otf') format('opentype');
+            font-weight: 300;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Editor';
+            src: url('fonts/Editor-Regular-BF647813f3bddb5.otf') format('opentype');
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Editor';
+            src: url('fonts/Editor-Bold-BF647813f39f7bd.otf') format('opentype');
+            font-weight: 700;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'GT America Mono';
+            src: url('fonts/GT-America-Mono-Regular-Trial.otf') format('opentype');
+            font-weight: 400;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'GT America Mono';
+            src: url('fonts/GT-America-Mono-Bold-Trial.otf') format('opentype');
+            font-weight: 700;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'GT America Mono';
+            src: url('fonts/GT-America-Mono-Black-Trial.otf') format('opentype');
+            font-weight: 900;
+            font-style: normal;
+            font-display: swap;
+        }
         :root {
-            --bg-color: #0a0a0a;
-            --text-main: #f5f5f5;
-            --text-muted: #888888;
-            --text-faint: #444444;
-            --border-color: rgba(255,255,255,0.08);
-            --hover-bg: rgba(255,255,255,0.03);
+            --bg-color: #f7f2ea;
+            --text-main: #111111;
+            --text-muted: #5f5a52;
+            --text-faint: #8a857d;
+            --border-color: rgba(0,0,0,0.08);
+            --hover-bg: rgba(0,0,0,0.04);
             --transition: all 0.3s ease;
             --nav-height: 60px;
-            --accent-purple: rgba(110,60,255,0.6);
+            --accent-gold: #b19360;
+            --accent-gold-soft: rgba(200,163,97,0.16);
+            --font-body: 'Editor', serif;
+            --font-display: 'GT America Mono', monospace;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -30,12 +75,27 @@
         ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }
 
         body {
-            font-family: 'Inter', sans-serif;
+            position: relative;
+            font-family: var(--font-body);
+            font-weight: 300;
             background-color: var(--bg-color);
             color: var(--text-main);
             line-height: 1.7;
             -webkit-font-smoothing: antialiased;
             cursor: none;
+        }
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)'/%3E%3C/svg%3E");
+            opacity: 0.5;
+            pointer-events: none;
+            z-index: -1;
+        }
+        h1, h2, h3, .top-nav-name, .section-title, .filter-btn, .hero-links a, .stat-num, .accordion-title-box h3, .accordion-year, .accordion-role, strong, b {
+            font-family: var(--font-display);
+            font-weight: 300;
         }
         a, button, img, video, audio, .accordion-header { cursor: none; }
 
@@ -44,9 +104,8 @@
             content: '';
             position: fixed;
             inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
-            background-size: 200px 200px;
-            opacity: 0.038;
+            background-image: none;
+            opacity: 0;
             pointer-events: none;
             z-index: 8000;
         }
@@ -54,36 +113,45 @@
         /* ── Cursor ── */
         .cursor-dot, .cursor-outline {
             position: fixed;
-            top: 0; left: 0;
+            top: 0;
+            left: 0;
             transform: translate(-50%, -50%);
-            border-radius: 50%;
-            z-index: 10001;
             pointer-events: none;
+            z-index: 10003;
+            display: block;
         }
-        .cursor-dot { width: 5px; height: 5px; background-color: var(--text-main); }
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--text-main);
+            border-radius: 50%;
+        }
         .cursor-outline {
-            width: 30px; height: 30px;
-            border: 1px solid rgba(255,255,255,0.45);
-            transition: width 0.2s, height 0.2s, border-color 0.2s, background-color 0.2s;
+            width: 32px;
+            height: 32px;
+            border: 1px solid rgba(17,17,17,0.5);
+            border-radius: 50%;
+            background-color: transparent;
+            transition: width 0.18s ease, height 0.18s ease, border-color 0.18s ease, background-color 0.18s ease, transform 0.18s ease;
         }
 
         /* ── Scroll progress bar ── */
         .progress-bar {
             position: fixed;
             top: 0; left: 0;
-            height: 2px;
+            height: 7px;
             width: 0%;
-            background: linear-gradient(90deg, rgba(110,60,255,0.9), rgba(0,190,255,0.9));
+            background: #b19360;
             z-index: 10002;
             pointer-events: none;
         }
 
         /* ── Glow blobs ── */
         .ambient-glow {
-            position: fixed;
+            position: absolute;
             border-radius: 50%;
-            filter: blur(140px);
-            z-index: -1;
+            filter: blur(110px);
+            z-index: -2;
             pointer-events: none;
             will-change: transform;
         }
@@ -109,11 +177,11 @@
             0%,100% { transform: translateY(0) translateX(0) scale(1); }
             55%      { transform: translateY(-25px) translateX(50px) scale(0.9); }
         }
-        .glow-1 { top:-8%;left:-8%;width:520px;height:520px;background:radial-gradient(circle,rgba(110,60,255,0.28),transparent 70%);animation:glow-drift-1 28s ease-in-out infinite; }
-        .glow-2 { bottom:5%;right:-8%;width:580px;height:580px;background:radial-gradient(circle,rgba(0,190,255,0.18),transparent 70%);animation:glow-drift-2 35s ease-in-out infinite; }
-        .glow-3 { top:35%;left:30%;width:350px;height:350px;background:radial-gradient(circle,rgba(220,60,120,0.12),transparent 70%);animation:glow-drift-3 22s ease-in-out infinite; }
-        .glow-4 { top:5%;right:10%;width:280px;height:280px;background:radial-gradient(circle,rgba(255,160,40,0.10),transparent 70%);animation:glow-drift-4 30s ease-in-out infinite; }
-        .glow-5 { bottom:20%;left:5%;width:320px;height:320px;background:radial-gradient(circle,rgba(40,220,160,0.10),transparent 70%);animation:glow-drift-5 25s ease-in-out infinite; }
+        .glow-1 { top:-10%;left:-14%;width:540px;height:540px;background:radial-gradient(circle,rgba(237, 182, 88, 0.48),transparent 60%);animation:glow-drift-1 28s ease-in-out infinite; }
+        .glow-2 { top:6%;right:-12%;width:620px;height:620px;background:radial-gradient(circle,rgba(211, 132, 47, 0.36),transparent 60%);animation:glow-drift-2 35s ease-in-out infinite; }
+        .glow-3 { top:32%;left:18%;width:460px;height:460px;background:radial-gradient(circle,rgba(239, 149, 45, 0.42),transparent 60%);animation:glow-drift-3 22s ease-in-out infinite; }
+        .glow-4 { top:50%;right:12%;width:480px;height:480px;background:radial-gradient(circle,rgba(203, 130, 40, 0.3),transparent 60%);animation:glow-drift-4 30s ease-in-out infinite; }
+        .glow-5 { top:62%;left:12%;width:520px;height:520px;background:radial-gradient(circle,rgba(215, 159, 46, 0.36),transparent 60%);animation:glow-drift-5 25s ease-in-out infinite; }
 
         /* ── Lightbox ── */
         .lightbox {
@@ -166,25 +234,26 @@
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 3rem;
             z-index: 500;
+            background: transparent;
+            border-bottom: 1px solid var(--border-color);
             transition: background 0.4s ease, border-color 0.4s ease;
         }
         .top-nav.scrolled {
-            background: rgba(10,10,10,0.85);
-            backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--border-color);
+            background: rgba(247,242,234,0.95);
+            border-bottom: 1px solid rgba(0,0,0,0.12);
         }
         .top-nav-name {
-            font-size: 0.9rem; font-weight: 500;
+            font-size: 0.85rem; font-weight: 500;
             color: var(--text-muted);
-            opacity: 0; transition: opacity 0.4s ease;
+            opacity: 1; transition: opacity 0.4s ease;
         }
-        .top-nav.scrolled .top-nav-name { opacity: 1; }
-        .top-nav-links { display: flex; gap: 2.5rem; }
+        .top-nav-links { display: flex; gap: 2rem; }
         .top-nav-links a {
-            font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px;
-            color: var(--text-faint); font-weight: 500; transition: color 0.3s;
+            font-size: 0.82rem; text-transform: uppercase; letter-spacing: 1.8px;
+            color: var(--text-main); font-weight: 500; transition: color 0.3s;
+            font-family: var(--font-display);
         }
-        .top-nav-links a:hover, .top-nav-links a.active { color: var(--text-main); }
+        .top-nav-links a:hover, .top-nav-links a.active { color: var(--accent-gold); }
 
         /* ── Hero ── */
         .hero {
@@ -208,52 +277,49 @@
 
         .hero-inner h1 {
             font-size: clamp(2.8rem, 6vw, 4.5rem);
-            font-weight: 500; letter-spacing: -2px; line-height: 1.05;
-            margin-bottom: 0.8rem;
+            font-weight: 700; letter-spacing: -1px; line-height: 1.05;
+            margin-bottom: 0.75rem;
+            color: var(--text-main);
         }
 
         /* ── Shimmer name gradient ── */
         .name-shimmer {
-            background: linear-gradient(90deg,
-                #f0f0f0 0%,
-                #c8a8ff 22%,
-                #7ae8ff 45%,
-                #f0f0f0 68%,
-                #c8a8ff 90%
-            );
-            background-size: 300% auto;
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: shimmer 6s linear infinite;
+            color: var(--text-main);
+            display: inline;
+            background: none;
+            background-clip: unset;
+            -webkit-background-clip: unset;
+            -webkit-text-fill-color: unset;
+            transition: none;
         }
         @keyframes shimmer {
-            0%   { background-position: 100% center; }
-            100% { background-position: -200% center; }
+            0%   { opacity: 1; }
+            100% { opacity: 1; }
         }
 
         .name-chinese {
+            font-family: 'Noto Serif SC', serif;
             font-weight: 300; font-size: 0.62em;
             color: var(--text-muted);
             margin-left: 0.3rem;
             -webkit-text-fill-color: var(--text-muted);
         }
         .hero-inner h2 {
-            font-size: 0.8rem; font-weight: 400; color: var(--text-muted);
-            margin-bottom: 2rem; text-transform: uppercase; letter-spacing: 3px;
+            font-size: 0.82rem; font-weight: 500; color: var(--text-muted);
+            margin-bottom: 2rem; text-transform: uppercase; letter-spacing: 2px;
         }
         .hero-inner p {
-            font-size: 0.97rem; color: var(--text-muted);
-            line-height: 1.85; max-width: 540px; margin-bottom: 0.9rem;
+            font-size: 1rem; color: var(--text-muted);
+            line-height: 1.85; max-width: 560px; margin-bottom: 1rem;
         }
         .hero-links { display: flex; gap: 2rem; margin-top: 2.2rem; }
         .hero-links a {
-            font-size: 0.82rem; color: var(--text-muted);
+            font-size: 0.82rem; color: var(--text-main);
             text-transform: uppercase; letter-spacing: 1.5px;
-            border-bottom: 1px solid var(--text-faint); padding-bottom: 2px;
-            transition: color 0.3s, border-color 0.3s;
+            border-bottom: 1px solid var(--border-color); padding-bottom: 2px;
+            transition: color 0.3s, border-color 0.3s, transform 0.3s;
         }
-        .hero-links a:hover { color: var(--text-main); border-color: var(--text-muted); }
+        .hero-links a:hover { color: var(--accent-gold); border-color: var(--accent-gold); transform: translateY(-1px); }
 
         /* ── Stats strip ── */
         .stats-strip {
@@ -263,6 +329,7 @@
             border-top: 1px solid var(--border-color);
             border-bottom: 1px solid var(--border-color);
             margin-bottom: 0;
+            background: transparent;
         }
         .stat { display: flex; flex-direction: column; }
         .stat-num {
@@ -291,13 +358,14 @@
         .filter-container { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2rem; }
         .filter-btn {
             background: transparent; border: 1px solid var(--border-color);
-            color: var(--text-faint); padding: 0.35rem 0.9rem;
+            color: var(--text-main); padding: 0.35rem 0.9rem;
             border-radius: 20px; font-family: inherit;
             font-size: 0.75rem; letter-spacing: 0.5px;
             transition: var(--transition);
         }
         .filter-btn.active, .filter-btn:hover {
-            background: var(--text-main); color: var(--bg-color);
+            background: var(--text-main);
+            color: #fff;
             border-color: var(--text-main);
         }
 
@@ -315,13 +383,13 @@
         }
 
         /* Left-border accent on open accordion */
-        .accordion-item.active { border-left-color: rgba(110,60,255,0.5); }
+        .accordion-item.active { border-left-color: var(--accent-gold); }
 
         .accordion-header {
             width: 100%;
             display: grid; grid-template-columns: 1fr auto auto; gap: 1.5rem;
             align-items: center;
-            padding: 1.6rem 0 1.6rem 0.4rem;
+            padding: 1.4rem 0 1.4rem 0.4rem;
             background: none; border: none;
             color: var(--text-main); text-align: left;
             font-family: inherit;
@@ -343,7 +411,7 @@
         .accordion-content {
             max-height: 0; overflow: hidden;
             transition: max-height 0.4s ease-in-out;
-            background-color: var(--hover-bg); padding: 0 0.8rem;
+            background-color: transparent; padding: 0 0.8rem;
         }
         .accordion-inner {
             padding: 0.4rem 0 2rem 0;
@@ -354,12 +422,12 @@
         .attachment-link {
             display: inline-flex; align-items: center; gap: 0.6rem;
             padding: 0.55rem 1.1rem;
-            background: rgba(255,255,255,0.04); border: 1px solid var(--border-color);
+            background: transparent; border: 1px solid var(--border-color);
             border-radius: 6px; color: var(--text-main);
             font-size: 0.82rem; margin-top: 1.2rem;
             transition: var(--transition);
         }
-        .attachment-link:hover { background: rgba(255,255,255,0.09); border-color: var(--text-muted); }
+        .attachment-link:hover { background: rgba(0,0,0,0.04); border-color: var(--text-muted); }
         .media-wrapper { margin-top: 1.5rem; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); }
 
         /* ── Art gallery ── */
@@ -451,7 +519,7 @@
     <div class="ambient-glow glow-5"></div>
 
     <nav class="top-nav" id="top-nav">
-        <span class="top-nav-name">Sam Cao</span>
+        <span class="top-nav-name">Fangyuan Cao</span>
         <div class="top-nav-links">
             <a href="#portfolio" class="nav-link active">Portfolio</a>
             <a href="#extras" class="nav-link">Outside the Classroom</a>
@@ -461,10 +529,10 @@
 
     <section class="hero">
         <div class="hero-inner">
-            <h1><span class="name-shimmer">Sam Cao</span><span class="name-chinese">&#26361;&#26041;&#28304;</span></h1>
+            <h1><span class="name-shimmer">Fangyuan Cao </span> <br> <span class="name-chinese">&#26361;&#26041;&#28304;</span></h1>
             <h2>Student &amp; Researcher</h2>
-            <p>High school senior with a deep interest in economics, philosophy, and history. I explore the places where abstract theory meets lived experience &mdash; how ideas shape institutions, policy, and culture.</p>
-            <p>Enrolling at Johns Hopkins University (Class of 2030) to study Economics and Public Health.</p>
+            <p>Senior at Miramonte High School with a deep interest in economics, philosophy, and history. I explore the places where abstract theory meets lived experience &mdash; how ideas shape institutions, policy, and culture.</p>
+            <p>Continuing my studies at Johns Hopkins University (Class of 2030), planning to study Economics and Public Health with a minor in Philosophy.</p>
             <div class="hero-links">
                 <a href="mailto:scao29@jh.edu">scao29@jh.edu</a>
                 <a href="https://linkedin.com/in/fangyuansam-cao" target="_blank">LinkedIn</a>
@@ -849,6 +917,7 @@
         /* ── Cursor (rAF lerp + magnetic) ── */
         var cursorDot     = document.querySelector('[data-cursor-dot]');
         var cursorOutline = document.querySelector('[data-cursor-outline]');
+        var nameShimmer   = document.querySelector('.name-shimmer');
         var mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
         var outX   = mouseX, outY = mouseY;
         var magX   = 0, magY = 0;
@@ -858,6 +927,14 @@
             mouseY = e.clientY;
             cursorDot.style.left = mouseX + 'px';
             cursorDot.style.top  = mouseY + 'px';
+
+            if (nameShimmer) {
+                var rect = nameShimmer.getBoundingClientRect();
+                var x = ((e.clientX - rect.left) / rect.width) * 100;
+                var y = ((e.clientY - rect.top)  / rect.height) * 100;
+                nameShimmer.style.setProperty('--shine-x', Math.max(0, Math.min(100, x)) + '%');
+                nameShimmer.style.setProperty('--shine-y', Math.max(0, Math.min(100, y)) + '%');
+            }
         });
 
         (function animateCursor() {
@@ -877,14 +954,14 @@
                 magY   = (r.top  + r.height / 2 - e.clientY) * 0.28;
                 cursorOutline.style.width           = '48px';
                 cursorOutline.style.height          = '48px';
-                cursorOutline.style.borderColor     = 'rgba(255,255,255,0.75)';
-                cursorOutline.style.backgroundColor = 'rgba(255,255,255,0.04)';
+                cursorOutline.style.borderColor     = 'rgba(17,17,17,0.7)';
+                cursorOutline.style.backgroundColor = 'rgba(17,17,17,0.06)';
             });
             el.addEventListener('mouseleave', function () {
                 magX = 0; magY = 0;
-                cursorOutline.style.width           = '30px';
-                cursorOutline.style.height          = '30px';
-                cursorOutline.style.borderColor     = 'rgba(255,255,255,0.45)';
+                cursorOutline.style.width           = '32px';
+                cursorOutline.style.height          = '32px';
+                cursorOutline.style.borderColor     = 'rgba(17,17,17,0.5)';
                 cursorOutline.style.backgroundColor = 'transparent';
             });
         });
