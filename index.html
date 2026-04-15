@@ -3,602 +3,437 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sam Cao 曹方源 | Portfolio</title>
+    <title>Sam Cao &#26361;&#26041;&#28304; | Portfolio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-
     <style>
-        /* --- CSS VARIABLES (DARK THEME) --- */
         :root {
             --bg-color: #0a0a0a;
             --text-main: #f5f5f5;
             --text-muted: #888888;
-            --text-faint: #555555;
-            --accent: #ffffff;
-            --border-color: rgba(255, 255, 255, 0.1);
-            --hover-bg: rgba(255, 255, 255, 0.04);
+            --text-faint: #444444;
+            --border-color: rgba(255,255,255,0.08);
+            --hover-bg: rgba(255,255,255,0.03);
             --transition: all 0.3s ease;
+            --nav-height: 60px;
+            --accent-purple: rgba(110,60,255,0.6);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; overflow-y: scroll; }
 
-        html {
-            scroll-behavior: smooth;
-            overflow-y: scroll; 
-        }
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }
 
-        /* --- CUSTOM SCROLLBAR --- */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--bg-color);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        /* --- CUSTOM CURSOR --- */
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             line-height: 1.7;
             -webkit-font-smoothing: antialiased;
-            position: relative;
-            cursor: none; /* Hide default cursor */
+            cursor: none;
         }
-        
-        a, button, input, textarea, img, video, audio, .accordion-header {
-            cursor: none; /* Hide default cursor on interactive elements */
+        a, button, img, video, audio, .accordion-header { cursor: none; }
+
+        /* ── Grain overlay ── */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 200px 200px;
+            opacity: 0.038;
+            pointer-events: none;
+            z-index: 8000;
         }
 
+        /* ── Cursor ── */
         .cursor-dot, .cursor-outline {
             position: fixed;
-            top: 0; 
-            left: 0;
+            top: 0; left: 0;
             transform: translate(-50%, -50%);
             border-radius: 50%;
-            z-index: 9999;
+            z-index: 10001;
             pointer-events: none;
         }
-
-        .cursor-dot {
-            width: 6px; 
-            height: 6px;
-            background-color: var(--text-main);
-        }
-
+        .cursor-dot { width: 5px; height: 5px; background-color: var(--text-main); }
         .cursor-outline {
-            width: 30px; 
-            height: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            width: 30px; height: 30px;
+            border: 1px solid rgba(255,255,255,0.45);
             transition: width 0.2s, height 0.2s, border-color 0.2s, background-color 0.2s;
         }
 
-        /* --- BACKGROUND AMBIENT GLOW EFFECTS --- */
+        /* ── Scroll progress bar ── */
+        .progress-bar {
+            position: fixed;
+            top: 0; left: 0;
+            height: 2px;
+            width: 0%;
+            background: linear-gradient(90deg, rgba(110,60,255,0.9), rgba(0,190,255,0.9));
+            z-index: 10002;
+            pointer-events: none;
+        }
+
+        /* ── Glow blobs ── */
         .ambient-glow {
             position: fixed;
             border-radius: 50%;
-            filter: blur(150px);
+            filter: blur(140px);
             z-index: -1;
             pointer-events: none;
             will-change: transform;
         }
-
-        .glow-1 {
-            top: -10%;
-            left: -10%;
-            width: 500px;
-            height: 500px;
-            background: rgba(100, 50, 255, 0.25);
+        @keyframes glow-drift-1 {
+            0%,100% { transform: translateY(0) translateX(0) scale(1); }
+            30%      { transform: translateY(-50px) translateX(40px) scale(1.1); }
+            65%      { transform: translateY(30px) translateX(-30px) scale(0.92); }
         }
-
-        .glow-2 {
-            top: 40%;
-            right: -10%;
-            width: 600px;
-            height: 600px;
-            background: rgba(0, 200, 255, 0.15);
+        @keyframes glow-drift-2 {
+            0%,100% { transform: translateY(0) translateX(0) scale(1); }
+            40%      { transform: translateY(60px) translateX(-50px) scale(1.08); }
+            75%      { transform: translateY(-40px) translateX(25px) scale(0.95); }
         }
+        @keyframes glow-drift-3 {
+            0%,100% { transform: translateY(0) translateX(0) scale(1); }
+            50%      { transform: translateY(-35px) translateX(-40px) scale(1.12); }
+        }
+        @keyframes glow-drift-4 {
+            0%,100% { transform: translateY(0) translateX(0) scale(1); }
+            45%      { transform: translateY(45px) translateX(30px) scale(1.06); }
+        }
+        @keyframes glow-drift-5 {
+            0%,100% { transform: translateY(0) translateX(0) scale(1); }
+            55%      { transform: translateY(-25px) translateX(50px) scale(0.9); }
+        }
+        .glow-1 { top:-8%;left:-8%;width:520px;height:520px;background:radial-gradient(circle,rgba(110,60,255,0.28),transparent 70%);animation:glow-drift-1 28s ease-in-out infinite; }
+        .glow-2 { bottom:5%;right:-8%;width:580px;height:580px;background:radial-gradient(circle,rgba(0,190,255,0.18),transparent 70%);animation:glow-drift-2 35s ease-in-out infinite; }
+        .glow-3 { top:35%;left:30%;width:350px;height:350px;background:radial-gradient(circle,rgba(220,60,120,0.12),transparent 70%);animation:glow-drift-3 22s ease-in-out infinite; }
+        .glow-4 { top:5%;right:10%;width:280px;height:280px;background:radial-gradient(circle,rgba(255,160,40,0.10),transparent 70%);animation:glow-drift-4 30s ease-in-out infinite; }
+        .glow-5 { bottom:20%;left:5%;width:320px;height:320px;background:radial-gradient(circle,rgba(40,220,160,0.10),transparent 70%);animation:glow-drift-5 25s ease-in-out infinite; }
 
-        /* --- LIGHTBOX STYLES --- */
+        /* ── Lightbox ── */
         .lightbox {
-            position: fixed;
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
+            position: fixed; top:0; left:0;
+            width:100%; height:100%;
+            background-color: rgba(0,0,0,0.92);
             z-index: 10000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            pointer-events: none;
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none;
             transition: opacity 0.3s ease;
         }
-
-        .lightbox.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
+        .lightbox.active { opacity: 1; pointer-events: auto; }
         .lightbox-content {
-            max-width: 90%;
-            max-height: 90vh;
+            max-width: 90%; max-height: 90vh;
             border-radius: 4px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
             transform: scale(0.95);
             transition: transform 0.3s ease;
         }
-
-        .lightbox.active .lightbox-content {
-            transform: scale(1);
-        }
-
+        .lightbox.active .lightbox-content { transform: scale(1); }
         .lightbox-close {
-            position: absolute;
-            top: 30px;
-            right: 40px;
-            color: white;
-            font-size: 40px;
-            font-weight: 300;
+            position: absolute; top: 28px; right: 36px;
+            color: white; font-size: 36px; font-weight: 300;
             transition: color 0.3s;
         }
+        .lightbox-close:hover { color: var(--text-muted); }
 
-        .lightbox-close:hover {
-            color: var(--text-muted);
-        }
-
-        /* --- BACK TO TOP BUTTON --- */
+        /* ── Back to top ── */
         .back-to-top {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: var(--text-main);
-            color: var(--bg-color);
-            border: none;
+            position: fixed; bottom: 28px; right: 28px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
             border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
+            width: 42px; height: 42px;
+            font-size: 18px;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none;
             transition: var(--transition);
             z-index: 99;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            backdrop-filter: blur(8px);
         }
+        .back-to-top.visible { opacity: 1; pointer-events: auto; }
+        .back-to-top:hover { background: rgba(255,255,255,0.14); transform: translateY(-3px); }
 
-        .back-to-top.visible {
-            opacity: 1;
-            pointer-events: auto;
+        /* ── Navbar ── */
+        .top-nav {
+            position: fixed; top:0; left:0; right:0;
+            height: var(--nav-height);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 3rem;
+            z-index: 500;
+            transition: background 0.4s ease, border-color 0.4s ease;
         }
-
-        .back-to-top:hover {
-            transform: translateY(-5px);
-            background: #ffffff;
+        .top-nav.scrolled {
+            background: rgba(10,10,10,0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color);
         }
-
-        /* --- SPLIT SCREEN LAYOUT --- */
-        .layout-wrapper {
-            display: flex;
-            max-width: 1200px;
-            margin: 0 auto;
-            min-height: 100vh;
-        }
-
-        /* LEFT SIDEBAR (Fixed) */
-        .sidebar {
-            width: 40%;
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            padding: 5rem 3rem 5rem 1rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .sidebar-header h1 {
-            font-size: 2.5rem;
-            font-weight: 500;
-            letter-spacing: -1px;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-
-        .sidebar-header h1 span {
-            font-weight: 300;
-            font-size: 1.8rem;
+        .top-nav-name {
+            font-size: 0.9rem; font-weight: 500;
             color: var(--text-muted);
+            opacity: 0; transition: opacity 0.4s ease;
+        }
+        .top-nav.scrolled .top-nav-name { opacity: 1; }
+        .top-nav-links { display: flex; gap: 2.5rem; }
+        .top-nav-links a {
+            font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px;
+            color: var(--text-faint); font-weight: 500; transition: color 0.3s;
+        }
+        .top-nav-links a:hover, .top-nav-links a.active { color: var(--text-main); }
+
+        /* ── Hero ── */
+        .hero {
+            min-height: 80vh;
+            display: flex; align-items: flex-end;
+            max-width: 860px; margin: 0 auto;
+            padding: calc(var(--nav-height) + 7rem) 2rem 5rem 2rem;
+        }
+        .hero-inner { max-width: 660px; }
+
+        /* Hero entrance animations */
+        @keyframes hero-enter {
+            from { opacity: 0; transform: translateY(18px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .hero-inner h1 { animation: hero-enter 0.8s 0.05s ease both; }
+        .hero-inner h2 { animation: hero-enter 0.8s 0.18s ease both; }
+        .hero-inner p   { animation: hero-enter 0.8s 0.28s ease both; }
+        .hero-inner p + p { animation-delay: 0.34s; }
+        .hero-links     { animation: hero-enter 0.8s 0.44s ease both; }
+
+        .hero-inner h1 {
+            font-size: clamp(2.8rem, 6vw, 4.5rem);
+            font-weight: 500; letter-spacing: -2px; line-height: 1.05;
+            margin-bottom: 0.8rem;
         }
 
-        .sidebar-header h2 {
-            font-size: 1.1rem;
-            font-weight: 400;
-            color: var(--text-main);
-            margin-bottom: 1.5rem;
+        /* ── Shimmer name gradient ── */
+        .name-shimmer {
+            background: linear-gradient(90deg,
+                #f0f0f0 0%,
+                #c8a8ff 22%,
+                #7ae8ff 45%,
+                #f0f0f0 68%,
+                #c8a8ff 90%
+            );
+            background-size: 300% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 6s linear infinite;
+        }
+        @keyframes shimmer {
+            0%   { background-position: 100% center; }
+            100% { background-position: -200% center; }
         }
 
-        .sidebar-header p {
-            font-size: 0.95rem;
+        .name-chinese {
+            font-weight: 300; font-size: 0.62em;
             color: var(--text-muted);
-            margin-bottom: 1rem;
-            max-width: 350px;
+            margin-left: 0.3rem;
+            -webkit-text-fill-color: var(--text-muted);
+        }
+        .hero-inner h2 {
+            font-size: 0.8rem; font-weight: 400; color: var(--text-muted);
+            margin-bottom: 2rem; text-transform: uppercase; letter-spacing: 3px;
+        }
+        .hero-inner p {
+            font-size: 0.97rem; color: var(--text-muted);
+            line-height: 1.85; max-width: 540px; margin-bottom: 0.9rem;
+        }
+        .hero-links { display: flex; gap: 2rem; margin-top: 2.2rem; }
+        .hero-links a {
+            font-size: 0.82rem; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 1.5px;
+            border-bottom: 1px solid var(--text-faint); padding-bottom: 2px;
+            transition: color 0.3s, border-color 0.3s;
+        }
+        .hero-links a:hover { color: var(--text-main); border-color: var(--text-muted); }
+
+        /* ── Stats strip ── */
+        .stats-strip {
+            display: flex; flex-wrap: wrap; gap: 0 3.5rem;
+            max-width: 860px; margin: 0 auto;
+            padding: 2.2rem 2rem;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 0;
+        }
+        .stat { display: flex; flex-direction: column; }
+        .stat-num {
+            font-size: 1.9rem; font-weight: 300;
+            letter-spacing: -1.5px; color: var(--text-main);
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: 0.72rem; color: var(--text-faint);
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-top: 0.35rem;
         }
 
-        .nav-links {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-top: 3rem;
-        }
-
-        .nav-links a {
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--text-faint);
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            width: fit-content;
-        }
-
-        .nav-links a::before {
-            content: '';
-            display: block;
-            width: 30px;
-            height: 1px;
-            background-color: var(--text-faint);
-            transition: var(--transition);
-        }
-
-        .nav-links a:hover, .nav-links a.active {
-            color: var(--text-main);
-        }
-
-        .nav-links a:hover::before, .nav-links a.active::before {
-            width: 50px;
-            background-color: var(--text-main);
-        }
-
-        .social-links {
-            display: flex;
-            gap: 1.5rem;
-        }
-
-        .social-links a {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        .social-links a:hover {
-            color: var(--text-main);
-        }
-
-        /* RIGHT MAIN CONTENT (Scrollable) */
-        .main-content {
-            width: 60%;
-            padding: 5rem 1rem 5rem 3rem;
-        }
-
-        section {
-            margin-bottom: 6rem;
-        }
-
+        /* ── Page content ── */
+        .page-content { max-width: 860px; margin: 0 auto; padding: 0 2rem 8rem 2rem; }
+        section { margin-bottom: 7rem; }
         .section-title {
-            font-size: 1.5rem;
-            font-weight: 400;
-            margin-bottom: 2rem;
-            color: var(--text-main);
-            display: block; 
+            font-size: 0.72rem; font-weight: 500;
+            text-transform: uppercase; letter-spacing: 3px;
+            color: var(--text-faint);
+            margin-bottom: 2.5rem; padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
         }
 
-        /* Filters */
-        .filter-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.6rem;
-            margin-bottom: 2rem;
-        }
-
+        /* ── Filters ── */
+        .filter-container { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2rem; }
         .filter-btn {
-            background: transparent;
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            padding: 0.4rem 1rem;
-            border-radius: 20px;
-            font-family: inherit;
-            font-size: 0.8rem;
+            background: transparent; border: 1px solid var(--border-color);
+            color: var(--text-faint); padding: 0.35rem 0.9rem;
+            border-radius: 20px; font-family: inherit;
+            font-size: 0.75rem; letter-spacing: 0.5px;
             transition: var(--transition);
         }
-
         .filter-btn.active, .filter-btn:hover {
-            background: var(--text-main);
-            color: var(--bg-color);
+            background: var(--text-main); color: var(--bg-color);
             border-color: var(--text-main);
         }
 
-        /* Accordion System */
-        .accordion-list {
-            display: flex;
-            flex-direction: column;
-            border-top: 1px solid var(--border-color);
-        }
-
+        /* ── Accordion ── */
+        .accordion-list { display: flex; flex-direction: column; border-top: 1px solid var(--border-color); }
         .accordion-item {
             border-bottom: 1px solid var(--border-color);
-            transition: background-color 0.3s ease;
+            transition: border-left-color 0.3s ease, opacity 0.35s ease, transform 0.35s ease;
+            border-left: 2px solid transparent;
+        }
+        .accordion-item.hide { display: none; }
+        .accordion-item.filtering-out {
+            opacity: 0;
+            transform: scale(0.98) translateY(6px);
         }
 
-        .accordion-item.hide {
-            display: none;
-        }
+        /* Left-border accent on open accordion */
+        .accordion-item.active { border-left-color: rgba(110,60,255,0.5); }
 
         .accordion-header {
             width: 100%;
-            display: flex;
-            justify-content: space-between;
+            display: grid; grid-template-columns: 1fr auto auto; gap: 1.5rem;
             align-items: center;
-            padding: 1.8rem 0;
-            background: none;
-            border: none;
-            color: var(--text-main);
-            text-align: left;
+            padding: 1.6rem 0 1.6rem 0.4rem;
+            background: none; border: none;
+            color: var(--text-main); text-align: left;
             font-family: inherit;
-            transition: padding-left 0.3s ease, padding-right 0.3s ease;
+            transition: padding-left 0.3s ease, background-color 0.3s ease;
         }
+        .accordion-item:hover .accordion-header { padding-left: 1rem; background-color: var(--hover-bg); }
+        .accordion-item.active .accordion-header { padding-left: 1rem; background-color: var(--hover-bg); border-bottom: 1px solid transparent; }
 
-        .accordion-item:hover .accordion-header {
-            padding-left: 1rem;
-            padding-right: 1rem;
-            background-color: var(--hover-bg);
-        }
-
-        .accordion-title-box {
-            display: flex;
-            flex-direction: column;
-            gap: 0.3rem;
-        }
-
-        .accordion-title-box h3 {
-            font-size: 1.1rem;
-            font-weight: 500;
-            margin: 0;
-        }
-
-        .accordion-role {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-
+        .accordion-title-box { display: flex; flex-direction: column; gap: 0.25rem; }
+        .accordion-title-box h3 { font-size: 1rem; font-weight: 500; margin: 0; }
+        .accordion-role { font-size: 0.85rem; color: var(--text-muted); }
+        .accordion-year { font-size: 0.75rem; color: var(--text-faint); white-space: nowrap; }
         .accordion-icon {
-            font-size: 1.2rem;
-            font-weight: 300;
-            color: var(--text-muted);
-            transition: transform 0.4s ease;
+            font-size: 1.1rem; font-weight: 300; color: var(--text-faint);
+            transition: transform 0.4s ease, color 0.3s;
         }
-
-        .accordion-item.active .accordion-icon {
-            transform: rotate(45deg);
-            color: var(--text-main);
-        }
-
-        .accordion-item.active .accordion-header {
-            padding-left: 1rem;
-            padding-right: 1rem;
-            background-color: var(--hover-bg);
-            border-bottom: 1px solid transparent;
-        }
+        .accordion-item.active .accordion-icon { transform: rotate(45deg); color: var(--text-main); }
 
         .accordion-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
-            background-color: var(--hover-bg);
-            padding: 0 1rem;
+            max-height: 0; overflow: hidden;
+            transition: max-height 0.4s ease-in-out;
+            background-color: var(--hover-bg); padding: 0 0.8rem;
         }
-
         .accordion-inner {
-            padding-bottom: 2rem;
-            font-size: 0.95rem;
-            color: var(--text-muted);
-            line-height: 1.8;
+            padding: 0.4rem 0 2rem 0;
+            font-size: 0.93rem; color: var(--text-muted); line-height: 1.85;
         }
 
-        /* Attachments */
+        /* ── Attachments & media ── */
         .attachment-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.6rem;
-            padding: 0.6rem 1.2rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            color: var(--text-main);
-            font-size: 0.85rem;
-            margin-top: 1.2rem;
+            display: inline-flex; align-items: center; gap: 0.6rem;
+            padding: 0.55rem 1.1rem;
+            background: rgba(255,255,255,0.04); border: 1px solid var(--border-color);
+            border-radius: 6px; color: var(--text-main);
+            font-size: 0.82rem; margin-top: 1.2rem;
             transition: var(--transition);
         }
+        .attachment-link:hover { background: rgba(255,255,255,0.09); border-color: var(--text-muted); }
+        .media-wrapper { margin-top: 1.5rem; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); }
 
-        .attachment-link:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--text-muted);
-        }
-
-        .media-wrapper {
-            margin-top: 1.5rem;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-        }
-
-        .media-wrapper img {
-            display: block;
-            width: 100%;
-            height: auto;
-        }
-
-        /* Art Gallery Grid */
+        /* ── Art gallery ── */
         .art-gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 12px;
-            margin-top: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px; margin-top: 1.5rem;
         }
-
-        .art-gallery img {
-            width: 100%;
-            height: 140px;
-            object-fit: cover;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            transition: transform 0.3s ease, border-color 0.3s ease;
+        /* Art items are wrapped in JS */
+        .art-item { position: relative; overflow: hidden; border-radius: 5px; border: 1px solid var(--border-color); }
+        .art-item img {
+            width: 100%; height: 150px; object-fit: cover;
+            display: block;
+            transition: transform 0.4s ease, border-color 0.3s;
         }
-
-        .art-gallery img:hover {
-            transform: scale(1.03);
-            border-color: var(--text-muted);
+        .art-item:hover img { transform: scale(1.07); }
+        .art-overlay {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 0.5rem 0.65rem;
+            background: linear-gradient(transparent, rgba(0,0,0,0.75));
+            color: rgba(255,255,255,0.9);
+            font-size: 0.72rem; letter-spacing: 0.3px;
+            opacity: 0; transform: translateY(4px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
         }
+        .art-item:hover .art-overlay { opacity: 1; transform: translateY(0); }
 
-        /* Music Player Styles */
-        .audio-gallery {
-            display: flex;
-            flex-direction: column;
-            gap: 1.2rem;
-            margin-top: 1.5rem;
-        }
-
+        /* ── Audio ── */
+        .audio-gallery { display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem; }
         .audio-track {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 1rem;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
+            display: flex; flex-direction: column; gap: 0.5rem;
+            background: rgba(255,255,255,0.02); padding: 1rem;
+            border-radius: 8px; border: 1px solid var(--border-color);
         }
+        .audio-track span { font-size: 0.92rem; color: var(--text-main); font-weight: 500; }
+        audio { width: 100%; height: 34px; outline: none; border-radius: 4px; }
 
-        .audio-track span {
-            font-size: 0.95rem;
+        /* ── Contact ── */
+        .contact-blurb { font-size: 1rem; color: var(--text-muted); line-height: 1.85; }
+        .contact-blurb a {
             color: var(--text-main);
-            font-weight: 500;
+            border-bottom: 1px solid var(--text-faint); padding-bottom: 1px;
+            transition: border-color 0.3s;
         }
+        .contact-blurb a:hover { border-color: var(--text-muted); }
 
-        audio {
-            width: 100%;
-            height: 36px;
-            outline: none;
-            border-radius: 4px;
+        /* ── Scroll reveal ── */
+        .reveal {
+            opacity: 0; transform: translateY(20px);
+            transition: opacity 0.65s ease, transform 0.65s ease;
         }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
 
-        /* Contact Form Styles */
-        .contact-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1.2rem;
-        }
-
-        .form-row {
-            display: flex;
-            gap: 1.2rem;
-            width: 100%;
-        }
-
-        .contact-form input, .contact-form textarea {
-            width: 100%;
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            border-radius: 6px;
-            font-family: inherit;
-            font-size: 0.95rem;
-            transition: var(--transition);
-        }
-
-        .contact-form input:focus, .contact-form textarea:focus {
-            outline: none;
-            border-color: var(--text-muted);
-            background: rgba(255, 255, 255, 0.06);
-        }
-
-        .submit-btn {
-            align-self: flex-start;
-            padding: 0.8rem 2rem;
-            background: var(--text-main);
-            color: var(--bg-color);
-            border: none;
-            border-radius: 30px;
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: var(--transition);
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            opacity: 0.9;
-        }
-
-        /* --- RESPONSIVE MOBILE --- */
-        @media (max-width: 900px) {
-            body { cursor: auto; } /* Disable custom cursor on mobile */
-            a, button, input, textarea, img, video, audio, .accordion-header { cursor: auto; }
+        /* ── Responsive ── */
+        @media (max-width: 700px) {
+            body { cursor: auto; }
+            a, button, img, video, audio, .accordion-header { cursor: auto; }
             .cursor-dot, .cursor-outline { display: none; }
-            
-            .layout-wrapper {
-                flex-direction: column;
-            }
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-                padding: 4rem 2rem 2rem 2rem;
-            }
-            .nav-links {
-                display: none; 
-            }
-            .main-content {
-                width: 100%;
-                padding: 2rem;
-            }
-            .accordion-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 1rem;
-            }
-            .accordion-icon {
-                align-self: flex-end;
-                margin-top: -2.5rem;
-            }
-            .art-gallery {
-                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            }
-            .form-row {
-                flex-direction: column;
-            }
+            .top-nav { padding: 0 1.4rem; }
+            .top-nav-links { gap: 1.4rem; }
+            .hero { padding-left: 1.4rem; padding-right: 1.4rem; min-height: 65vh; }
+            .hero-inner h1 { letter-spacing: -1px; }
+            .stats-strip { gap: 1.5rem 2.5rem; padding: 1.8rem 1.4rem; }
+            .page-content { padding: 0 1.4rem 4rem 1.4rem; }
+            .accordion-header { grid-template-columns: 1fr auto; }
+            .accordion-year { display: none; }
+            .art-gallery { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
         }
     </style>
 </head>
 <body>
 
+    <div class="progress-bar" id="progress-bar"></div>
     <div class="cursor-dot" data-cursor-dot></div>
     <div class="cursor-outline" data-cursor-outline></div>
 
@@ -607,444 +442,633 @@
         <img id="lightbox-img" class="lightbox-content" src="" alt="Expanded Art">
     </div>
 
-    <button id="back-to-top" class="back-to-top">↑</button>
+    <button id="back-to-top" class="back-to-top">&#8593;</button>
 
     <div class="ambient-glow glow-1"></div>
     <div class="ambient-glow glow-2"></div>
+    <div class="ambient-glow glow-3"></div>
+    <div class="ambient-glow glow-4"></div>
+    <div class="ambient-glow glow-5"></div>
 
-    <div class="layout-wrapper">
-        
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h1>Sam Cao <span>曹方源</span></h1>
-                <h2>Student & Researcher</h2>
-                <p>I am a high school senior with a deep interest in economics, philosophy, and history. I enjoy exploring the connections between abstract academic theories and the everyday institutions that shape our lives.</p>
-                <p>I am looking forward to continuing my education at Johns Hopkins University (Class of 2030), where I hope to study Economics and Public Health.</p>
-                
-                <nav class="nav-links">
-                    <a href="#portfolio" class="nav-link active">Portfolio</a>
-                    <a href="#extras" class="nav-link">Beyond the Resume</a>
-                    <a href="#contact" class="nav-link">Contact</a>
-                </nav>
-            </div>
+    <nav class="top-nav" id="top-nav">
+        <span class="top-nav-name">Sam Cao</span>
+        <div class="top-nav-links">
+            <a href="#portfolio" class="nav-link active">Portfolio</a>
+            <a href="#extras" class="nav-link">Outside the Classroom</a>
+            <a href="#contact" class="nav-link">Contact</a>
+        </div>
+    </nav>
 
-            <div class="social-links">
+    <section class="hero">
+        <div class="hero-inner">
+            <h1><span class="name-shimmer">Sam Cao</span><span class="name-chinese">&#26361;&#26041;&#28304;</span></h1>
+            <h2>Student &amp; Researcher</h2>
+            <p>High school senior with a deep interest in economics, philosophy, and history. I explore the places where abstract theory meets lived experience &mdash; how ideas shape institutions, policy, and culture.</p>
+            <p>Enrolling at Johns Hopkins University (Class of 2030) to study Economics and Public Health.</p>
+            <div class="hero-links">
                 <a href="mailto:scao29@jh.edu">scao29@jh.edu</a>
                 <a href="https://linkedin.com/in/fangyuansam-cao" target="_blank">LinkedIn</a>
             </div>
-        </aside>
+        </div>
+    </section>
 
-        <main class="main-content">
-            
-            <section id="portfolio">
-                <h2 class="section-title">Portfolio</h2>
-                
-                <div class="filter-container">
-                    <button class="filter-btn active" data-filter="all">All</button>
-                    <button class="filter-btn" data-filter="policy">Policy</button>
-                    <button class="filter-btn" data-filter="research">Essays</button>
-                    <button class="filter-btn" data-filter="editorial">Editorial</button>
-                    <button class="filter-btn" data-filter="business">Programs</button>
+    <!-- Stats strip with animated counters -->
+    <br> 
+     <br> 
+      <br> 
+       <br> 
+        <br> 
+         <br> 
+          <br> 
+           <br> 
+
+    <div class="page-content">
+
+        <section id="portfolio">
+            <h2 class="section-title reveal">Portfolio</h2>
+
+            <div class="filter-container reveal">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="policy">Policy</button>
+                <button class="filter-btn" data-filter="research">Essays</button>
+                <button class="filter-btn" data-filter="editorial">Editorial</button>
+                <button class="filter-btn" data-filter="business">Programs</button>
+            </div>
+
+            <div class="accordion-list" id="portfolio-list">
+
+                <div class="accordion-item reveal" data-category="research">
+                    <button class="accordion-header" aria-expanded="false">
+                        <div class="accordion-title-box">
+                            <h3>John Locke Essay Competition</h3>
+                            <span class="accordion-role">Very High Commendation</span>
+                        </div>
+                        <span class="accordion-year">2024&ndash;2025</span>
+                        <span class="accordion-icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            Authored &ldquo;The Asymmetry of Moral Obligations&rdquo; (2025), applying multilevel social contract theory to argue that obligations to future generations must rest on instrumental rather than traditional moral reasoning. Placed in the top ~1% globally. Previously awarded High Commendation in Philosophy and Merit in History (2024).
+                            <br>
+                            <a href="assets/The Asymmetry of Moral Obligations.pdf" target="_blank" class="attachment-link">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                Read Essay (PDF)
+                            </a>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="accordion-list" id="portfolio-list">
-                    
-                    <div class="accordion-item" data-category="policy">
-                        <button class="accordion-header">
-                            <div class="accordion-title-box">
-                                <h3>Institute for Youth in Policy (YIP)</h3>
-                                <span class="accordion-role">Economic Policy Analyst & Public Policy Fellow</span>
+                <div class="accordion-item reveal" data-category="policy">
+                    <button class="accordion-header" aria-expanded="false">
+                        <div class="accordion-title-box">
+                            <h3>Institute for Youth in Policy</h3>
+                            <span class="accordion-role">Economic Policy Analyst &amp; Public Policy Fellow</span>
+                        </div>
+                        <span class="accordion-year">2024&ndash;2026</span>
+                        <span class="accordion-icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            Awarded Outstanding Capstone for research on U.S. patent reform, arguing that over-broad patents suppress follow-on innovation by raising entry costs and proposing post-grant review expansion under the AIA. Paid co-author on a depolarization white paper published with Business for America. Co-authored 4 nonpartisan briefs on trade policy, U.S. debt, and foreign funding.
+                            <div class="media-wrapper">
+                                <video controls width="100%" preload="metadata">
+                                    <source src="assets/Patent Reform Video (YIP Capstone).mp4" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
                             </div>
-                            <span class="accordion-icon">+</span>
-                        </button>
-                        <div class="accordion-content">
-                            <div class="accordion-inner">
-                                Awarded Outstanding Capstone for research on U.S. patent reform, arguing over-broad patents suppress follow-on innovation. Paid co-author on a depolarization white paper with Business for America. Co-authored 4 briefs on trade, debt, and foreign funding.
-                                
-                                <div class="media-wrapper">
-                                    <video controls width="100%" preload="metadata">
-                                        <source src="assets/Patent Reform Video (YIP Capstone).mp4" type="video/mp4">
-                                        Your browser does not support the video tag.
-                                    </video>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item reveal" data-category="research">
+                    <button class="accordion-header" aria-expanded="false">
+                        <div class="accordion-title-box">
+                            <h3>Harvard International Economics Essay Contest</h3>
+                            <span class="accordion-role">Contest Finalist</span>
+                        </div>
+                        <span class="accordion-year">2025</span>
+                        <span class="accordion-icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            Authored &ldquo;Beyond Carbon Subsidies.&rdquo; Compared carbon taxes and cap-and-trade via marginal abatement cost curves, demonstrating allocative superiority of carbon taxes under standard conditions. Examined market distortions from permit banking and political economy constraints; concluded optimal design depends on institutional context. Top ~5% of ~347 entries, judged by Harvard Economics faculty.
+                            <br>
+                            <a href="assets/Beyond Carbon Subsidies (Improved).pdf" target="_blank" class="attachment-link">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                Read Essay (PDF)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item reveal" data-category="research policy">
+                    <button class="accordion-header" aria-expanded="false">
+                        <div class="accordion-title-box">
+                            <h3>High School Fed Challenge</h3>
+                            <span class="accordion-role">Published &mdash; <em>Journal of Future Economics</em></span>
+                        </div>
+                        <span class="accordion-year">2024</span>
+                        <span class="accordion-icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            Co-authored a podcast script titled &ldquo;Lett-uce Unpack,&rdquo; sponsored by the Federal Reserve Bank of New York. Investigated fast food&rsquo;s role in agricultural monopolization (CAFOs), labor market volatility, and inflation. Proposed solutions including tax incentives for food deserts and community-based nutrition education. Selected for publication in the 2024 <em>Journal of Future Economics</em> &mdash; one of 12 published out of 195 entries.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item reveal" data-category="research">
+                    <button class="accordion-header" aria-expanded="false">
+                        <div class="accordion-title-box">
+                            <h3>Horizon Academic Essay Prize</h3>
+                            <span class="accordion-role">Honorable Mention</span>
+                        </div>
+                        <span class="accordion-year">2025</span>
+                        <span class="accordion-icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            Ranked in the top 50 out of 1,952 international entries in a competition judged by faculty from Yale, Harvard, Oxford, and Cambridge. Authored &ldquo;Evaluating Governmental Controls on Social Media Speech,&rdquo; arguing that state regulation of social media fails due to politicization of enforcement and enforcement limits, and that media literacy is a more durable alternative.
+                            <br>
+                            <a href="assets/Evaluating Governmental Controls on Social Media Speech.pdf" target="_blank" class="attachment-link">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                Read Essay (PDF)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item reveal" data-category="research">
+                    <button class="accordion-header" aria-expanded="false">
+                        <div class="accordion-title-box">
+                            <h3>National History Day</h3>
+                            <span class="accordion-role">State Finalist &amp; Maritime History Award</span>
+                        </div>
+                        <span class="accordion-year">2025</span>
+                        <span class="accordion-icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            Created a website titled &ldquo;No Prey, No Pay, No Tyranny,&rdquo; arguing that pirates during the Golden Age of Piracy represented the most democratic and egalitarian institutions in the pre-Enlightenment era &mdash; contrasting with the Royal Navy and merchant service. Analyzed primary sources to demonstrate how pirates practiced constitutional governance. Selected as one of 15 state finalists in California and was the sole recipient of the Maritime History Award in the senior division.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item reveal" data-category="research">
+                    <button class="accordion-header" aria-expanded="false">
+                        <div class="accordion-title-box">
+                            <h3>Marshall Society Essay Competition</h3>
+                            <span class="accordion-role">Commendation</span>
+                        </div>
+                        <span class="accordion-year">2024</span>
+                        <span class="accordion-icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            Authored &ldquo;A Fertility Crisis&rdquo; for the Cambridge University Economics Society&rsquo;s annual contest. Applied the Solow Growth Model to project GDP contraction from sustained below-replacement fertility. Evaluated pro-natalist transfer programs against the Easterlin hypothesis, arguing economic stability is a more durable fertility lever than cash transfers. Top ~4% of over 1,000 international entries.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item reveal" data-category="editorial">
+                    <button class="accordion-header" aria-expanded="false">
+                        <div class="accordion-title-box">
+                            <h3>Academus Journal</h3>
+                            <span class="accordion-role">Co-Founder, President &amp; Editor-in-Chief</span>
+                        </div>
+                        <span class="accordion-year">2024&ndash;Present</span>
+                        <span class="accordion-icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            Led bi-weekly philosophy lectures on ethics, epistemology, and religion for ~25 attendees &mdash; one of the largest non-sport clubs at Miramonte. Founded and manage the Academus Journal for the Social Sciences and Humanities, publishing 3 double-blind peer-reviewed issues comprising 15 academic papers.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item reveal" data-category="business">
+                    <button class="accordion-header" aria-expanded="false">
+                        <div class="accordion-title-box">
+                            <h3>Leadership in the Business World (Wharton)</h3>
+                            <span class="accordion-role">Program Participant</span>
+                        </div>
+                        <span class="accordion-year">2025</span>
+                        <span class="accordion-icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            Selected for a four-week residential business immersion at the Wharton School (UPenn). Engaged in lectures on finance, marketing, and entrepreneurship. Co-developed a case presentation on Duolingo and led a team to win 3rd place out of 23 groups in the final case competition.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item reveal" data-category="business">
+                    <button class="accordion-header" aria-expanded="false">
+                        <div class="accordion-title-box">
+                            <h3>Berkeley Business Academy (B-BAY) @ UC Berkeley Haas</h3>
+                            <span class="accordion-role">Program Participant</span>
+                        </div>
+                        <span class="accordion-year">2024&ndash;2025</span>
+                        <span class="accordion-icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            Selected for a two-semester, project-based entrepreneurship incubator at UC Berkeley Haas (~10% acceptance). Conducted customer discovery, validated a business model, and built operating and financial plans for an AI college counseling service (Future U Assist). Pitched the prototype to a panel of Haas professors and entrepreneurs.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item reveal" data-category="editorial">
+                    <button class="accordion-header" aria-expanded="false">
+                        <div class="accordion-title-box">
+                            <h3>Center for Teen Economic Education</h3>
+                            <span class="accordion-role">Editor-in-Chief</span>
+                        </div>
+                        <span class="accordion-year">2024&ndash;Present</span>
+                        <span class="accordion-icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            Promoted from summer intern to Editor-in-Chief. Lead an editorial team of ~10 article writers, publishing 20+ articles spanning personal finance, monetary policy, and macroeconomic theory. Mentor writers on economic reasoning, research depth, and citation rigor. Raised blog traffic by 50% through newsletter advertisements.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item reveal" data-category="editorial">
+                    <button class="accordion-header" aria-expanded="false">
+                        <div class="accordion-title-box">
+                            <h3>Journal Article Editor</h3>
+                            <span class="accordion-role"><em>JRHS</em>, <em>Questions</em> &amp; <em>Journal of Policy Analysis</em></span>
+                        </div>
+                        <span class="accordion-year">2023&ndash;Present</span>
+                        <span class="accordion-icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            Review humanities and social-science manuscripts for the <em>Journal of Research High School</em> (JRHS), <em>Questions Journal</em> (PLATO), and the <em>Journal of Policy Analysis</em>. Evaluate submissions for clarity, writing quality, and citation accuracy; only ~30% of JRHS submissions are published. Nominated for JRHS Junior Editor of the Year 2026.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item reveal" data-category="research">
+                    <button class="accordion-header" aria-expanded="false">
+                        <div class="accordion-title-box">
+                            <h3>Independent Research Project: The One-Child Policy</h3>
+                            <span class="accordion-role">Author</span>
+                        </div>
+                        <span class="accordion-year">2025</span>
+                        <span class="accordion-icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            Authored a comprehensive historical and demographic analysis exploring how Maoist policies, the pervasive influence of Scientism, and Western fears of overpopulation shaped the origins and implementation of China&rsquo;s One-Child Policy.
+                            <br>
+                            <a href="assets/Why One Child (FINAL).pdf" target="_blank" class="attachment-link">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                Read Paper (PDF)
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="extras">
+            <h2 class="section-title reveal">Outside the Classroom</h2>
+            <div class="accordion-list">
+
+                <div class="accordion-item reveal">
+                    <button class="accordion-header" aria-expanded="false">
+                        <div class="accordion-title-box">
+                            <h3>Art Portfolio</h3>
+                            <span class="accordion-role">Drawing, Painting &amp; Digital Media</span>
+                        </div>
+                        <span class="accordion-year">2023&ndash;2025</span>
+                        <span class="accordion-icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            Selected for the California State Summer School for the Arts (CSSSA), a rigorous month-long conservatory at CalArts pursuing intensive pre-professional studio training. Won 3rd Place in the Congressional Art Competition, showcasing original work to the U.S. House of Representatives.
+                            <div class="art-gallery">
+                                <img src="assets/art/Dry Season.jpg" alt="Dry Season">
+                                <img src="assets/art/Erosion.jpg" alt="Erosion">
+                                <img src="assets/art/Rictus.jpg" alt="Rictus">
+                                <img src="assets/art/Sagittal.jpg" alt="Sagittal">
+                                <img src="assets/art/San Francisco International, 11 14 PM.jpg" alt="San Francisco International, 11:14 PM">
+                                <img src="assets/art/Scarcity.jpg" alt="Scarcity">
+                                <img src="assets/art/Self-Portrait Playing the Violin.jpg" alt="Self-Portrait Playing the Violin">
+                                <img src="assets/art/Study of Female Figure.jpg" alt="Study of Female Figure">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item reveal">
+                    <button class="accordion-header" aria-expanded="false">
+                        <div class="accordion-title-box">
+                            <h3>Violin &amp; Composition</h3>
+                            <span class="accordion-role">Teacher &amp; Composer</span>
+                        </div>
+                        <span class="accordion-year">2022&ndash;Present</span>
+                        <span class="accordion-icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            Manage a private violin studio, teaching weekly one-on-one lessons to 10 students with individualized practice plans. Formed a student ensemble that busks original compositions outside local businesses, donating ~$500 in proceeds to charity. A few of my compositions are below.
+                            <div class="audio-gallery">
+                                <div class="audio-track">
+                                    <span>Fugue in E-flat Minor</span>
+                                    <audio controls><source src="assets/music/Fugue_in_E_flat_Minor.mp3" type="audio/mpeg"></audio>
+                                </div>
+                                <div class="audio-track">
+                                    <span>Impromptu in F Minor</span>
+                                    <audio controls><source src="assets/music/impromptu-in-f-minor.mp3" type="audio/mpeg"></audio>
+                                </div>
+                                <div class="audio-track">
+                                    <span><em>Le Festin</em> from Ratatouille (arranged for violin and piano)</span>
+                                    <audio controls><source src="assets/music/Le Festin.mp3" type="audio/mpeg"></audio>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <div class="accordion-item" data-category="research">
-                        <button class="accordion-header">
-                            <div class="accordion-title-box">
-                                <h3>John Locke Essay Competition</h3>
-                                <span class="accordion-role">Very High Commendation (Top 1%)</span>
-                            </div>
-                            <span class="accordion-icon">+</span>
-                        </button>
-                        <div class="accordion-content">
-                            <div class="accordion-inner">
-                                Authored "The Asymmetry of Moral Obligations," applying multilevel social contract theory to environmental frameworks. Previously awarded High Commendation in Philosophy and Merit in History (2024).
-                                
-                                <br>
-                                <a href="assets/The Asymmetry of Moral Obligations.pdf" target="_blank" class="attachment-link">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                    Read Essay (PDF)
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item" data-category="research">
-                        <button class="accordion-header">
-                            <div class="accordion-title-box">
-                                <h3>Harvard International Economics Essay Contest</h3>
-                                <span class="accordion-role">Contest Finalist</span>
-                            </div>
-                            <span class="accordion-icon">+</span>
-                        </button>
-                        <div class="accordion-content">
-                            <div class="accordion-inner">
-                                Analyzed carbon taxes versus cap-and-trade via marginal abatement cost curves, examining market distortions from permit banking to conclude optimal design depends on institutional context.
-                                
-                                <br>
-                                <a href="assets/Beyond Carbon Subsidies (Improved).pdf" target="_blank" class="attachment-link">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                    Read Essay (PDF)
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item" data-category="research">
-                        <button class="accordion-header">
-                            <div class="accordion-title-box">
-                                <h3>Research Paper: The One-Child Policy</h3>
-                                <span class="accordion-role">Independent Writing</span>
-                            </div>
-                            <span class="accordion-icon">+</span>
-                        </button>
-                        <div class="accordion-content">
-                            <div class="accordion-inner">
-                                Authored a comprehensive historical and demographic analysis exploring how Maoist policies, the pervasive influence of Scientism, and Western fears of overpopulation shaped the origins and implementation of China's One-Child Policy.
-                                
-                                <br>
-                                <a href="assets/Why One Child (FINAL).pdf" target="_blank" class="attachment-link">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                    Read Paper (PDF)
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item" data-category="research policy">
-                        <button class="accordion-header">
-                            <div class="accordion-title-box">
-                                <h3>Research Paper: Evaluating Social Media Speech</h3>
-                                <span class="accordion-role">Independent Writing</span>
-                            </div>
-                            <span class="accordion-icon">+</span>
-                        </button>
-                        <div class="accordion-content">
-                            <div class="accordion-inner">
-                                An analysis of governmental controls on social media speech, evaluating the practical, ethical, and economic risks of state-driven censorship. Argued that disinformation is better addressed through third-party fact-checkers and media literacy initiatives.
-                                
-                                <br>
-                                <a href="assets/Evaluating Governmental Controls on Social Media Speech.pdf" target="_blank" class="attachment-link">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                    Read Paper (PDF)
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item" data-category="research">
-                        <button class="accordion-header">
-                            <div class="accordion-title-box">
-                                <h3>Horizon Academic Essay Prize</h3>
-                                <span class="accordion-role">Honorable Mention</span>
-                            </div>
-                            <span class="accordion-icon">+</span>
-                        </button>
-                        <div class="accordion-content">
-                            <div class="accordion-inner">
-                                Ranked in the top 50 out of 1,952 international entries in a competition judged by faculty from institutions including Yale, Harvard, Oxford, and Cambridge.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item" data-category="editorial">
-                        <button class="accordion-header">
-                            <div class="accordion-title-box">
-                                <h3>Academus Journal</h3>
-                                <span class="accordion-role">Co-Founder, President & Editor-in-Chief</span>
-                            </div>
-                            <span class="accordion-icon">+</span>
-                        </button>
-                        <div class="accordion-content">
-                            <div class="accordion-inner">
-                                Lead bi-weekly philosophy lectures on ethics and epistemology. Founded a double-blind peer-reviewed humanities journal, successfully publishing 3 print issues comprising 15 academic papers.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item" data-category="business">
-                        <button class="accordion-header">
-                            <div class="accordion-title-box">
-                                <h3>Leadership in the Business World (Wharton)</h3>
-                                <span class="accordion-role">Program Participant</span>
-                            </div>
-                            <span class="accordion-icon">+</span>
-                        </button>
-                        <div class="accordion-content">
-                            <div class="accordion-inner">
-                                Selected for a four-week residential business immersion. Engaged in lectures on finance, marketing, and entrepreneurship. Co-developed a case presentation and led a team to win 3rd place out of 23 groups in the final case competition.
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
-            </section>
 
-            <section id="extras">
-                <h2 class="section-title">Beyond the Resume</h2>
-
-                <div class="accordion-list">
-                    
-                    <div class="accordion-item">
-                        <button class="accordion-header">
-                            <div class="accordion-title-box">
-                                <h3>Art Portfolio</h3>
-                                <span class="accordion-role">Drawing, Painting & Digital Media</span>
-                            </div>
-                            <span class="accordion-icon">+</span>
-                        </button>
-                        <div class="accordion-content">
-                            <div class="accordion-inner">
-                                Outside of academics, I am an avid artist. I was selected for the California State Summer School for the Arts (CSSSA), a rigorous, month-long conservatory at CalArts pursuing intensive studio training. I also won 3rd Place in the Congressional Art Competition, showcasing original artistic work to the U.S. House of Representatives. Below is a small portfolio of my art.
-                                
-                                <div class="art-gallery">
-                                    <img src="assets/art/Dry Season.jpg" alt="Dry Season">
-                                    <img src="assets/art/Erosion.jpg" alt="Erosion">
-                                    <img src="assets/art/Rictus.jpg" alt="Rictus">
-                                    <img src="assets/art/Sagittal.jpg" alt="Sagittal">
-                                    <img src="assets/art/San Francisco International, 11 14 PM.jpg" alt="San Francisco International">
-                                    <img src="assets/art/Scarcity.jpg" alt="Scarcity">
-                                    <img src="assets/art/Self-Portrait Playing the Violin.jpg" alt="Self-Portrait Playing the Violin">
-                                    <img src="assets/art/Still Life after Manet.jpg" alt="Still Life after Manet">
-                                    <img src="assets/art/Study of Female Figure.jpg" alt="Study of Female Figure">
-                                </div>
-                            </div>
+                <div class="accordion-item reveal">
+                    <button class="accordion-header" aria-expanded="false">
+                        <div class="accordion-title-box">
+                            <h3>Lamorinda Community Orchestra</h3>
+                            <span class="accordion-role">Teaching Assistant, Principal Violinist &amp; Webmaster</span>
+                        </div>
+                        <span class="accordion-year">2023&ndash;Present</span>
+                        <span class="accordion-icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            Lead the first violin section (~15 players) and plan monthly sectionals, coaching students on intonation, rhythm, musical phrasing, and concert-readiness. Also modernized the organization&rsquo;s website as an unpaid volunteer, improving concert logistics and increasing audience attendance by ~30%.
                         </div>
                     </div>
-
-                    <div class="accordion-item">
-                        <button class="accordion-header">
-                            <div class="accordion-title-box">
-                                <h3>Violin & Composition</h3>
-                                <span class="accordion-role">Teacher, Busker & Composer</span>
-                            </div>
-                            <span class="accordion-icon">+</span>
-                        </button>
-                        <div class="accordion-content">
-                            <div class="accordion-inner">
-                                I manage a private violin studio, teaching weekly one-on-one lessons to local students and creating individualized practice plans. Also, below is a sample of my compositions.
-                                
-                                <div class="audio-gallery">
-                                    <div class="audio-track">
-                                        <span>Fugue in E-flat Minor</span>
-                                        <audio controls>
-                                            <source src="assets/music/Fugue_in_E_flat_Minor.mp3" type="audio/mpeg">
-                                            Your browser does not support the audio element.
-                                        </audio>
-                                    </div>
-                                    <div class="audio-track">
-                                        <span>Impromptu in F Minor</span>
-                                        <audio controls>
-                                            <source src="assets/music/impromptu-in-f-minor.mp3" type="audio/mpeg">
-                                            Your browser does not support the audio element.
-                                        </audio>
-                                    </div>
-                                    <div class="audio-track">
-                                        <span>Le Festin</span>
-                                        <audio controls>
-                                            <source src="assets/music/Le Festin.mp3" type="audio/mpeg">
-                                            Your browser does not support the audio element.
-                                        </audio>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
-            </section>
 
-            <section id="contact">
-                <h2 class="section-title">Get in Touch</h2>
-                <form class="contact-form" onsubmit="event.preventDefault(); alert('Message feature ready to be connected to a backend service like Formspree!');">
-                    <div class="form-row">
-                        <input type="text" placeholder="Your Name" required>
-                        <input type="email" placeholder="Your Email" required>
+                <div class="accordion-item reveal">
+                    <button class="accordion-header" aria-expanded="false">
+                        <div class="accordion-title-box">
+                            <h3>Community Service &amp; Civic Engagement</h3>
+                            <span class="accordion-role">Symphony of Service (VP), The Salvation Army, Miramonte Peer Tutoring</span>
+                        </div>
+                        <span class="accordion-year">2023&ndash;Present</span>
+                        <span class="accordion-icon">+</span>
+                    </button>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            <strong>Symphony of Service (Vice-President):</strong> Organize monthly concerts at 3 senior centers in the Bay Area, coordinating ~12 volunteers per event and logging 400+ collective service hours. Manage the student-to-senior letter-writing program (100+ letters sent).
+                            <br><br>
+                            <strong>The Salvation Army (Sunday Leadership Team):</strong> Mentor ~20 low-income elementary students in piano through weekly lessons. Lead weekly Mandarin sessions for ~25 students, increasing their proficiency to an introductory high school level.
+                            <br><br>
+                            <strong>Miramonte Peer Tutoring:</strong> Selected as a peer tutor providing drop-in academic help for core subjects.
+                            <br><br>
+                            These activities resulted in the <strong>President&rsquo;s Volunteer Service Award</strong> &mdash; Bronze (120+ hours, 2024) and Gold (250+ hours, 2025).
+                        </div>
                     </div>
-                    <textarea rows="5" placeholder="Your Message" required></textarea>
-                    <button type="submit" class="submit-btn">Send Message</button>
-                </form>
-            </section>
+                </div>
 
-        </main>
+            </div>
+        </section>
+
+        <section id="contact">
+            <h2 class="section-title reveal">Contact</h2>
+            <p class="contact-blurb reveal">
+                I&rsquo;m always happy to connect &mdash; whether about research, writing, or anything in between. Reach me at <a href="mailto:scao29@jh.edu">scao29@jh.edu</a> or via <a href="https://linkedin.com/in/fangyuansam-cao" target="_blank">LinkedIn</a>.
+            </p>
+        </section>
+
     </div>
 
     <script>
-        // --- Custom Cursor Logic ---
-        const cursorDot = document.querySelector('[data-cursor-dot]');
-        const cursorOutline = document.querySelector('[data-cursor-outline]');
+    (function () {
+        /* ── Cursor (rAF lerp + magnetic) ── */
+        var cursorDot     = document.querySelector('[data-cursor-dot]');
+        var cursorOutline = document.querySelector('[data-cursor-outline]');
+        var mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+        var outX   = mouseX, outY = mouseY;
+        var magX   = 0, magY = 0;
 
-        window.addEventListener('mousemove', function(e) {
-            const posX = e.clientX;
-            const posY = e.clientY;
-            
-            cursorDot.style.left = `${posX}px`;
-            cursorDot.style.top = `${posY}px`;
-
-            // Animate the outline to smoothly trail the dot
-            cursorOutline.animate({
-                left: `${posX}px`,
-                top: `${posY}px`
-            }, { duration: 500, fill: "forwards" });
+        window.addEventListener('mousemove', function (e) {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            cursorDot.style.left = mouseX + 'px';
+            cursorDot.style.top  = mouseY + 'px';
         });
 
-        // Expand cursor on hover
-        const interactiveElements = document.querySelectorAll('a, button, input, textarea, .accordion-header, .art-gallery img');
-        interactiveElements.forEach(el => {
-            el.addEventListener('mouseenter', () => {
-                cursorOutline.style.width = '50px';
-                cursorOutline.style.height = '50px';
-                cursorOutline.style.borderColor = 'var(--text-main)';
-                cursorOutline.style.backgroundColor = 'rgba(255,255,255,0.05)';
+        (function animateCursor() {
+            outX += (mouseX + magX - outX) * 0.14;
+            outY += (mouseY + magY - outY) * 0.14;
+            cursorOutline.style.left = outX + 'px';
+            cursorOutline.style.top  = outY + 'px';
+            requestAnimationFrame(animateCursor);
+        })();
+
+        /* Cursor expand + magnetic pull */
+        var magneticEls = document.querySelectorAll('a, button, .accordion-header');
+        magneticEls.forEach(function (el) {
+            el.addEventListener('mousemove', function (e) {
+                var r  = el.getBoundingClientRect();
+                magX   = (r.left + r.width  / 2 - e.clientX) * 0.28;
+                magY   = (r.top  + r.height / 2 - e.clientY) * 0.28;
+                cursorOutline.style.width           = '48px';
+                cursorOutline.style.height          = '48px';
+                cursorOutline.style.borderColor     = 'rgba(255,255,255,0.75)';
+                cursorOutline.style.backgroundColor = 'rgba(255,255,255,0.04)';
             });
-            el.addEventListener('mouseleave', () => {
-                cursorOutline.style.width = '30px';
-                cursorOutline.style.height = '30px';
-                cursorOutline.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+            el.addEventListener('mouseleave', function () {
+                magX = 0; magY = 0;
+                cursorOutline.style.width           = '30px';
+                cursorOutline.style.height          = '30px';
+                cursorOutline.style.borderColor     = 'rgba(255,255,255,0.45)';
                 cursorOutline.style.backgroundColor = 'transparent';
             });
         });
 
-        // --- Lightbox Logic ---
-        const lightbox = document.getElementById('lightbox');
-        const lightboxImg = document.getElementById('lightbox-img');
-        const lightboxClose = document.querySelector('.lightbox-close');
-        const artImages = document.querySelectorAll('.art-gallery img');
+        /* ── Scroll progress bar (rAF lerp for smoothness) ── */
+        var progressBar    = document.getElementById('progress-bar');
+        var progTarget     = 0;
+        var progCurrent    = 0;
 
-        artImages.forEach(img => {
-            img.addEventListener('click', () => {
+        function updateProgressTarget() {
+            var scrolled = window.scrollY;
+            var total    = document.documentElement.scrollHeight - window.innerHeight;
+            progTarget   = total > 0 ? (scrolled / total) * 100 : 0;
+        }
+
+        (function animateProgress() {
+            progCurrent += (progTarget - progCurrent) * 0.12;
+            progressBar.style.width = progCurrent + '%';
+            requestAnimationFrame(animateProgress);
+        })();
+
+        /* ── Navbar + back-to-top on scroll ── */
+        var topNav      = document.getElementById('top-nav');
+        var navLinks    = document.querySelectorAll('.nav-link');
+        var backToTop   = document.getElementById('back-to-top');
+        var sections    = ['portfolio', 'extras', 'contact'].map(function (id) { return document.getElementById(id); });
+
+        window.addEventListener('scroll', function () {
+            updateProgressTarget();
+            var sy = window.scrollY;
+            topNav.classList.toggle('scrolled', sy > 60);
+            backToTop.classList.toggle('visible', sy > 400);
+
+            var current = 0;
+            sections.forEach(function (sec, i) {
+                if (sy >= sec.offsetTop - 140) current = i;
+            });
+            navLinks.forEach(function (lnk, i) { lnk.classList.toggle('active', i === current); });
+        }, { passive: true });
+
+        backToTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+        /* ── Scroll reveal ── */
+        var revealObserver = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    /* Stagger sibling accordion items */
+                    var el    = entry.target;
+                    var delay = 0;
+                    if (el.classList.contains('accordion-item')) {
+                        var siblings = Array.from(el.parentElement.querySelectorAll('.accordion-item.reveal:not(.visible)'));
+                        var idx      = siblings.indexOf(el);
+                        delay        = Math.min(idx * 60, 300);
+                    }
+                    setTimeout(function () { el.classList.add('visible'); }, delay);
+                    revealObserver.unobserve(el);
+                }
+            });
+        }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
+
+        document.querySelectorAll('.reveal').forEach(function (el) { revealObserver.observe(el); });
+
+        /* ── Animated number counters ── */
+        var counterObserver = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting && !entry.target.dataset.counted) {
+                    entry.target.dataset.counted = '1';
+                    var el      = entry.target;
+                    var target  = parseInt(el.getAttribute('data-target'), 10);
+                    var suffix  = el.getAttribute('data-suffix') || '';
+                    var start   = Date.now();
+                    var dur     = 1400;
+                    (function tick() {
+                        var p = Math.min((Date.now() - start) / dur, 1);
+                        var ease = 1 - Math.pow(1 - p, 3);
+                        el.textContent = Math.floor(ease * target) + suffix;
+                        if (p < 1) requestAnimationFrame(tick);
+                        else el.textContent = target + suffix;
+                    })();
+                    counterObserver.unobserve(el);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('[data-target]').forEach(function (el) { counterObserver.observe(el); });
+
+        /* ── Lightbox ── */
+        var lightbox      = document.getElementById('lightbox');
+        var lightboxImg   = document.getElementById('lightbox-img');
+        var lightboxClose = document.querySelector('.lightbox-close');
+
+        /* Wrap art images for overlay effect */
+        document.querySelectorAll('.art-gallery img').forEach(function (img) {
+            var wrapper = document.createElement('div');
+            wrapper.className = 'art-item';
+            img.parentNode.insertBefore(wrapper, img);
+            wrapper.appendChild(img);
+            var overlay = document.createElement('div');
+            overlay.className = 'art-overlay';
+            overlay.textContent = img.alt;
+            wrapper.appendChild(overlay);
+
+            img.addEventListener('click', function () {
                 lightboxImg.src = img.src;
                 lightbox.classList.add('active');
             });
         });
 
-        lightboxClose.addEventListener('click', () => {
-            lightbox.classList.remove('active');
+        lightboxClose.addEventListener('click', function () { lightbox.classList.remove('active'); });
+        lightbox.addEventListener('click', function (e) {
+            if (e.target !== lightboxImg) lightbox.classList.remove('active');
         });
 
-        lightbox.addEventListener('click', (e) => {
-            if (e.target !== lightboxImg) {
-                lightbox.classList.remove('active');
-            }
-        });
+        /* ── Accordion (keyboard-accessible) ── */
+        document.querySelectorAll('.accordion-header').forEach(function (header) {
+            /* Keyboard: Enter / Space already fire click on <button>; add explicit keydown for clarity */
+            header.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); header.click(); }
+            });
 
-        // --- Back to Top Arrow Logic ---
-        const backToTopBtn = document.getElementById('back-to-top');
-        
-        backToTopBtn.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
+            header.addEventListener('click', function () {
+                var item     = header.parentElement;
+                var content  = item.querySelector('.accordion-content');
+                var isActive = item.classList.contains('active');
 
-        // --- Scrolling & Parallax Logic ---
-        const glow1 = document.querySelector('.glow-1');
-        const glow2 = document.querySelector('.glow-2');
-
-        window.addEventListener('scroll', () => {
-            const scrollY = window.scrollY;
-            
-            // Parallax Ambient Glow
-            glow1.style.transform = `translateY(${scrollY * 0.1}px) translateX(${scrollY * 0.05}px)`;
-            glow2.style.transform = `translateY(${scrollY * -0.05}px) translateX(${scrollY * -0.02}px)`;
-            
-            // Back to top visibility
-            if (scrollY > 400) {
-                backToTopBtn.classList.add('visible');
-            } else {
-                backToTopBtn.classList.remove('visible');
-            }
-
-            // Simple ScrollSpy for Sidebar Links
-            const extrasSection = document.getElementById('extras');
-            const contactSection = document.getElementById('contact');
-            const navLinks = document.querySelectorAll('.nav-link');
-
-            if(window.scrollY >= contactSection.offsetTop - 300) {
-                navLinks[0].classList.remove('active');
-                navLinks[1].classList.remove('active');
-                navLinks[2].classList.add('active');
-            } else if(window.scrollY >= extrasSection.offsetTop - 300) {
-                navLinks[0].classList.remove('active');
-                navLinks[1].classList.add('active');
-                navLinks[2].classList.remove('active');
-            } else {
-                navLinks[0].classList.add('active');
-                navLinks[1].classList.remove('active');
-                navLinks[2].classList.remove('active');
-            }
-        });
-
-        // --- Accordion Logic ---
-        const accordionHeaders = document.querySelectorAll('.accordion-header');
-        
-        accordionHeaders.forEach(header => {
-            header.addEventListener('click', () => {
-                const item = header.parentElement;
-                const content = item.querySelector('.accordion-content');
-                const isActive = item.classList.contains('active');
-
-                // Close all other accordions
-                document.querySelectorAll('.accordion-item').forEach(otherItem => {
-                    otherItem.classList.remove('active');
-                    otherItem.querySelector('.accordion-content').style.maxHeight = null;
+                document.querySelectorAll('.accordion-item').forEach(function (other) {
+                    other.classList.remove('active');
+                    other.querySelector('.accordion-content').style.maxHeight = null;
+                    other.querySelector('.accordion-header').setAttribute('aria-expanded', 'false');
                 });
 
-                // Toggle current item
                 if (!isActive) {
                     item.classList.add('active');
-                    content.style.maxHeight = content.scrollHeight + "px";
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    header.setAttribute('aria-expanded', 'true');
                 }
             });
         });
 
-        // --- Project Filtering Logic ---
-        const filterBtns = document.querySelectorAll('.filter-btn');
-        const portfolioItems = document.querySelectorAll('#portfolio-list .accordion-item');
+        /* ── Portfolio filter (smooth transitions) ── */
+        var filterBtns     = document.querySelectorAll('.filter-btn');
+        var portfolioItems = document.querySelectorAll('#portfolio-list .accordion-item');
 
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                // Remove active class from all buttons
-                filterBtns.forEach(b => b.classList.remove('active'));
+        filterBtns.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                filterBtns.forEach(function (b) { b.classList.remove('active'); });
                 btn.classList.add('active');
+                var filter = btn.getAttribute('data-filter');
 
-                const filterValue = btn.getAttribute('data-filter');
-
-                portfolioItems.forEach(item => {
-                    // Close item before filtering
+                /* First pass: fade out items that should hide */
+                var toHide = [], toShow = [];
+                portfolioItems.forEach(function (item) {
+                    var cats      = item.getAttribute('data-category') || '';
+                    var matches   = filter === 'all' || cats.includes(filter);
+                    /* close accordion */
                     item.classList.remove('active');
                     item.querySelector('.accordion-content').style.maxHeight = null;
-
-                    const categories = item.getAttribute('data-category');
-                    if (filterValue === 'all' || categories.includes(filterValue)) {
-                        item.classList.remove('hide');
-                    } else {
-                        item.classList.add('hide');
-                    }
+                    item.querySelector('.accordion-header').setAttribute('aria-expanded', 'false');
+                    if (matches) { toShow.push(item); } else { toHide.push(item); }
                 });
+
+                toHide.forEach(function (item) {
+                    item.style.opacity   = '0';
+                    item.style.transform = 'scale(0.97) translateY(6px)';
+                });
+
+                setTimeout(function () {
+                    toHide.forEach(function (item) { item.classList.add('hide'); item.style.opacity = ''; item.style.transform = ''; });
+                    toShow.forEach(function (item) {
+                        item.classList.remove('hide');
+                        item.style.opacity   = '0';
+                        item.style.transform = 'scale(0.97) translateY(6px)';
+                        requestAnimationFrame(function () {
+                            requestAnimationFrame(function () {
+                                item.style.opacity   = '';
+                                item.style.transform = '';
+                            });
+                        });
+                    });
+                }, 300);
             });
         });
+
+    })();
     </script>
 </body>
 </html>

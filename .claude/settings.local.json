@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python patch.py)",
+      "Bash(python patch2.py)",
+      "Bash(python3 -c ':*)"
+    ]
+  }
+}
