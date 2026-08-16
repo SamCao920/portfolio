@@ -88,7 +88,7 @@
             --gilt-quiet: rgba(201,171,115,0.42);
             --grain-opacity: 0.20;
             --vignette: rgba(8,10,13,0.55);
-            --art-filter: saturate(0.90) brightness(0.97) contrast(1.03);
+            --art-filter: saturate(0.96) brightness(0.98) contrast(1.02);
 
             --measure: 1240px;
             --gutter: 3rem;
@@ -101,6 +101,7 @@
         }
 
         @media (prefers-color-scheme: light) {
+            .hero-glow { opacity: 0.62; }
             :root {
                 --bg: #f4efe4;
                 --bg-deep: #ece6d9;
@@ -216,8 +217,52 @@
             max-width: var(--measure);
             margin: 0 auto;
             padding: calc(var(--nav-h) + 3rem) var(--gutter) 4rem;
-            overflow: hidden;
         }
+
+        /* Full-bleed out of the centred hero grid. html/body clip the
+           overflow, so this cannot introduce a horizontal scrollbar.
+           Six soft gilt blooms drifting on long, mismatched cycles —
+           pure CSS, so it is composited on the GPU and costs no script. */
+        .hero-glow {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100vw;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+            -webkit-mask-image: radial-gradient(ellipse 82% 84% at 52% 50%, #000 34%, transparent 100%);
+            mask-image: radial-gradient(ellipse 82% 84% at 52% 50%, #000 34%, transparent 100%);
+        }
+        .hero-glow span {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(74px);
+            will-change: transform;
+        }
+
+        @keyframes bloom-a {
+            0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+            50%      { transform: translate3d(7vw, -5vh, 0) scale(1.18); }
+        }
+        @keyframes bloom-b {
+            0%, 100% { transform: translate3d(0, 0, 0) scale(1.06); }
+            50%      { transform: translate3d(-6vw, 6vh, 0) scale(0.9); }
+        }
+        @keyframes bloom-c {
+            0%, 100% { transform: translate3d(0, 0, 0) scale(0.95); }
+            50%      { transform: translate3d(4vw, 7vh, 0) scale(1.14); }
+        }
+
+        .hero-glow .g1 { top: -12%; left:  4%; width: 46vw; height: 46vw; background: radial-gradient(circle, rgba(201,171,115,0.30), transparent 66%); animation: bloom-a 46s ease-in-out infinite; }
+        .hero-glow .g2 { top:  22%; left: 30%; width: 38vw; height: 38vw; background: radial-gradient(circle, rgba(216,180,120,0.24), transparent 66%); animation: bloom-b 61s ease-in-out infinite; }
+        .hero-glow .g3 { top:  48%; left: -6%; width: 42vw; height: 42vw; background: radial-gradient(circle, rgba(190,158,102,0.23), transparent 68%); animation: bloom-c 53s ease-in-out infinite; }
+        .hero-glow .g4 { top:  -4%; left: 52%; width: 34vw; height: 34vw; background: radial-gradient(circle, rgba(210,176,116,0.20), transparent 68%); animation: bloom-c 72s ease-in-out infinite reverse; }
+        .hero-glow .g5 { top:  56%; left: 44%; width: 40vw; height: 40vw; background: radial-gradient(circle, rgba(196,166,110,0.21), transparent 66%); animation: bloom-a 67s ease-in-out infinite reverse; }
+        .hero-glow .g6 { top:  16%; left: 66%; width: 30vw; height: 30vw; background: radial-gradient(circle, rgba(222,188,128,0.17), transparent 70%); animation: bloom-b 55s ease-in-out infinite; }
+
         .fp-text {
             grid-column: 1;
             grid-row: 1;
@@ -398,30 +443,31 @@
             overflow: hidden;
             will-change: transform, opacity;
         }
-        .is-3d .face-art { height: 100%; }
+        .is-3d .face-art {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 1.5rem;
+        }
         .is-3d .face-art img {
-            transform: scale(1.06);
+            width: auto;
+            height: auto;
+            max-height: 84%;
+            max-width: 88%;
+            object-fit: contain;
+            border: 1px solid var(--rule-hair);
+            box-shadow: 0 22px 52px rgba(0,0,0,0.42);
+            transform: scale(0.965);
             transition: transform 2.4s cubic-bezier(.16,.7,.2,1);
         }
         .is-3d .face.on .face-art img { transform: scale(1); }
-        .is-3d .face-art::after {
-            content: '';
-            position: absolute; inset: 0;
-            background:
-              linear-gradient(to right, transparent 44%, color-mix(in srgb, var(--bg) 78%, transparent) 88%, var(--bg) 100%),
-              linear-gradient(to left,  transparent 78%, color-mix(in srgb, var(--bg) 65%, transparent) 100%),
-              linear-gradient(to bottom, var(--bg) 0%, transparent 15%, transparent 85%, var(--bg) 100%);
-        }
+
         /* Art sits on the right for odd facets, the left for even, so the
            drum does not read as the same slide five times. */
         .is-3d .face:nth-child(even) .face-art { grid-column: 2; grid-row: 1; }
         .is-3d .face:nth-child(even) .face-text { grid-column: 1; grid-row: 1; }
-        .is-3d .face:nth-child(even) .face-art::after {
-            background:
-              linear-gradient(to left,  transparent 44%, color-mix(in srgb, var(--bg) 78%, transparent) 88%, var(--bg) 100%),
-              linear-gradient(to right, transparent 78%, color-mix(in srgb, var(--bg) 65%, transparent) 100%),
-              linear-gradient(to bottom, var(--bg) 0%, transparent 15%, transparent 85%, var(--bg) 100%);
-        }
+
 
         /* ── Facet contents ── */
         .face-text {
@@ -765,7 +811,8 @@
             .vault-note { font-size: 0.98rem; margin-bottom: 1.6rem; }
             .scroll-cue { display: none; }
             .face { padding: 3.5rem var(--gutter); gap: 1.6rem; }
-            .face-art { height: 42vh; }
+            .face-art { height: auto; display: flex; justify-content: center; }
+            .face-art img { max-height: 46vh; width: auto; object-fit: contain; border: 1px solid var(--rule-hair); }
             .writing { grid-template-columns: 1fr; gap: 0.9rem; padding: 2.4rem 0; }
             .w-index { padding-top: 0; }
             .w-body { font-size: 1.04rem; }
@@ -788,6 +835,10 @@
     <button class="to-top" id="to-top" aria-label="Return to top">&#8593;</button>
 
     <header class="frontispiece" id="top">
+        <div class="hero-glow" aria-hidden="true">
+            <span class="g1"></span><span class="g2"></span><span class="g3"></span>
+            <span class="g4"></span><span class="g5"></span><span class="g6"></span>
+        </div>
         <div class="fp-portrait">
             <figure id="portrait-card">
                 <img src="assets/plates/portrait.jpg" alt="Fangyuan Cao" width="900" height="1200">
@@ -826,7 +877,7 @@
                 <div class="drum" id="drum">
 
                     <article class="face">
-                        <div class="face-art"><img src="assets/plates/plate-1.jpg" alt=""></div>
+                        <div class="face-art"><img src="assets/plates/cover-1.jpg" alt="" loading="lazy"></div>
                         <div class="face-text">
                             <div class="face-num">I</div>
                             <p class="face-venue caps">John Locke Essay Competition</p>
@@ -839,7 +890,7 @@
                     </article>
 
                     <article class="face">
-                        <div class="face-art"><img src="assets/plates/plate-2.jpg" alt=""></div>
+                        <div class="face-art"><img src="assets/plates/cover-2.jpg" alt="" loading="lazy"></div>
                         <div class="face-text">
                             <div class="face-num">II</div>
                             <p class="face-venue caps">Harvard International Economics Essay Contest</p>
@@ -852,7 +903,7 @@
                     </article>
 
                     <article class="face">
-                        <div class="face-art"><img src="assets/plates/plate-3.jpg" alt=""></div>
+                        <div class="face-art"><img src="assets/plates/cover-3.jpg" alt="" loading="lazy"></div>
                         <div class="face-text">
                             <div class="face-num">III</div>
                             <p class="face-venue caps">Independent Research</p>
@@ -865,7 +916,7 @@
                     </article>
 
                     <article class="face">
-                        <div class="face-art"><img src="assets/plates/plate-4.jpg" alt=""></div>
+                        <div class="face-art"><img src="assets/plates/cover-4.jpg" alt="" loading="lazy"></div>
                         <div class="face-text">
                             <div class="face-num">IV</div>
                             <p class="face-venue caps">High School Fed Challenge, FRB New York</p>
@@ -929,37 +980,40 @@
 
                 <article class="writing reveal">
                     <div class="w-index">iii</div>
-                    <div class="w-head">                        <h3 class="w-title">A Fertility Crisis</h3>
-                        <p class="w-venue caps">Marshall Society Essay Competition, Cambridge, 2024</p>
-                        <p class="w-result caps">Commendation &middot; top 4% of over 1,000 international entries</p>
+                    <div class="w-head">
+                        <h3 class="w-title">Against Moral Intuitionism</h3>
+                        <p class="w-venue caps">John Locke Essay Competition, Philosophy, 2024</p>
+                        <p class="w-result caps">High Commendation &middot; top 3% of submissions</p>
                     </div>
-                    <div class="w-prose"><p class="w-body">The annual contest of the Cambridge University Economics Society. The essay applies the Solow growth model to project output contraction under sustained below-replacement fertility, then tests the standard policy response &mdash; pro-natalist cash transfers &mdash; against the Easterlin hypothesis, and argues that perceived economic stability is a far more durable lever on fertility than transfers are.</p>
-                        <!-- Paste the PDF path into href to switch this link on. -->
-                        <a class="w-link caps" href="">Read the essay</a>
+                    <div class="w-prose">
+                        <p class="w-body">We have no reason to trust our moral intuitions. Taking intuition in the foundationalist sense &mdash; a self-evident &ldquo;intellectual seeming&rdquo; &mdash; the essay argues they are epistemically unreliable, subject to persistent disagreement, and resting on a questionable metaphysics. The central asymmetry is with perception: a perceptual seeming can be checked against contextual cues, so we know to distrust it in fog or when impaired. An intellectual seeming admits no such feedback. And because moral intuitionism presupposes moral realism, every argument against the latter counts against it too.</p>
+                        <a class="w-link caps" href="assets/Against Moral Intuitionism.pdf" target="_blank" rel="noopener">Read the essay</a>
                     </div>
                 </article>
 
                 <article class="writing reveal">
                     <div class="w-index">iv</div>
-                    <div class="w-head">                        <h3 class="w-title">No Prey, No Pay, No Tyranny</h3>
-                        <p class="w-venue caps">National History Day, Senior Division, 2025</p>
-                        <p class="w-result caps">California State Finalist, 1 of 15 &middot; sole recipient of the Maritime History Award</p>
+                    <div class="w-head">
+                        <h3 class="w-title">The Zhejiang-Jiangxi Campaign</h3>
+                        <p class="w-venue caps">Independent research</p>
+                        <!-- TODO: competition and result, if any -->
                     </div>
-                    <div class="w-prose"><p class="w-body">A research website arguing that pirate crews of the Golden Age were the most democratic and egalitarian institutions of the pre-Enlightenment world. Working from articles of agreement and other primary sources, it shows crews practising elected leadership, written constitutions, and compensation schemes that the Royal Navy and the merchant service &mdash; the supposedly lawful alternatives &mdash; did not.</p>
-                        <!-- Paste the PDF path into href to switch this link on. -->
-                        <a class="w-link caps" href="">Read the project</a>
+                    <div class="w-prose">
+                        <p class="w-body">The Doolittle raid of April 1942 did little physical damage and a great deal for American morale, and that is where the story usually stops. It leaves out what the Japanese did next: a retaliatory campaign through Zhejiang and Jiangxi in which roughly 250,000 civilians were killed, property was destroyed wholesale, and biological weapons were used indiscriminately. The paper traces Sino-American cooperation from the isolationism of the mid-1930s through the shift in public opinion after the Marco Polo Bridge Incident, and argues that the raid&rsquo;s consequences have to be reassessed against the devastation that followed it.</p>
+                        <a class="w-link caps" href="assets/The Zhejiang-Jiangxi Campaign.pdf" target="_blank" rel="noopener">Read the paper</a>
                     </div>
                 </article>
 
                 <article class="writing reveal">
                     <div class="w-index">v</div>
-                    <div class="w-head">                        <h3 class="w-title">Patent Reform and Follow-on Innovation</h3>
-                        <p class="w-venue caps">Institute for Youth in Policy, Public Policy Fellowship</p>
-                        <p class="w-result caps">Outstanding Capstone</p>
+                    <div class="w-head">
+                        <h3 class="w-title">Washington&rsquo;s Neutrality Proclamation and the Birth of Executive Authority</h3>
+                        <p class="w-venue caps">Independent research</p>
+                        <!-- TODO: competition and result, if any -->
                     </div>
-                    <div class="w-prose"><p class="w-body">A capstone arguing that over-broad patents suppress follow-on innovation by raising entry costs for the firms best placed to improve on an existing invention, and proposing an expansion of post-grant review under the America Invents Act. Written during a two-month fellowship with roughly a 6&ndash;8% acceptance rate; I also co-authored four nonpartisan economic policy briefs and was a paid co-author on a depolarization white paper published with Business for America.</p>
-                        <!-- Paste the PDF path into href to switch this link on. -->
-                        <a class="w-link caps" href="">Read the capstone</a>
+                    <div class="w-prose">
+                        <p class="w-body">In 1793 revolutionary France dragged the young republic into its first foreign policy crisis, caught between treaty obligations to Paris and the threat of British retaliation. Washington&rsquo;s response looks unremarkable on its face &mdash; a short statement of intent to stay out of European wars. Read closely, it is something else: a deliberate attempt to silence factional clamour in the name of the national interest, and an assertion of executive power that the Constitution nowhere clearly grants. The paper reads the Proclamation as the moment that authority is claimed rather than conferred.</p>
+                        <a class="w-link caps" href="assets/Washingtons Neutrality Proclamation.pdf" target="_blank" rel="noopener">Read the paper</a>
                     </div>
                 </article>
 
@@ -1800,6 +1854,8 @@
                 else { spinning = false; card.style.transform = ''; }
             }
         })();
+
+
 
         layout();
         chrome();
