@@ -450,6 +450,7 @@
             justify-content: center;
             padding: 0 1.5rem;
         }
+        .is-3d .face-plate { max-height: 84%; }
         .is-3d .face-art img {
             width: auto;
             height: auto;
@@ -470,6 +471,47 @@
 
 
         /* ── Facet contents ── */
+        /* A title plate for a work with no cover of its own: same frame and
+           proportions as the journal covers, set in the page's own types so
+           it follows the palette instead of baking one in. */
+        .face-plate {
+            width: min(320px, 88%);
+            aspect-ratio: 4 / 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.6rem;
+            padding: 2.4rem 1.8rem;
+            text-align: center;
+            background:
+                radial-gradient(ellipse 120% 90% at 50% 0%, color-mix(in srgb, var(--gilt) 13%, transparent), transparent 70%),
+                var(--bg-deep);
+            border: 1px solid var(--rule-hair);
+            box-shadow: inset 0 0 0 1px var(--gilt-quiet), 0 22px 52px rgba(0,0,0,0.42);
+        }
+        .face-plate .plate-kicker {
+            font-size: 0.8rem;
+            letter-spacing: 0.26em;
+            color: var(--gilt);
+            padding-bottom: 1.4rem;
+            border-bottom: 1px solid var(--gilt-quiet);
+        }
+        .face-plate .plate-title {
+            font-family: var(--font-display);
+            font-weight: 400;
+            font-size: clamp(1.25rem, 1.9vw, 1.6rem);
+            line-height: 1.34;
+            color: var(--ink);
+        }
+        .face-plate .plate-foot {
+            font-size: 0.78rem;
+            letter-spacing: 0.22em;
+            color: var(--ink-faint);
+            padding-top: 1.4rem;
+            border-top: 1px solid var(--rule-hair);
+        }
+
         .face-text {
             align-self: center;
             padding: 0 1rem;
@@ -858,7 +900,7 @@
                 <a href="https://github.com/SamCao920" target="_blank" rel="noopener">Github</a>
             </div>
         </div>
-        <div class="scroll-cue caps">Four Works</div>
+        <div class="scroll-cue caps">Five Works</div>
     </header>
 
     <main>
@@ -877,9 +919,28 @@
                 <div class="drum" id="drum">
 
                     <article class="face">
-                        <div class="face-art"><img src="assets/plates/cover-1.jpg" alt="" loading="lazy"></div>
+                        <div class="face-art">
+                            <div class="face-plate">
+                                <p class="plate-kicker caps">Youth Liberty Prize</p>
+                                <h4 class="plate-title">Programmable Money<br>and the Abolition<br>of Visible Failure</h4>
+                                <p class="plate-foot caps">Third Place &middot; MMXXVI</p>
+                            </div>
+                        </div>
                         <div class="face-text">
                             <div class="face-num">I</div>
+                            <p class="face-venue caps">Youth Liberty Prize, 2026</p>
+                            <h3 class="face-title">Programmable Money and the Abolition of Visible Failure</h3>
+                            <p class="face-claim">Interventions have always failed in public, and that is what forced governments to retreat. Money that blocks the act before it happens leaves no failure to see.</p>
+                            <p class="face-body">A botched intervention is still a signal: the queue, the shortage, the black market are public evidence the state must answer for. Programmable money &mdash; <em>ex ante</em> control of the payment protocol &mdash; invalidates the act before it occurs, so the distortion never surfaces. Cash and permissionless rails are the economy&rsquo;s error-detection apparatus.</p>
+                            <p class="face-result caps">Third Place, &euro;10,000 &middot; 1,142 essays from 110 countries</p>
+                            <a href="assets/Programmable Money and the Abolition of Visible Failure.pdf" target="_blank" rel="noopener" class="face-link caps">Read the essay</a>
+                        </div>
+                    </article>
+
+                    <article class="face">
+                        <div class="face-art"><img src="assets/plates/cover-1.jpg" alt="" loading="lazy"></div>
+                        <div class="face-text">
+                            <div class="face-num">II</div>
                             <p class="face-venue caps">John Locke Essay Competition</p>
                             <h3 class="face-title">The Asymmetry of Moral Obligations</h3>
                             <p class="face-claim">We can ground our obligations to the living in ordinary morality. Our obligations to future people cannot be grounded that way at all.</p>
@@ -892,7 +953,7 @@
                     <article class="face">
                         <div class="face-art"><img src="assets/plates/cover-2.jpg" alt="" loading="lazy"></div>
                         <div class="face-text">
-                            <div class="face-num">II</div>
+                            <div class="face-num">III</div>
                             <p class="face-venue caps">Harvard International Economics Essay Contest</p>
                             <h3 class="face-title">Beyond Carbon Subsidies</h3>
                             <p class="face-claim">Green subsidies buy almost no abatement at enormous cost. Carbon taxes buy a great deal at a fraction of it, and are still the harder policy to keep.</p>
@@ -905,7 +966,7 @@
                     <article class="face">
                         <div class="face-art"><img src="assets/plates/cover-3.jpg" alt="" loading="lazy"></div>
                         <div class="face-text">
-                            <div class="face-num">III</div>
+                            <div class="face-num">IV</div>
                             <p class="face-venue caps">Independent Research</p>
                             <h3 class="face-title">Why One Child?</h3>
                             <p class="face-claim">The one-child policy is usually read as an authoritarian state stopping at nothing. It is better read as a state that had lost faith in ideology and put its faith in science instead.</p>
@@ -918,7 +979,7 @@
                     <article class="face">
                         <div class="face-art"><img src="assets/plates/cover-4.jpg" alt="" loading="lazy"></div>
                         <div class="face-text">
-                            <div class="face-num">IV</div>
+                            <div class="face-num">V</div>
                             <p class="face-venue caps">High School Fed Challenge, FRB New York</p>
                             <h3 class="face-title">Lett-uce Unpack</h3>
                             <p class="face-claim">Fast food is not just a consumer market. It is the channel through which agricultural consolidation reaches the labor market and the price level.</p>
