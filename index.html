@@ -599,6 +599,62 @@
         }
 
         /* ════════════════════════════════════════════════
+           APPEARANCES
+           Same catalogue rhythm as the writings, but the left rail
+           carries the date rather than a sequence number — these are
+           fixed to a calendar, and several are still ahead.
+           ════════════════════════════════════════════════ */
+        .appearance-list { border-top: 1px solid var(--rule-hair); }
+        .appearance {
+            display: grid;
+            grid-template-columns: 7.5rem minmax(0, 0.92fr) minmax(0, 1.08fr);
+            gap: 0 3rem;
+            align-items: start;
+            padding: 3.2rem 0;
+            border-bottom: 1px solid var(--rule-hair);
+            transition: background-color 0.4s ease;
+        }
+        .appearance:hover { background-color: color-mix(in srgb, var(--ink) 3%, transparent); }
+        .a-when {
+            padding-top: 0.45rem;
+            line-height: 1.5;
+        }
+        .a-when .day {
+            display: block;
+            font-family: var(--font-display);
+            font-size: 1.12rem;
+            letter-spacing: 0.06em;
+            color: var(--gilt);
+        }
+        .a-when .yr {
+            display: block;
+            font-size: 0.86rem;
+            letter-spacing: 0.18em;
+            color: var(--ink-faint);
+        }
+        .a-title {
+            font-family: var(--font-display);
+            font-weight: 400;
+            font-size: clamp(1.4rem, 2.1vw, 1.85rem);
+            line-height: 1.24;
+            margin-bottom: 0.5rem;
+        }
+        .a-where { color: var(--ink-faint); font-size: 0.92rem; letter-spacing: 0.11em; margin-bottom: 0.2rem; }
+        .a-role  { color: var(--gilt); font-size: 0.92rem; letter-spacing: 0.11em; }
+        .a-body  { color: var(--ink-muted); font-size: 1.06rem; line-height: 1.78; }
+        .a-body em { font-style: italic; }
+        /* a quiet marker, not a badge: these have not happened yet */
+        .a-soon {
+            display: inline-block;
+            margin-top: 0.7rem;
+            font-size: 0.78rem;
+            letter-spacing: 0.2em;
+            color: var(--ink-faint);
+            padding: 0.2rem 0.6rem 0.24rem;
+            border: 1px solid var(--rule-hair);
+        }
+
+        /* ════════════════════════════════════════════════
            VAULT GRAPH
            A live force-directed map of my Obsidian notes,
            rendered to canvas. Positions ship pre-solved, so it
@@ -814,6 +870,11 @@
             .face-art { height: auto; display: flex; justify-content: center; }
             .face-art img { max-height: 46vh; width: auto; object-fit: contain; border: 1px solid var(--rule-hair); }
             .writing { grid-template-columns: 1fr; gap: 0.9rem; padding: 2.4rem 0; }
+            .appearance { grid-template-columns: 1fr; gap: 0.9rem; padding: 2.4rem 0; }
+            .a-when { padding-top: 0; }
+            .a-when .day, .a-when .yr { display: inline; }
+            .a-when .yr { margin-left: 0.5rem; }
+            .a-body { font-size: 1.04rem; }
             .w-index { padding-top: 0; }
             .w-body { font-size: 1.04rem; }
             .graph-legend { right: 1rem; bottom: 1rem; font-size: 0.68rem; }
@@ -827,6 +888,7 @@
         <nav>
             <a href="#works" class="nav-link caps active">Highlights</a>
             <a href="#writings" class="nav-link caps">Writings</a>
+            <a href="#appearances" class="nav-link caps">Appearances</a>
             <a href="#vault" class="nav-link caps">Vault</a>
             <a href="#contact" class="nav-link caps">Contact</a>
         </nav>
@@ -1020,6 +1082,45 @@
             </div>
         </section>
 
+
+
+        <section id="appearances" class="shell">
+            <div class="section-head reveal">
+                <div class="ornament"><i></i></div>
+                <h2>Appearances</h2>
+                <p class="subhead">Conferences and gatherings</p>
+            </div>
+
+            <div class="appearance-list">
+
+                <article class="appearance reveal">
+                    <div class="a-when"><span class="day">Oct 10&ndash;11</span><span class="yr">2026</span></div>
+                    <div>
+                        <h3 class="a-title">Making Progress</h3>
+                        <p class="a-where caps">Abundance Corps &middot; Berkeley, California</p>
+                        <p class="a-role caps">Selected participant</p>
+                        <span class="a-soon caps">Forthcoming</span>
+                    </div>
+                    <div>
+                        <p class="a-body">A private gathering of around fifty students from across the country on how science, technology, and institutions raise living standards, hosted by Abundance Corps with the Roots of Progress Institute and Emergent Ventures. Two days of panels, student presentations, and conversation with people doing the work.</p>
+                    </div>
+                </article>
+
+                <article class="appearance reveal">
+                    <div class="a-when"><span class="day">Oct 21&ndash;23</span><span class="yr">2026</span></div>
+                    <div>
+                        <h3 class="a-title">Madrid Annual Conference on Austrian Economics</h3>
+                        <p class="a-where caps">Universidad Rey Juan Carlos &middot; Madrid</p>
+                        <p class="a-role caps">Invited to present</p>
+                        <span class="a-soon caps">Forthcoming</span>
+                    </div>
+                    <div>
+                        <p class="a-body">The annual conference of the Fundaci&oacute;n Jes&uacute;s Huerta de Soto, where the three Youth Liberty Prize winners are invited to present their essays and the awards are given on 22 October. I will be presenting <em>Programmable Money and the Abolition of Visible Failure</em>.</p>
+                    </div>
+                </article>
+
+            </div>
+        </section>
 
         <section id="vault" class="shell">
             <div class="section-head reveal">
