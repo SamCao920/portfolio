@@ -363,8 +363,6 @@
         <div>
           <section class="section">${sectionHead("Selected work", "writings.html", "All writing")}
             <ul class="posters five">${S.writings.filter(w => w.featured).map(workPoster).join("")}</ul></section>
-          ${STUDIO.length ? `<section class="section">${sectionHead("From the studio", "studio.html", "All work")}
-            <ul class="art-grid four">${STUDIO.slice(0, 4).map(studioTile).join("")}</ul></section>` : ""}
           <section class="section">${sectionHead("Favorite books", "books.html#favorites", "All favorites")}
             <ul class="posters four">${homeBooks.map(b => posterItem(b)).join("")}</ul></section>
           <section class="section">${sectionHead("Favorite films", "films.html", "All films")}

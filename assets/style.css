@@ -694,3 +694,8 @@ dialog.palette { width: min(600px, calc(100vw - 32px)); margin-top: 12vh; paddin
 :root[data-accent="rose"][data-theme="light"] { --accent: #c2337a; --on-accent: #ffffff; --gilt: #c2337a; }
 :root[data-accent="teal"] { --accent: #2cc8c0; --on-accent: #04211f; --gilt: #2cc8c0; }
 :root[data-accent="teal"][data-theme="light"] { --accent: #0d7f7a; --on-accent: #ffffff; --gilt: #0d7f7a; }
+/* header: menu sits next to the logo; search and theme button stay on the right */
+.site-header .wrap { justify-content: flex-start; gap: 12px 26px; }
+.header-right { flex: 1; min-width: 0; }
+.header-right .nav { margin-right: auto; }
+@media (max-width: 600px) { .site-header .wrap { align-items: flex-start; } }
