@@ -192,7 +192,7 @@
             var REPEL = 26, SPRING = 0.045, LINK_LEN = 26, CENTER = 0.010;
             var DAMP = 0.55;          /* heavier than the solve; same fixed point,
                                          much less overshoot when disturbed */
-            var MAXV = 1.6;           /* per-node speed clamp, in graph units */
+            var MAXV = 6;             /* per-node speed clamp, in graph units: a safety net, not a brake */
             var dragIdx = -1;
 
             /* Ambient drift. Purely a render offset — it never enters the
@@ -217,9 +217,15 @@
                HOPS links of the grabbed node is unpinned. Everything else is
                frozen at its shipped position. */
             var active = new Uint8Array(N), anyActive = false;
-            var HOPS = 2, queue = new Int32Array(N), depth = new Int32Array(N);
+            var HOPS = 3, queue = new Int32Array(N), depth = new Int32Array(N);
+            /* How freely each ring of neighbours follows the drag: direct links
+               move fully, the next ring less, the third barely. A hard edge
+               between moving and frozen nodes is what made the net judder. */
+            var MOBILITY = [1, 1, 0.55, 0.22];
+            var act = new Int32Array(N), nAct = 0, MOB = new Float64Array(N);
+            var BX = new Float64Array(N), BY = new Float64Array(N);   /* resting force at grab time */
             function activateAround(seed) {
-                active.fill(0);
+                active.fill(0); nAct = 0;
                 if (seed < 0) { anyActive = false; return; }
                 var head = 0, tail = 0;
                 queue[tail++] = seed; active[seed] = 1; depth[seed] = 0;
@@ -232,28 +238,49 @@
                         active[w] = 1; depth[w] = depth[v] + 1; queue[tail++] = w;
                     }
                 }
+                for (var q = 0; q < tail; q++) {
+                    var n = queue[q]; act[nAct++] = n; MOB[n] = MOBILITY[depth[n]];
+                    VX[n] = VY[n] = 0;
+                }
+                /* The shipped layout is only approximately at rest. Measure the
+                   leftover force on every freed node now and subtract it each
+                   tick, so nothing creeps: only the disturbance you add moves things. */
+                forcesFor(BX, BY);
                 anyActive = true;
+            }
+            /* Exact forces on the freed nodes only (repulsion from every node,
+               their springs, the centring pull). Exact rather than Barnes-Hut:
+               the quadtree's approximation shifts every time the dragged node
+               crosses a cell boundary, and those jumps were the jiggle. */
+            function forcesFor(OX, OY) {
+                for (var a = 0; a < nAct; a++) {
+                    var i = act[a], xi = X[i], yi = Y[i], fx = 0, fy = 0;
+                    for (var j = 0; j < N; j++) {
+                        if (j === i) continue;
+                        var dx = X[j] - xi, dy = Y[j] - yi, d2 = dx * dx + dy * dy;
+                        if (d2 < 0.01) d2 = 0.01;
+                        var f = REPEL / d2;
+                        fx -= dx * f; fy -= dy * f;
+                    }
+                    for (var k = adjStart[i]; k < adjStart[i + 1]; k++) {
+                        var w = adj[k], ex = X[w] - xi, ey = Y[w] - yi;
+                        var d = Math.sqrt(ex * ex + ey * ey) || 1e-6;
+                        var s = (d - LINK_LEN) * SPRING / d;
+                        fx += ex * s; fy += ey * s;
+                    }
+                    OX[i] = fx - xi * CENTER; OY[i] = fy - yi * CENTER;
+                }
             }
 
             function tick() {
-                FX.fill(0); FY.fill(0);
-                var root = buildTree();
-                for (var i = 0; i < N; i++) repel(i, root, REPEL, FX, FY);
-                for (var e = 0; e < M; e++) {
-                    var a = LA[e], b = LB[e];
-                    var dx = X[b] - X[a], dy = Y[b] - Y[a];
-                    var d = Math.sqrt(dx * dx + dy * dy) || 1e-6;
-                    var f = (d - LINK_LEN) * SPRING;
-                    dx = dx / d * f; dy = dy / d * f;
-                    FX[a] += dx; FY[a] += dy;
-                    FX[b] -= dx; FY[b] -= dy;
-                }
-                for (i = 0; i < N; i++) {
-                    FX[i] -= X[i] * CENTER; FY[i] -= Y[i] * CENTER;
+                if (!anyActive) return;
+                forcesFor(FX, FY);
+                for (var a = 0; a < nAct; a++) {
+                    var i = act[a];
                     if (i === dragIdx) continue;
-                    if (anyActive && !active[i]) { VX[i] = VY[i] = 0; continue; }
-                    VX[i] = (VX[i] + FX[i] * alpha) * DAMP;
-                    VY[i] = (VY[i] + FY[i] * alpha) * DAMP;
+                    var m = MOB[i] * alpha;
+                    VX[i] = (VX[i] + (FX[i] - BX[i]) * m) * DAMP;
+                    VY[i] = (VY[i] + (FY[i] - BY[i]) * m) * DAMP;
                     var sp = Math.sqrt(VX[i] * VX[i] + VY[i] * VY[i]);
                     if (sp > MAXV) { VX[i] *= MAXV / sp; VY[i] *= MAXV / sp; }
                     X[i] += VX[i]; Y[i] += VY[i];
@@ -465,7 +492,7 @@
                 pointerDown = true; moved = false;
                 lastX = ev.offsetX; lastY = ev.offsetY; downX = lastX; downY = lastY;
                 var i = pick(lastX, lastY, 4);
-                if (i >= 0) { dragIdx = i; activateAround(i); heat(0.05); }
+                if (i >= 0) { dragIdx = i; activateAround(i); heat(0.1); }
                 canvas.classList.add('dragging');
             });
 
@@ -479,7 +506,7 @@
                     if (dragIdx >= 0) {
                         X[dragIdx] += dx / scale; Y[dragIdx] += dy / scale;
                         VX[dragIdx] = VY[dragIdx] = 0;
-                        heat(0.05);
+                        heat(0.1);
                     } else {
                         tx += dx; ty += dy; userMoved = true; cam = null;
                         kick();
