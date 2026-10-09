@@ -308,7 +308,7 @@ window.SITE = {
     }
   ],
   "studio": {
-    "intro": "Drawings, paintings and photographs from 2024 to 2025. I studied in the Visual Arts program at the California State Summer School for the Arts (CSSSA), and my work was recognized in my congressional district’s Congressional Art Competition.",
+    "intro": "Drawings and paintings from 2024 to 2025. I studied in the Visual Arts program at the California State Summer School for the Arts (CSSSA), and my work was recognized in my congressional district’s Congressional Art Competition.",
     "items": [
       {
         "title": "Mauvaise Foi",
@@ -390,24 +390,6 @@ window.SITE = {
         "size": "18 × 24 in",
         "note": "Economics is often defined as the study of scarcity, and how we allocate resources given scarcity. With this piece, I sought to strip that definition of its mathematical implications and visualize the raw humanity underneath. What happens when demand is plentiful, but supply is constricted to a single point?",
         "img": "assets/studio/scarcity.jpg"
-      },
-      {
-        "title": "San Francisco International Airport, 11:42 PM",
-        "year": "2024",
-        "kind": "Photography",
-        "medium": "Digital photograph",
-        "size": "",
-        "note": "There was something striking about the way that the subject in this shot crossed their arms. It was as if they were in defiance of the nervousness that usually fills an airport, planting themselves in place amid a river of frantic travelers.",
-        "img": "assets/studio/san-francisco-international-airport.jpg"
-      },
-      {
-        "title": "Dry Season",
-        "year": "2025",
-        "kind": "Photography",
-        "medium": "Digital photograph",
-        "size": "",
-        "note": "Every time I wander through the rolling hills of Orinda, I find scenes like this: patterns of greenery poking through the yellow, dried grass. It reminds me of the vast beauty of nature, and its sheer scale compared to humans. At the same time, I’m reminded of nature’s destructive potential, and the wildfire risk that hangs over my community each dry season.",
-        "img": "assets/studio/dry-season.jpg"
       }
     ]
   },
