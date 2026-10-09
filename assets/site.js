@@ -264,13 +264,23 @@
       };
       $$(".tab").forEach(t => t.addEventListener("click", () => { show(t.dataset.tab); try { history.replaceState(null, "", "#" + t.dataset.tab); } catch (e) {} }));
       show(defs.some(d => d[0] === fromHash) ? fromHash : defs[0][0]);
-      /* Same-page links like films.html#diary only change the hash; switch tab and scroll to it. */
-      window.addEventListener("hashchange", () => {
-        const k = location.hash.slice(1);
-        if (!defs.some(d => d[0] === k)) return;
+      /* Links to a tab on this same page (films.html#diary on Films): open the tab and scroll to it,
+         even when the URL already ends in that hash. */
+      const openTab = k => {
         show(k);
+        try { history.replaceState(null, "", "#" + k); } catch (e) {}
         const strip = $(".tabs"); if (strip) strip.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+      document.addEventListener("click", e => {
+        const a = e.target.closest && e.target.closest("a[href*='#']");
+        if (!a || e.ctrlKey || e.metaKey || e.shiftKey) return;
+        const u = new URL(a.href, location.href);
+        const k = u.hash.slice(1);
+        if (u.pathname !== location.pathname || !defs.some(d => d[0] === k)) return;
+        e.preventDefault();
+        openTab(k);
       });
+      window.addEventListener("hashchange", () => { const k = location.hash.slice(1); if (defs.some(d => d[0] === k)) openTab(k); });
     };
     return [html, start];
   }

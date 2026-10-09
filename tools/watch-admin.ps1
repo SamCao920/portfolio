@@ -8,7 +8,7 @@ if (-not $mutex.WaitOne(0)) { exit 0 }   # already running
 $files = "data\content.js", "data\books.js", "data\films.js", "data\theme.js"
 function Stamp { ($files | ForEach-Object { if (Test-Path $_) { (Get-Item $_).LastWriteTimeUtc.Ticks } }) -join "," }
 
-"$(Get-Date -Format s) watcher started" | Add-Content tools\watch-admin.log
+"$(Get-Date -Format s) watcher started"
 $last = Stamp
 $changedAt = $null
 # Publish saves made while the watcher was not running.
@@ -20,12 +20,12 @@ while ($true) {
   if ($now -ne $last) { $last = $now; $changedAt = Get-Date; continue }
   if ($changedAt -and ((Get-Date) - $changedAt).TotalSeconds -ge 10) {
     $changedAt = $null
-    git add -A
+    git add -A 2>&1 | Out-Null
     git diff --cached --quiet
     if ($LASTEXITCODE -ne 0) {
       git commit -m "Admin edit $(Get-Date -Format 'yyyy-MM-dd HH:mm')"   # pre-commit hook stamps cache-busting
       git push
-      "$(Get-Date -Format s) pushed" | Add-Content tools\watch-admin.log
+      "$(Get-Date -Format s) pushed"
     }
   }
 }
