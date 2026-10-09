@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 """
-Rebuild the vault graph embedded in index.html.
+Rebuild the vault graph embedded in vault.html.
 
 Reads an Obsidian vault, extracts the [[wikilink]] graph, solves the layout
 with the SAME force law the browser runs (so the shipped positions are already
 the simulation's fixed point and the graph opens settled), and rewrites the
 <script id="vault-data"> block in place.
 
-    python3 tools/build-graph.py "/path/to/vault" [path/to/index.html]
+    python3 tools/build-graph.py "/path/to/vault" [path/to/vault.html]
 
 Requires numpy. Excludes .trash, .obsidian, templates and assets by default —
 add folder names to SKIP to keep anything else off the public page.
 """
 import json, os, re, sys
+from datetime import datetime, timezone
 import numpy as np
 
 SKIP = {'.trash', '.obsidian', '.claude', '.claudian', '.pandoc',
@@ -83,7 +84,7 @@ def solve(n, links):
 
 def main():
     vault = sys.argv[1]
-    page = sys.argv[2] if len(sys.argv) > 2 else 'index.html'
+    page = sys.argv[2] if len(sys.argv) > 2 else 'vault.html'
 
     notes, edges = scan(vault)
     deg = {}
@@ -104,6 +105,7 @@ def main():
                round(float(P[i, 0]), 1), round(float(P[i, 1]), 1)]
               for i, k in enumerate(keep)],
         'l': links,
+        'built': datetime.now(timezone.utc).isoformat(timespec='minutes'),   # shown as "Last synced" on the page
     }
     blob = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
 
