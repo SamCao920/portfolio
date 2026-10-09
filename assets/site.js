@@ -19,8 +19,13 @@
 
   /* ---------- data ---------- */
   const BOOKS = ((window.BOOKS || {}).items || []).map((b, i) => ({ ...b, kind: "book", i }));
+  /* vault notes linked to books (data/notes.js, from tools/import-book-notes.py) */
+  const BOOK_NOTES = ((window.NOTES || {}).books || []);
+  BOOKS.forEach(b => { b.notes = BOOK_NOTES.filter(n => n.book === `${b.t}|${b.a}`); });
+  const vaultLink = title => "vault.html?note=" + encodeURIComponent(title);
   const FD = window.FILMS || { items: [], diary: [], lists: [], watchlist: [], favorites: [] };
-  const FILMS_ALL = FD.items.map((f, i) => ({ ...f, kind: "film", i }));
+  const FILM_NOTES = ((window.NOTES || {}).films || []);
+  const FILMS_ALL = FD.items.map((f, i) => ({ ...f, kind: "film", i, notes: FILM_NOTES.filter(n => n.film === `${f.t}|${f.y}`) }));
   const HIDDEN_FILMS = new Set((S.hiddenFilms || []).map(s => s.normalize("NFKC")));
   const shown = f => f && !HIDDEN_FILMS.has(`${f.t} (${f.y})`.normalize("NFKC"));
   const FILMS = FILMS_ALL.filter(shown);
@@ -38,7 +43,7 @@
   const TODAY = isoOf(new Date());
   const isUpcoming = w => (w.end || w.start) ? (w.end || w.start) >= TODAY : !!w.upcoming;
   const isOngoing = w => w.start && w.start <= TODAY && (w.end || w.start) >= TODAY;
-  const filmDiary = FD.diary.map(d => ({ ...d, it: FILMS_ALL[d.f] })).filter(d => shown(d.it));
+  const filmDiary = FD.diary.map(d => ({ ...d, it: FILMS_ALL[d.f] })).filter(d => shown(d.it)).sort(byDateDesc("date"));
 
   const NAV = [
     ["index.html", "Home", "home"],
@@ -64,9 +69,9 @@
   const tasteCount = groupCount;
   const groupOf = key => GROUPS.find(g => g.items.some(it => it[2] === key));
   function header() {
-    const link = ([href, label, key]) => `<a href="${href}"${key === page ? ' aria-current="page"' : ""}>${label}</a>`;
+    const link = ([href, label, key]) => `<a href="${href}"${key === page ? ' aria-current="page"' : ""}><span class="nl">${label}</span></a>`;
     const chev = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-    const groupHtml = g => `<div class="nav-group"><a href="${g.items[0][0]}" class="nav-parent"${groupOf(page) === g ? ' aria-current="page"' : ""} aria-haspopup="true">${g.label}${chev}</a>
+    const groupHtml = g => `<div class="nav-group"><a href="${g.items[0][0]}" class="nav-parent"${groupOf(page) === g ? ' aria-current="page"' : ""} aria-haspopup="true"><span class="nl">${g.label}${chev}</span></a>
       <div class="nav-menu" role="menu">${g.items.map(([href, label, key]) => `<a role="menuitem" href="${href}"${key === page ? ' aria-current="page"' : ""}><b>${label}</b><span>${groupCount(key)}</span></a>`).join("")}</div></div>`;
     const html = [];
     NAV.forEach(n => {
@@ -112,6 +117,8 @@
   function knownCover(it) {
     const o = (S.posterOverrides || {})[it.t];
     if (o) return o;
+    const nc = it.kind === "book" && it.notes && it.notes.find(n => n.cover);
+    if (nc) return nc.cover;
     const c = store.get(coverKey(it));
     if (c && c !== "none") return c;
     if (it.kind === "book" && it.isbn && c !== "none") return `https://covers.openlibrary.org/b/isbn/${it.isbn}-M.jpg?default=false`;
@@ -122,7 +129,7 @@
     const src = knownCover(it);
     const remote = !src && store.get(coverKey(it)) !== "none";
     const label = `${it.t}${it.kind === "book" ? " by " + it.a : it.y ? ` (${it.y})` : ""}`;
-    return `<button class="poster" type="button" data-kind="${it.kind}" data-i="${it.i}"${remote ? " data-remote" : ""} title="${esc(label)}" aria-label="${esc(label)}"${extra}>${coverFace(it.t, sub)}${src ? `<img alt="" loading="lazy" src="${esc(src)}" onerror="window.__coverMiss(this)">` : ""}</button>`;
+    return `<button class="poster${it.notes && it.notes.length ? " has-notes" : ""}" type="button" data-kind="${it.kind}" data-i="${it.i}"${remote ? " data-remote" : ""} title="${esc(label)}" aria-label="${esc(label)}"${extra}>${coverFace(it.t, sub)}${src ? `<img alt="" loading="lazy" src="${esc(src)}" onerror="window.__coverMiss(this)">` : ""}</button>`;
   }
   function posterItem(it, opts = {}) {
     let meta;
@@ -336,8 +343,6 @@
   /* ---------- pages ---------- */
   function home() {
     const p = S.profile;
-    const written = S.writings.filter(w => w.type === "essay" || w.type === "research").length;
-    const awards = S.writings.filter(w => w.award && w.type !== "appearance").length;
     const avatar = p.avatar ? `<img src="${esc(p.avatar)}" alt="${esc(p.name)}">` : esc(p.initials);
     /* loose title match: "Moby Dick" finds "Moby-Dick or, The Whale" */
     const loose = t => String(t).toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, " ").trim();
@@ -350,19 +355,18 @@
       : next ? `<span class="status"><i class="dot"></i>Next: ${esc(next.title)}${next.place ? ", " + esc(next.place) : ""} · ${esc(fmtDate(next.start).replace(/, \d{4}$/, ""))}</span>`
       : `<span class="status"><i class="dot"></i>${esc(p.location)}</span>`;
     return `
-      <section class="profile hero">
+      <section class="profile hero${(window.QUOTES || {}).items ? " with-quote" : ""}"><div class="hero-main">
         <div class="profile-id"><div class="avatar ring">${avatar}</div>
           <div class="hero-text"><p class="hello">Hi, I’m</p>
           <h1><span class="first">${esc(p.name.split(" ")[0])}</span> ${esc(p.name.split(" ").slice(1).join(" "))}${p.badge ? `<span class="badge">${esc(p.badge)}</span>` : ""}</h1>
           <p class="aka">${esc(p.legalName || "")} <span class="cjk">${esc(p.cjk)}</span></p>
           <p class="tagline">${esc(p.tagline)}</p></div></div>
-        ${statsRow([[written, "Essays"], [awards, "Awards"], [booksRead().length, "Books"], [FILMS.length, "Films"]])}
+</div>
+        ${quoteBlock()}
       </section>
       ${heatmap()}
       <div class="cols">
         <div>
-          <section class="section">${sectionHead("Selected work", "writings.html", "All writing")}
-            <ul class="posters five">${S.writings.filter(w => w.featured).map(workPoster).join("")}</ul></section>
           <section class="section">${sectionHead("Favorite books", "books.html#favorites", "All favorites")}
             <ul class="posters four">${homeBooks.map(b => posterItem(b)).join("")}</ul></section>
           <section class="section">${sectionHead("Favorite films", "films.html", "All films")}
@@ -381,6 +385,77 @@
       </div>`;
   }
 
+  /* a random line from the vault quote bank (data/quotes.js), different from the last one shown */
+  function quoteBlock() {
+    const Q = ((window.QUOTES || {}).items || []);
+    if (!Q.length) return "";
+    let i = -1;
+    const last = +(store.get("lastQuote") ?? -1);
+    const pick = () => {
+      const all = Q.map((q, n) => n), P = all.filter(n => n !== i && n !== last);
+      const from = P.length ? P : all;
+      return from[Math.floor(Math.random() * from.length)];
+    };
+    const show = (fig, animate) => {
+      i = pick(); store.set("lastQuote", String(i));
+      const q = Q[i];
+      const fill = () => {
+        $("blockquote", fig).innerHTML = esc(q.q).replace(/\n/g, "<br>");
+        $("figcaption", fig).innerHTML = q.by;
+        fig.classList.toggle("long", q.q.length > 300);
+        fig.classList.remove("out", "open");
+        $$("blockquote, figcaption", fig).forEach(el => { delete el._vdone; });
+        const bq = $("blockquote", fig);
+        $(".qod-more", fig).hidden = bq.scrollHeight <= bq.clientHeight + 2;   /* long passages are clamped; offer the rest */
+        linkVault(fig);
+      };
+      if (!animate) return fill();
+      fig.classList.add("out"); setTimeout(fill, 220);
+    };
+    setTimeout(() => {
+      const fig = $("#qod"); if (!fig) return;
+      show(fig, false);
+      $(".qod-next", fig).addEventListener("click", () => show(fig, true));
+      $(".qod-more", fig).addEventListener("click", () => { fig.classList.add("open"); $(".qod-more", fig).hidden = true; });
+    });
+    return `<figure class="qod" id="qod" aria-live="polite"><blockquote></blockquote><button class="qod-more linkish" type="button" hidden>Read the rest</button><figcaption></figcaption>
+      <button class="qod-next" type="button" aria-label="Show another quote" data-tip="Another">↻</button></figure>`;
+  }
+
+  /* ---------- link mentions of things in my vault ----------
+     NOTES.links (tools/import-book-notes.py) lists the works, writings and maps of content on the Vault graph.
+     Any mention of one in page text becomes a link to it on the Vault page. Multi-word titles match anywhere;
+     one-word titles ("Hamlet", "Politics") only when set as a title, i.e. in italics. Once per paragraph. */
+  const VLINKS = ((window.NOTES || {}).links || []).slice().sort((a, b) => b[0].length - a[0].length);
+  const apos = s => s.replace(/[’‘]/g, "'");
+  const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const VRE = VLINKS.length ? new RegExp(`(^|[^\\p{L}\\p{N}])(${VLINKS.map(([t]) => reEsc(apos(t)).replace(/'/g, "['’‘]")).join("|")})(?![\\p{L}\\p{N}])`, "gu") : null;
+  const VMAP = new Map(VLINKS.map(([t, n]) => [apos(t), n]));
+  const NO_LINK = "a, button, input, textarea, select, script, style, h1, h2, h3, .poster, .cover-face, .site-header, .site-footer, .hm, .stats, .filterbar, .tabs, .section-head, .vault-wrap, .dlg-nav, [data-novault]";
+  function linkVault(root) {
+    if (!VRE || page === "vault" || !root) return;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: n => n.nodeValue.trim().length > 2 && !n.parentElement.closest(NO_LINK) ? 1 : 2 });
+    const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(node => {
+      const block = node.parentElement.closest("p, li, figcaption, blockquote, dd, td, .tag, div") || root;
+      const done = block._vdone || (block._vdone = new Set());
+      const text = node.nodeValue; let m, last = 0; const frag = document.createDocumentFragment(); let changed = false;
+      VRE.lastIndex = 0;
+      while ((m = VRE.exec(text))) {
+        const title = apos(m[2]), note = VMAP.get(title);
+        const start = m.index + m[1].length;
+        const titled = /\s/.test(title) || node.parentElement.closest("em, i, cite");
+        if (!note || done.has(note) || !titled) continue;
+        done.add(note); changed = true;
+        frag.append(text.slice(last, start));
+        const a = document.createElement("a"); a.className = "vlink"; a.href = vaultLink(note); a.textContent = m[2]; a.dataset.tip = "In my vault";
+        frag.append(a); last = start + m[2].length;
+      }
+      if (!changed) return;
+      frag.append(text.slice(last)); node.replaceWith(frag);
+    });
+  }
+
   function writingsPage() {
     const types = ["all", ...new Set(S.writings.map(w => w.type))];
     const html = `
@@ -395,6 +470,7 @@
       const draw = () => {
         const list = S.writings.filter(w => type === "all" || w.type === type);
         $("#w-list").innerHTML = list.map(entry).join("") || '<li class="empty">Nothing here yet.</li>';
+        linkVault($("#w-list"));
         $("#w-count").textContent = plural(list.length, "entry").replace("entrys", "entries");
       };
       $$(".chip[data-type]").forEach(btn => btn.addEventListener("click", () => {
@@ -418,7 +494,8 @@
         id: "br", noun: "book",
         filters: [
           { id: "br-year", label: "Year", options: [["all", "All"], ...years.map(y => [String(y), String(y)]), ["undated", "Undated"]], test: (b, v) => v === "undated" ? !b.read : parse(b.read).y === +v },
-          { id: "br-rating", ...ratingFilter(1) }
+          { id: "br-rating", ...ratingFilter(1) },
+          { id: "br-notes", label: "Show", options: [["all", "All"], ["notes", "With my notes"]], test: b => b.notes.length > 0 }
         ],
         sorts: [["date", "Date read", (a, b) => String(b.read || "").localeCompare(String(a.read || ""))],
                 ["rating", "Rating", (a, b) => (b.r ?? 0) - (a.r ?? 0)],
@@ -441,7 +518,7 @@
     setTimeout(start);
     const reading = booksReading();
     return `
-      <div class="page-head"><div><h1 class="page-title">Books</h1><p class="page-sub">What I’ve read, from my Goodreads.</p></div>
+      <div class="page-head"><div><h1 class="page-title">Books</h1><p class="page-sub">What I’ve read, am reading and want to read.</p></div>
         ${statsRow([[read.length, "Read"], [dated.filter(b => parse(b.read).y === thisYear).length, "This year"], [bookFavs().length, "Favorites"], [toRead.length, "To read"]])}</div>
       <div class="cols">
         <div>
@@ -450,9 +527,19 @@
         </div>
         <aside>
           ${ratingsBlock(read.filter(b => b.r != null).map(b => b.r), 1)}
+          ${notedBlock(BOOKS, "Books")}
           <section class="side-block">${sectionHead("Recently read", "books.html#diary", "Diary")}${diaryMini(dated.map(b => ({ date: b.read, it: b })), 3)}</section>
         </aside>
       </div>`;
+  }
+
+  /* sidebar list of works that have notes in my vault, most ideas first */
+  function notedBlock(list, noun) {
+    const ideas = it => it.notes.reduce((s, n) => s + n.ideas.length, 0);
+    const noted = list.filter(it => it.notes && it.notes.length).sort((a, b) => ideas(b) - ideas(a));
+    if (!noted.length) return "";
+    return `<section class="side-block">${sectionHead("In my notes")}<p class="side-note">${noun} with a dog-eared corner have notes in my vault. Open one to read them.</p>
+      <ul class="noted">${noted.slice(0, 8).map(it => `<li><button type="button" class="linkish" data-kind="${it.kind}" data-i="${it.i}">${esc(it.t)}</button><span>${plural(ideas(it), "idea")}</span></li>`).join("")}</ul></section>`;
   }
 
   function filmsPage() {
@@ -465,7 +552,7 @@
         filters: [
           { id: "fg-decade", label: "Decade", options: [["all", "All"], ...decades.map(d => [String(d), d + "s"])], test: (f, v) => f.y && Math.floor(f.y / 10) * 10 === +v },
           { id: "fg-rating", ...ratingFilter(0.5) },
-          { id: "fg-liked", label: "Show", options: [["all", "All"], ["liked", "Liked"]], test: f => f.liked }
+          { id: "fg-liked", label: "Show", options: [["all", "All"], ["liked", "Liked"], ...(FILMS.some(f => f.notes.length) ? [["notes", "With my notes"]] : [])], test: (f, v) => v === "notes" ? f.notes.length > 0 : f.liked }
         ],
         sorts: [["added", "When added", (a, b) => b.i - a.i],
                 ["rating", "Rating", (a, b) => (b.r ?? 0) - (a.r ?? 0)],
@@ -488,7 +575,7 @@
     const [tabHtml, start] = tabs("films", defs);
     setTimeout(start);
     return `
-      <div class="page-head"><div><h1 class="page-title">Films</h1><p class="page-sub">${esc(FD.bio || "")} Mirrored from <a href="${esc(S.letterboxd)}" target="_blank" rel="noopener">my Letterboxd</a>.</p></div>
+      <div class="page-head"><div><h1 class="page-title">Films</h1><p class="page-sub">${esc(FD.bio || "")}</p></div>
         ${statsRow([[FILMS.length, "Films"], [yearCount, "This year"], [FD.lists.length, "Lists"], [WATCH.length, "Watchlist"]])}</div>
       <div class="cols">
         <div>
@@ -499,8 +586,8 @@
         </div>
         <aside>
           ${ratingsBlock(FILMS.filter(f => f.r != null).map(f => f.r), 0.5)}
+          ${notedBlock(FILMS, "Films")}
           <section class="side-block">${sectionHead("Diary", "films.html#diary", String(filmDiary.length))}${diaryMini(filmDiary, 3)}</section>
-          <a class="btn go block" href="${esc(S.letterboxd)}" target="_blank" rel="noopener">Follow on Letterboxd</a>
         </aside>
       </div>`;
   }
@@ -604,6 +691,7 @@
         <canvas id="graph" aria-label="Interactive map of my notes"></canvas>
         <div class="graph-tip" id="graph-tip" aria-hidden="true"></div>
         <div class="graph-legend" id="graph-legend"></div>
+        ${new URLSearchParams(location.search).get("note") ? `<div class="graph-focus"><span>Showing</span><b>${esc(new URLSearchParams(location.search).get("note"))}</b><a href="vault.html">Show everything</a></div>` : ""}
       </div>
       ${vaultStamp()}`;
   }
@@ -618,7 +706,7 @@
             <ul class="timeline">${S.record.map(([y, t]) => `<li><span class="yr">${esc(y)}</span><span>${esc(t)}</span></li>`).join("")}</ul></section>
         </div>
         <aside>
-          ${S.profile.avatar ? `<div class="about-portrait"><img src="${esc(S.profile.avatar)}" alt="${esc(S.profile.name)}"></div>` : ""}
+          ${(S.profile.aboutPhoto || S.profile.avatar) ? `<div class="about-portrait"><img src="${esc(S.profile.aboutPhoto || S.profile.avatar)}" alt="${esc(S.profile.name)}"></div>` : ""}
           <section class="side-block">${sectionHead("Details")}
             <dl class="facts">${S.facts.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl></section>
           <section class="side-block">${sectionHead("Interests")}
@@ -647,6 +735,33 @@
       <ul class="social-list" style="margin-top:22px">${rows}</ul>`;
   }
 
+  /* Wrap a cover or artwork in a box with real depth: front, back and four edges.
+     kind: book (spine + page edges), film (thin card), canvas (stretched canvas), board (paper on board). */
+  function make3d(el, kind, depth, frame) {
+    if (!el) return;
+    const wrap = document.createElement("div");
+    wrap.className = `obj3d ${kind}${frame ? " framed " + frame : ""}`;
+    wrap.style.setProperty("--d", depth + "px");
+    el.replaceWith(wrap);
+    wrap.innerHTML = `<div class="obj"><div class="face front"></div><i class="face side l"></i><i class="face side r"></i><i class="face side t"></i><i class="face side b"></i><i class="face back"></i><i class="glare"></i></div>`;
+    if (frame) {
+      /* moulding, optional mat for works on paper, then the picture; corner rosettes on gilt */
+      const f = document.createElement("div");
+      f.className = `frame ${frame}`;
+      f.innerHTML = `${frame === "gilt" ? '<i class="rosette tl"></i><i class="rosette tr"></i><i class="rosette bl"></i><i class="rosette br"></i>' : ""}<div class="${frame === "gilt" ? "lip" : "mat"}"></div>`;
+      f.lastElementChild.appendChild(el);
+      $(".front", wrap).appendChild(f);
+    } else $(".front", wrap).appendChild(el);
+  }
+  /* which frame suits a work: gilt for paintings, walnut + mat for works on paper, none for objects */
+  function frameFor(it) {
+    const m = String(it.kind === "studio" ? (S.studio.items[it.i] || {}).kind : it.medium || "").toLowerCase();
+    if (/photo/.test(m)) return "black";
+    if (/sculpture|glass|furniture|ceramic/.test(m)) return null;
+    if (/painting/.test(m) || /oil/i.test(it.medium || "")) return "gilt";
+    return "walnut";
+  }
+
   let openDetail = () => {};
   /* ---------- detail dialog for any book or film ---------- */
   function detailDialog() {
@@ -665,11 +780,13 @@
             ${it.link ? `<a class="read-link" href="${esc(it.link)}" target="_blank" rel="noopener">Source →</a>` : ""}</div></div>`;
         $(".dlg-close", dlg).onclick = () => dlg.close();
         dlg.classList.add("wide");
+        const fr = frameFor(it);
+        make3d($(".dlg-art-img img", dlg), it.kind === "studio" ? "board" : "canvas", fr === "black" ? 14 : fr ? 26 : it.kind === "studio" ? 5 : 10, fr);
         if (!dlg.open) dlg.showModal();
         return;
       }
       dlg.classList.remove("wide");
-      let sub, meta = [], body = "", link = "";
+      let sub, meta = [], body = "", link = "", notesHtml = "";
       if (it.kind === "book") {
         sub = it.a + (it.year ? ` · ${it.year}` : "");
         const shelf = { read: it.read ? `Read ${fmtDate(it.read)}` : "Read", reading: `Reading since ${fmtDate(it.added)}`, "to-read": "Want to read", dnf: "Did not finish" }[it.shelf];
@@ -681,7 +798,22 @@
         if (logs.length) meta.push("Watched " + logs.map(d => fmtDate(d.date) + (d.rewatch ? " (rewatch)" : "")).join(", "));
         else if (it.kind === "watch") meta.push("On my watchlist");
         body = logs.filter(d => d.review).map(d => esc(d.review)).join("<br>");
-        if (it.uri) link = `<a class="read-link" href="${esc(it.uri)}" target="_blank" rel="noopener">View on Letterboxd →</a>`;
+        if (it.notes && it.notes.length && it.notes[0].author) sub = [sub, it.notes[0].author].filter(Boolean).join(" · ");
+      }
+      {
+        if (it.notes && it.notes.length) {
+          notesHtml = it.notes.map(n => {
+            const ideas = n.ideasInGraph.length ? n.ideasInGraph : n.ideas;
+            return `<section class="dlg-notes">
+              <h4>${it.notes.length > 1 ? esc(n.title) + " · " : ""}From my notes</h4>
+              ${n.summary.map(p => `<p>${esc(p)}</p>`).join("")}
+              ${n.significance.length ? `<h5>Why it matters</h5>${n.significance.map(p => `<p>${esc(p)}</p>`).join("")}` : ""}
+              ${ideas.length ? `<h5>Ideas I took from it</h5><ul class="ideas">${ideas.slice(0, 8).map(t => n.ideasInGraph.includes(t)
+                  ? `<li><a href="${vaultLink(t)}">${esc(t)}</a></li>` : `<li>${esc(t)}</li>`).join("")}</ul>
+                ${ideas.length > 8 ? `<p class="more-ideas">and ${ideas.length - 8} more</p>` : ""}` : ""}
+              ${n.inGraph ? `<a class="read-link" href="${vaultLink(n.note)}">See it in the Vault <span class="arr">→</span></a>` : ""}</section>`;
+          }).join("");
+        }
       }
       const title = it.kind === "book" ? it.full || it.t : it.t;
       dlg.innerHTML = `<button class="dlg-close" type="button" aria-label="Close">×</button>
@@ -689,8 +821,11 @@
         <div><h3>${esc(title)}</h3><p class="by">${esc(sub)}</p>
           <div class="poster-meta">${stars(it.r)}${heart(it.liked)}${it.fav ? '<span class="pill">Favorite</span>' : ""}</div>
           <p class="poster-caption">${esc(meta.join(" · "))}</p>
-          ${body ? `<p class="review">${body}</p>` : ""}${link}</div></div>`;
+          ${body ? `<p class="review">${body}</p>` : ""}${link}${notesHtml}</div></div>`;
+      dlg.classList.toggle("wide", !!notesHtml);
+      linkVault(dlg);
       $(".dlg-close", dlg).onclick = () => dlg.close();
+      make3d($(".dlg .poster", dlg), it.kind === "book" ? "book" : "film", it.kind === "book" ? Math.round(Math.min(34, Math.max(10, (it.pages || 300) / 22))) : 4);
       if (!dlg.open) dlg.showModal();
     };
     const nav = () => {
@@ -711,6 +846,20 @@
       openDetail(it, list);
     });
     dlg.addEventListener("keydown", e => { if (e.key === "ArrowRight") step(1); if (e.key === "ArrowLeft") step(-1); });
+    /* tilt the 3D object toward the pointer */
+    const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    dlg.addEventListener("pointermove", e => {
+      const o = $(".obj", dlg); if (!o || calm) return;
+      const r = o.getBoundingClientRect();
+      const nx = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / (innerWidth / 3)));
+      const ny = Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / (innerHeight / 3)));
+      o.classList.add("live");
+      o.style.setProperty("--ry", (nx * 32).toFixed(2) + "deg");
+      o.style.setProperty("--rx", (-ny * 14).toFixed(2) + "deg");
+      o.style.setProperty("--gx", (50 + nx * 45).toFixed(1) + "%");
+      o.style.setProperty("--gy", (50 + ny * 45).toFixed(1) + "%");
+    });
+    dlg.addEventListener("pointerleave", () => { const o = $(".obj", dlg); if (o) { o.classList.remove("live"); o.style.removeProperty("--ry"); o.style.removeProperty("--rx"); } });
     dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
   }
 
@@ -727,7 +876,7 @@
     const pal = document.createElement("dialog");
     pal.className = "palette";
     pal.innerHTML = `<div class="pal-box"><label class="pal-input"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="pal-q" type="search" placeholder="Search writing, books, films, art…" autocomplete="off" spellcheck="false" aria-label="Search"></label>
+      <input id="pal-q" type="search" placeholder="Search writing, books, films, art, notes…" autocomplete="off" spellcheck="false" aria-label="Search"></label>
       <ul class="pal-list" id="pal-list" role="listbox"></ul>
       <div class="pal-foot"><span><kbd>↑</kbd><kbd>↓</kbd> move</span><span><kbd>Enter</kbd> open</span><span><kbd>Esc</kbd> close</span></div></div>`;
     document.body.appendChild(pal);
@@ -741,8 +890,8 @@
         results = index.map(x => {
           const hay = (x.t + " " + x.sub).toLowerCase(), t = x.t.toLowerCase();
           if (!words.every(w => hay.includes(w))) return null;
-          return [x, t.startsWith(term) ? 0 : t.includes(term) ? 1 : 2];
-        }).filter(Boolean).sort((a, b) => a[1] - b[1] || a[0].t.length - b[0].t.length).slice(0, 9).map(r => r[0]);
+          return [x, (t.startsWith(term) ? 0 : t.includes(term) ? 1 : 2) + (x.type === "Note" ? 0.5 : 0)];
+        }).filter(Boolean).sort((a, b) => a[1] - b[1] || a[0].t.length - b[0].t.length).slice(0, 10).map(r => r[0]);
       }
       sel = 0;
       ul.innerHTML = results.map((x, i) => `<li role="option" class="pal-item" data-n="${i}" aria-selected="${i === sel}"><span class="pal-type">${esc(x.type)}</span><span class="pal-t">${esc(x.t)}</span><span class="pal-sub">${esc(x.sub)}</span></li>`).join("")
@@ -764,7 +913,17 @@
     ul.addEventListener("click", e => { const li = e.target.closest(".pal-item"); if (li) go(results[+li.dataset.n]); });
     ul.addEventListener("mousemove", e => { const li = e.target.closest(".pal-item"); if (li && +li.dataset.n !== sel) { sel = +li.dataset.n; mark(); } });
     pal.addEventListener("click", e => { if (e.target === pal) pal.close(); });
-    const open = () => { if (pal.open) return; q.value = ""; draw(); pal.showModal(); q.focus(); };
+    let notesLoaded = false;
+    const loadNotes = () => {
+      if (notesLoaded) return; notesLoaded = true;
+      const add = () => (window.VAULT_INDEX ? window.VAULT_INDEX.notes : []).forEach(([t, folder]) =>
+        index.push({ type: "Note", t, sub: folder, href: "vault.html?note=" + encodeURIComponent(t) }));
+      if (window.VAULT_INDEX) { add(); return; }
+      const sc = document.createElement("script"); sc.src = "data/vault-index.js";
+      sc.onload = () => { add(); if (pal.open && q.value.trim()) draw(); };
+      document.head.appendChild(sc);
+    };
+    const open = () => { if (pal.open) return; loadNotes(); q.value = ""; draw(); pal.showModal(); q.focus(); };
     $("#search-btn").addEventListener("click", open);
     document.addEventListener("keydown", e => {
       const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
@@ -832,7 +991,29 @@
   }
 
   /* ---------- boot ---------- */
-  const PAGES = { home, writings: writingsPage, books: booksPage, films: filmsPage, art: artPage, studio: studioPage, vault: vaultPage, about: aboutPage, socials: socialsPage };
+  function notFoundPage() {
+    setTimeout(() => { const b = $("#nf-search"); if (b) b.onclick = () => $("#search-btn").click(); });
+    const path = decodeURIComponent(location.pathname).replace(/^\//, "") || "this page";
+    return `<section class="nf">
+      <p class="nf-code">404</p>
+      <h1 class="page-title">This page doesn’t exist</h1>
+      <p class="page-sub">There’s nothing at <code>${esc(path)}</code>. It may have moved when the site was rebuilt.</p>
+      <div class="nf-actions"><button class="btn go" type="button" id="nf-search">Search the site</button><a class="btn" href="index.html">Go home</a></div>
+      <div class="nf-links">${NAV.filter(n => n[2] !== "home").map(([href, label]) => `<a href="${href}">${label}</a>`).join("")}</div>
+    </section>`;
+  }
+
+  /* privacy-friendly visit counts: set analytics.goatcounter in content.js (or the editor) */
+  function analytics() {
+    const code = ((S.analytics || {}).goatcounter || "").trim();
+    if (!code || location.protocol === "file:" || /^(localhost|127\.)/.test(location.hostname)) return;
+    const sc = document.createElement("script");
+    sc.async = true; sc.src = "https://gc.zgo.at/count.js";
+    sc.dataset.goatcounter = `https://${code.replace(/^https?:\/\//, "").replace(/\.goatcounter\.com.*$/, "")}.goatcounter.com/count`;
+    document.body.appendChild(sc);
+  }
+
+  const PAGES = { notfound: notFoundPage, home, writings: writingsPage, books: booksPage, films: filmsPage, art: artPage, studio: studioPage, vault: vaultPage, about: aboutPage, socials: socialsPage };
   document.body.insertAdjacentHTML("afterbegin", header());
   const app = document.getElementById("app");
   app.innerHTML = `<div class="wrap">${groupOf(page) ? tasteNav() : ""}${(PAGES[page] || home)()}</div>`;
@@ -841,5 +1022,11 @@
   themeToggle();
   searchPalette();
   chrome();
+  analytics();
   setTimeout(() => watchCovers(app));
+  /* link vault mentions now and in anything drawn later (tabs, filters, dialogs) */
+  linkVault(app);
+  if (VRE && page !== "vault") new MutationObserver(recs => recs.forEach(r => r.addedNodes.forEach(n => {
+    if (n.nodeType === 1 && !n.classList.contains("vlink")) linkVault(n);
+  }))).observe(document.body, { childList: true, subtree: true });
 })();

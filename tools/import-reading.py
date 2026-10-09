@@ -8,8 +8,17 @@ Defaults: ~/Downloads/goodreads_library_export.csv and ~/Downloads/films
 Keep the raw exports OUT of this repo: the Goodreads file contains private notes.
 Only public fields are written. Private notes and custom shelves other than
 "favs" are dropped.
+
+RETIRED: books and films are now logged in admin.html (Reading and Watching).
+Running this would overwrite that log with an old export, so it refuses unless
+you pass --overwrite as the first argument.
 """
 import csv, json, os, re, sys, datetime
+
+if not (len(sys.argv) > 1 and sys.argv[1] == '--overwrite'):
+    sys.exit('Books and films are now logged in admin.html. This importer would overwrite that log.\n'
+             'If you really mean it, run: python tools/import-reading.py --overwrite [goodreads.csv] [letterboxd_folder]')
+sys.argv.pop(1)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)

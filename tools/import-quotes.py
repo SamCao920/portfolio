@@ -1,0 +1,122 @@
+#!/usr/bin/env python3
+"""
+Pull the quote bank from the Obsidian vault into data/quotes.js for the home page.
+
+    python3 tools/import-quotes.py [path/to/Commonplace]
+
+Reads "4 - Maps of Content/quote bank.md". A quote is a top-level bullet (or an
+unbulleted *italic* block), and its attribution is the indented bullet under it.
+Indented bullets that read as commentary (long ones) are skipped, and the quote is
+credited to its section instead (e.g. "## [[Essays (book)]]" -> Montaigne, Essays).
+Only the quotes and attributions are published; your commentary is not.
+
+Extra quotes kept outside the vault (e.g. e-reader highlights) go in tools/extra-quotes.md,
+in the same format. Any that repeat a quote already in the vault are dropped.
+"""
+import html, json, os, re, sys, datetime
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(HERE)
+VAULT = sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser('~/Commonplace')
+SRC = os.path.join(VAULT, '4 - Maps of Content', 'quote bank.md')
+
+# credit for quotes in a section whose own attribution line is commentary or missing
+SECTION_CREDIT = {'Hamlet': 'William Shakespeare, *Hamlet*', 'Essays': 'Montaigne, *Essays*'}
+
+def unlink(s):
+    s = re.sub(r'\[\[[^\]|]*\|([^\]]*)\]\]', r'\1', s)
+    s = re.sub(r'\[\[([^\]]*)\]\]', r'\1', s)
+    return s.replace('\\[', '[').replace('\\]', ']')
+
+def section_name(line):
+    name = unlink(line.lstrip('#').strip())
+    return re.sub(r'\s*\((book|play|novel)\)\s*$', '', name).strip()
+
+def clean_quote(lines):
+    text = '\n'.join(l.strip() for l in lines)
+    text = re.sub(r'^-\s+', '', text)
+    ref = None
+    m = re.search(r'\s*\(([\d.\s]+(?:-\s*\d+)?)\)\s*\**\s*$', text)
+    if m:
+        ref = re.sub(r'\.+\s*', '.', m.group(1)).replace(' ', '')
+        text = text[:m.start()]
+    text = unlink(text).replace('*', '').strip()
+    text = re.sub(r'[ \t]+', ' ', text)
+    return text, ref
+
+def cite_html(s):
+    s = re.sub(r'\s+', ' ', unlink(s)).strip().rstrip('.')
+    if s.count('*') % 2:                      # unclosed italics in the note
+        s += '*'
+    s = re.sub(r'\*([^*,]+?),\s*\(?([^*]*?)\)?\s*\*', r'*\1*, \2', s)   # *Essays, Book I* -> *Essays*, Book I
+    s = re.sub(r'(\w) from ', r'\1, from ', s)
+    s = html.escape(s, quote=False)
+    s = re.sub(r'\*([^*]+)\*', r'<em>\1</em>', s)
+    return s.replace('*', '').strip()
+
+def parse(path):
+  lines = open(path, encoding='utf-8').read().split('\n')
+  if lines and lines[0].strip() == '---':          # front matter
+    end = lines.index('---', 1) if '---' in lines[1:] else 0
+    lines = lines[end + 1:]
+  quotes, section, i = [], None, 0
+  while i < len(lines):
+      line = lines[i]
+      if line.startswith('#'):
+          section = section_name(line); i += 1; continue
+      starts = re.match(r'^-\s+\S', line) or re.match(r'^\*\S', line)
+      if not starts:
+          i += 1; continue
+      block = [line]
+      i += 1
+      open_italic = line.count('*') % 2 == 1
+      while i < len(lines):
+          nxt = lines[i]
+          if not nxt.strip() or nxt.startswith('#') or re.match(r'^\s*-\s', nxt):
+              break
+          if open_italic or nxt[:1] in (' ', '\t'):
+              block.append(nxt); open_italic ^= nxt.count('*') % 2 == 1; i += 1; continue
+          break
+      text, ref = clean_quote(block)
+      cite = None
+      j = i
+      while j < len(lines) and not lines[j].strip():
+          j += 1
+      if j < len(lines) and re.match(r'^\s+-\s', lines[j]):
+          cand = re.sub(r'^\s+-\s+', '', lines[j]).strip()
+          if len(cand) <= 160 and not re.match(r'^(What|This|The idea|Hamlet describes|Masterful)\b', cand):
+              cite = cand
+          i = j + 1
+      if not cite:
+          cite = SECTION_CREDIT.get(section or '', section or '')
+          if ref:
+              cite += f', {ref}'
+      if len(text) < 12:
+          continue
+      quotes.append({'q': text, 'by': cite_html(cite)})
+  return quotes
+
+def key(q):
+    return re.sub(r'[^a-z0-9]+', ' ', q.lower().replace('’', "'")).strip()
+
+quotes = parse(SRC)
+EXTRA = os.path.join(HERE, 'extra-quotes.md')
+if os.path.exists(EXTRA):
+    have = [key(q['q']) for q in quotes]
+    for q in parse(EXTRA):
+        k = key(q['q'])
+        if any(k == h or (min(len(k), len(h)) > 25 and (k in h or h in k)) for h in have):
+            print('  skipped duplicate:', q['q'][:60]); continue
+        quotes.append(q); have.append(k)
+
+out = os.path.join(ROOT, 'data', 'quotes.js')
+try:   # leave the file alone when nothing changed, so the daily update doesn't commit just a new date
+    prev = json.loads(re.search(r'window\.QUOTES = (.*);\s*$', open(out, encoding='utf-8').read(), re.S).group(1))['items']
+    if prev == quotes:
+        print(f'{out}: {len(quotes)} quotes, unchanged'); sys.exit(0)
+except (OSError, AttributeError, ValueError, KeyError):
+    pass
+with open(out, 'w', encoding='utf-8', newline='\n') as f:
+    f.write('/* Generated by tools/import-quotes.py from the vault quote bank. Do not edit by hand; re-run the script. */\n')
+    f.write('window.QUOTES = ' + json.dumps({'updated': datetime.date.today().isoformat(), 'items': quotes}, ensure_ascii=False, indent=0).replace('\n', '') + ';\n')
+print(f'wrote {out}: {len(quotes)} quotes')

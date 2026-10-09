@@ -10,7 +10,6 @@
 <link rel="icon" href="assets/website/my-notion-face-transparent.ico" type="image/x-icon">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,700&display=swap">
 <link rel="stylesheet" href="assets/style.css">
 <style>
   /* Editor layout: sticky toolbar, section list on the left, form on the right. */
@@ -85,6 +84,37 @@
   .acc:active, .pal-card:active { transform: scale(.96); }
   .theme-demo { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 22px; padding: 14px 16px; border-radius: 8px; background: var(--bg-raised); box-shadow: inset 0 0 0 1px var(--line); }
   .theme-demo .read-link { margin: 0; }
+  .font-demo { margin-top: 6px; padding: 16px 18px; border-radius: 8px; background: var(--bg-raised); box-shadow: inset 0 0 0 1px var(--line); }
+  .font-demo p { margin: 0 0 8px; }
+  .fd-name { font: var(--dw, 700) 34px/1.1 var(--display); color: var(--heading); letter-spacing: -.025em; }
+  .fd-cjk { font: var(--cjkw, 600) 22px/1 var(--cjk); color: var(--text-strong); margin-left: 6px; letter-spacing: 0; }
+  .fd-title { font: var(--dw, 700) 20px/1.25 var(--display); color: var(--heading); }
+  .fd-body { font: 400 15px/1.6 var(--body); color: var(--text); max-width: 60ch; }
+  .card-thumb { width: 30px; height: 30px; object-fit: cover; border-radius: 4px; flex: none; box-shadow: 0 0 0 1px var(--edge); }
+  .logform { padding: 18px 18px 6px; border-radius: 10px; background: var(--bg-raised); box-shadow: inset 0 0 0 1px var(--line); }
+  .logform h2 { margin: 0 0 14px; font: 700 18px/1.2 var(--display); color: var(--heading); }
+  .logform .f.check { margin-top: 26px; }
+  .f input[type=text], .f input[type=date], .f input[type=url], .f select { height: 40px; }
+  .logform input[readonly] { opacity: .7; }
+  .logbtns { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 14px; }
+  .danger-btn:hover { background: var(--accent); color: var(--on-accent); }
+  .lfilter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+  .lfilter input, .lfilter select { flex: 1 1 200px; min-width: 0; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--bg-glow); color: var(--text-strong); font: 14px var(--body); padding: 8px 10px; }
+  .lfilter select, .lfilter .short { flex: 0 1 150px; }
+  .llist, .chips { list-style: none; margin: 0 0 8px; padding: 0; }
+  .lrow { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.3fr) 110px 110px 100px; gap: 10px; align-items: center; width: 100%; padding: 8px 10px; border: 0; border-bottom: 1px solid var(--line); background: none; color: var(--text); font: 14px var(--body); text-align: left; cursor: pointer; transition: background .15s; }
+  .lrow.f4 { grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr) 110px 100px; }
+  .lrow:hover { background: var(--bg-raised); }
+  .lrow.static { grid-template-columns: minmax(0, 2.2fr) minmax(0, .6fr) 100px auto; cursor: default; }
+  .lrow b { color: var(--heading); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lrow > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+  .lr-stars { color: var(--accent) !important; }
+  .lr-date { font-variant-numeric: tabular-nums; text-align: right; }
+  .lr-acts { display: flex; gap: 6px; align-items: center; justify-content: flex-end; }
+  .llist { max-height: 460px; overflow-y: auto; border-top: 1px solid var(--line); }
+  .lempty { padding: 10px; color: var(--muted); font-size: 13px; }
+  .chips li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border-bottom: 1px solid var(--line); color: var(--heading); }
+  @media (max-width: 600px) { .lrow { grid-template-columns: minmax(0, 1fr) auto; } .lrow > span:not(.lr-stars) { display: none; } .lrow.static { grid-template-columns: minmax(0, 1fr) auto; } }
   .notice { padding: 12px 14px; border-radius: 8px; background: color-mix(in srgb, var(--accent) 10%, var(--bg-raised)); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); margin-bottom: 18px; font-size: 14px; }
 </style>
 </head>
@@ -104,6 +134,8 @@
   <main class="ed-main" id="main"></main>
 </div>
 <script src="data/content.js"></script>
+<script src="data/books.js"></script>
+<script src="data/films.js"></script>
 <script src="assets/admin.js"></script>
 </body>
 </html>

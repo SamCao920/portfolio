@@ -1,0 +1,57 @@
+---
+note: Highlights not (yet) in the vault quote bank. Same format as the quote bank. Merged by tools/import-quotes.py; duplicates of vault quotes are skipped.
+---
+## All the King's Men
+- *They were doomed, but they lived in the agony of will.*
+	- Jack Burden, from *All the King’s Men* by Robert Penn Warren
+- *If you could not accept the past and its burden there was no future, for without one there cannot be the other, and if you could accept the past you might hope for the future, for only out of the past can you make the future.*
+	- Jack Burden, from *All the King’s Men* by Robert Penn Warren
+- *All knowledge that is worth anything is maybe paid for by blood. Maybe that is the only way you can tell that a certain piece of knowledge is worth anything: it has cost some blood.*
+	- Jack Burden, from *All the King’s Men* by Robert Penn Warren
+- *You remember the individual words from the old language you spoke together, but you have forgotten the grammar. You remember the steps of the dance, but the music isn’t playing any more.*
+	- Jack Burden, from *All the King’s Men* by Robert Penn Warren
+- *Sure, there’s some graft, but there’s just enough to make the wheels turn without squeaking. And remember this. There never was a machine rigged up by man didn’t represent some loss of energy.*
+	- Willie Stark, from *All the King’s Men* by Robert Penn Warren
+- *If a man knew how to live he would never die.*
+	- From *All the King’s Men* by Robert Penn Warren
+- *For either killing or creating may be a crime punishable by death, and the death always comes by the criminal’s own hand and every man is a suicide.*
+	- Jack Burden, from *All the King’s Men* by Robert Penn Warren
+- *By the time we understand the pattern we are in, the definition we are making for ourselves, it is too late to break out of the box. We can only live in terms of the definition. Yet the definition we have made of ourselves is ourselves. To break out of it, we must make a new self. But how can the self make a new self when the selfness which it is, is the only substance from which the new self can be made?*
+	- Jack Burden, from *All the King’s Men* by Robert Penn Warren
+- *You live with words a long time. Then all at once you are old, and there are the things and the words don’t matter any more.*
+	- From *All the King’s Men* by Robert Penn Warren
+- *For the truth is a terrible thing. You dabble your foot in it and it is nothing. But you walk a little farther and you feel it pull you like an undertow or a whirlpool. For there is a blackness of truth, too.*
+	- Jack Burden, from *All the King’s Men* by Robert Penn Warren
+- *You don’t ever have to frame anybody, because the truth is always sufficient.*
+	- Willie Stark, from *All the King’s Men* by Robert Penn Warren
+## Moby-Dick
+- *Towards thee I roll, thou all-destroying but unconquering whale; to the last I grapple with thee; from hell’s heart I stab at thee; for hate’s sake I spit my last breath at thee.*
+	- Captain Ahab, from *Moby-Dick*
+- *Moby Dick seeks thee not. It is thou, thou, that madly seekest him!*
+	- Starbuck, from *Moby-Dick*
+- *All the things that most exasperate and outrage mortal man, all these things are bodiless, but only bodiless as objects, not as agents.*
+	- Ishmael, from *Moby-Dick*
+- *Ahab never thinks; he only feels, feels, feels; that’s tingling enough for mortal man! to think’s audacity. God only has that right and privilege.*
+	- Captain Ahab, from *Moby-Dick*
+- *If the gods think to speak outright to man, they will honorably speak outright; not shake their heads, and give an old wives’ darkling hint.*
+	- Captain Ahab, from *Moby-Dick*
+- *In an instant’s compass, great hearts sometimes condense to one deep pang, the sum total of those shallow pains kindly diffused through feebler men’s whole lives.*
+	- Ishmael, from *Moby-Dick*
+- *By heaven, man, we are turned round and round in this world, like yonder windlass, and Fate is the handspike.*
+	- Captain Ahab, from *Moby-Dick*
+- *Like cures like; and for this hunt, my malady becomes my most desired health.*
+	- Captain Ahab, from *Moby-Dick*
+- *Oh, how immaterial are all materials! What things real are there, but imponderable thoughts?*
+	- Captain Ahab, from *Moby-Dick*
+- *Lo! ye believers in gods all goodness, and in man all ill, lo you! see the omniscient gods oblivious of suffering man; and man, though idiotic, and knowing not what he does, yet full of the sweet things of love and gratitude.*
+	- Captain Ahab, from *Moby-Dick*
+- *Level by nature to this earth’s horizon are the glances of man’s eyes; not shot from the crown of his head, as if God had meant him to gaze on his firmament.*
+	- Captain Ahab, from *Moby-Dick*
+- *Loveliness unfathomable, as ever lover saw in his young bride’s eye! Tell me not of thy teeth-tiered sharks, and thy kidnapping cannibal ways. Let faith oust fact; let fancy oust memory; I look deep down and do believe.*
+	- Starbuck, from *Moby-Dick*
+- *In no Paradise myself, I am impatient of all misery in others that is not mad.*
+	- Captain Ahab, from *Moby-Dick*
+- *I am past scorching; not easily can’st thou scorch a scar.*
+	- Perth the blacksmith to Ahab, from *Moby-Dick*
+- *Oh, Death, why canst thou not sometimes be timely?*
+	- Ishmael, from *Moby-Dick*

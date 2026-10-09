@@ -6,22 +6,20 @@
 
 window.SITE = {
   "profile": {
-    "name": "Sam Cao",
+    "name": "Sam",
     "legalName": "Fangyuan Cao",
     "cjk": "曹方源",
     "nickname": "Sam",
-    "avatar": "assets/plates/portrait.jpg",
+    "avatar": "assets/plates/fqs 2026-09-05 2204297EB87367C564 - Copy.JPG",
     "initials": "SC",
-    "badge": "",
-    "tagline": "Moral and Political Economy & Applied Mathematics at Johns Hopkins. Interested in political economy, history, philosophy, and more.",
+    "tagline": "Moral and Political Economy & Applied Mathematics and Statistics at Johns Hopkins University. Interested in political economy, history, philosophy, and more.",
     "location": "Baltimore, Maryland",
     "updated": "October 2026",
     "now": [
-      "Selected participant at Making Progress, Berkeley, Oct 10–11",
-      "Presenting at the Madrid Annual Conference on Austrian Economics, Oct 21–23",
       "Writing on Chinese influence in the International Seabed Authority for the Foreign Affairs Review",
       "Hopkins Symphony Orchestra & Hopkins Chamber Music Seminar"
-    ]
+    ],
+    "aboutPhoto": "assets/plates/68.png"
   },
   "about": [
     "Hi, I’m Sam. My given name is Fangyuan (曹方源), but you can call me Sam. I’m double majoring in Moral and Political Economy and Applied Mathematics and Statistics at the Johns Hopkins University, and I write and research at the intersection of economics, philosophy, and history.",
@@ -57,8 +55,7 @@ window.SITE = {
     "Austrian economics",
     "Violin",
     "Classical music",
-    "Roman history",
-    "and more."
+    "Roman history"
   ],
   "record": [
     [
@@ -262,7 +259,6 @@ window.SITE = {
     "All the King's Men"
   ],
   "showDidNotFinish": true,
-  "letterboxd": "https://letterboxd.com/TrueRoman/",
   "posterOverrides": {},
   "socials": [
     {
@@ -277,24 +273,19 @@ window.SITE = {
       "url": "https://www.linkedin.com/in/fangyuansam-cao/"
     },
     {
-      "name": "X",
-      "handle": "@fangyuansamcao",
-      "url": "https://x.com/fangyuansamcao"
-    },
-    {
       "name": "Curius",
       "handle": "What I’m reading online",
       "url": "https://curius.app/sam-cao"
     },
     {
-      "name": "GitHub",
-      "handle": "SamCao920",
-      "url": "https://github.com/SamCao920"
+      "name": "Substack",
+      "handle": "@samcao7",
+      "url": "https://substack.com/@samcao7"
     },
     {
-      "name": "Letterboxd",
-      "handle": "TrueRoman",
-      "url": "https://letterboxd.com/TrueRoman/"
+      "name": "X",
+      "handle": "@fangyuansamcao",
+      "url": "https://x.com/fangyuansamcao"
     },
     {
       "name": "Spotify",
@@ -302,13 +293,13 @@ window.SITE = {
       "url": "https://open.spotify.com/user/g98hr5cchv85ym9vx3oh08dy2"
     },
     {
-      "name": "Instagram",
-      "handle": "@_samcao",
-      "url": "https://www.instagram.com/_samcao/"
+      "name": "Musescore",
+      "handle": "Sam_Cao",
+      "url": "https://musescore.com/user/28636156"
     }
   ],
   "studio": {
-    "intro": "Drawings and paintings from 2024 to 2025. I studied in the Visual Arts program at the California State Summer School for the Arts (CSSSA), and my work was recognized in my congressional district’s Congressional Art Competition.",
+    "intro": "Drawings, paintings and photographs from 2024 to 2026. I studied in the Visual Arts program at the California State Summer School for the Arts (CSSSA), and my work was recognized in my congressional district’s Congressional Art Competition.",
     "items": [
       {
         "title": "Mauvaise Foi",
@@ -390,6 +381,76 @@ window.SITE = {
         "size": "18 × 24 in",
         "note": "Economics is often defined as the study of scarcity, and how we allocate resources given scarcity. With this piece, I sought to strip that definition of its mathematical implications and visualize the raw humanity underneath. What happens when demand is plentiful, but supply is constricted to a single point?",
         "img": "assets/studio/scarcity.jpg"
+      },
+      {
+        "title": "Forbidden City",
+        "year": "2026",
+        "kind": "Photography",
+        "medium": "Sony a6000 · 35mm · f/5 · 1/1000s · ISO 100",
+        "img": "assets/studio/photo-dsc01200.jpg"
+      },
+      {
+        "title": "Garden Pond",
+        "year": "2026",
+        "kind": "Photography",
+        "medium": "Sony a6000 · 50mm · f/6.3 · 1/80s · ISO 100",
+        "img": "assets/studio/photo-dsc01350.jpg"
+      },
+      {
+        "title": "Koi Pond",
+        "year": "2026",
+        "kind": "Photography",
+        "medium": "Sony a6000 · 50mm · f/5.6 · 1/80s · ISO 125",
+        "img": "assets/studio/photo-dsc01452.jpg"
+      },
+      {
+        "title": "Moss Garden",
+        "year": "2026",
+        "kind": "Photography",
+        "medium": "Sony a6000 · 50mm · f/5.6 · 1/80s · ISO 200",
+        "img": "assets/studio/photo-dsc01627.jpg"
+      },
+      {
+        "title": "Lake in the Mist",
+        "year": "2026",
+        "kind": "Photography",
+        "medium": "Sony a6000 · 45mm · f/5.6 · 1/80s · ISO 200",
+        "img": "assets/studio/photo-dsc01644.jpg"
+      },
+      {
+        "title": "Manhattan, Sunset",
+        "year": "2025",
+        "kind": "Photography",
+        "medium": "Sony a6000 · 21mm · f/4.5 · 1/250s · ISO 100",
+        "img": "assets/studio/photo-20250718-dsc09775.jpg"
+      },
+      {
+        "title": "Tower at Dusk",
+        "year": "2025",
+        "kind": "Photography",
+        "medium": "Sony a6000 · 42mm · f/4.5 · 1/30s · ISO 3200",
+        "img": "assets/studio/photo-20250718-dsc09815.jpg"
+      },
+      {
+        "title": "Geothermal Pool I",
+        "year": "2024",
+        "kind": "Photography",
+        "medium": "Sony a6000 · 55mm · f/7.1 · 1/640s · ISO 100",
+        "img": "assets/studio/photo-dsc07882.jpg"
+      },
+      {
+        "title": "Geothermal Pool II",
+        "year": "2024",
+        "kind": "Photography",
+        "medium": "Sony a6000 · 48mm · f/5 · 1/1600s · ISO 100",
+        "img": "assets/studio/photo-dsc08742.jpg"
+      },
+      {
+        "title": "Geothermal Pool III",
+        "year": "2024",
+        "kind": "Photography",
+        "medium": "Digital photograph",
+        "img": "assets/studio/photo-dsc08688.jpg"
       }
     ]
   },
@@ -462,5 +523,17 @@ window.SITE = {
     "The Lego Batman Movie (2017)",
     "How to Train Your Dragon (2025)",
     "Back to the Future Part III (1990)"
-  ]
+  ],
+  "theme": {
+    "palette": "ink",
+    "accent": "cobalt",
+    "fonts": {
+      "display": "Fraunces",
+      "body": "Manrope",
+      "cjk": "Noto Serif SC"
+    }
+  },
+  "analytics": {
+    "goatcounter": "samcao"
+  }
 };

@@ -336,7 +336,7 @@
                 }
 
                 if (cand && cand.length && labelAlpha > 0.01) {
-                    ctx.font = '700 12px "Source Serif 4", Georgia, serif';
+                    ctx.font = '600 12px "Hanken Grotesk", Arial, sans-serif';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     cand.sort(function (p, q) { return DEG[q] - DEG[p]; });
@@ -550,6 +550,19 @@
             window.addEventListener('themechange', function () { refreshPalette(); legend(); draw(); });
             fit();
             kick();
+
+            /* ?note=Title opens the graph zoomed in on that note, with its links lit */
+            var want = new URLSearchParams(location.search).get('note');
+            if (want) {
+                var fi = TITLE.indexOf(want);
+                if (fi < 0) { var lw = want.toLowerCase(); for (var q = 0; q < N; q++) if (TITLE[q].toLowerCase() === lw) { fi = q; break; } }
+                if (fi >= 0) {
+                    scale = Math.min(Math.max(scale * 2.6, 0.6), 3);
+                    tx = W / 2 - X[fi] * scale; ty = H / 2 - Y[fi] * scale;
+                    setHover(fi, W / 2, H / 2 - 18);
+                    wrap.scrollIntoView({ block: 'center' });
+                }
+            }
         })();
 
 
