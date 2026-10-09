@@ -264,6 +264,13 @@
       };
       $$(".tab").forEach(t => t.addEventListener("click", () => { show(t.dataset.tab); try { history.replaceState(null, "", "#" + t.dataset.tab); } catch (e) {} }));
       show(defs.some(d => d[0] === fromHash) ? fromHash : defs[0][0]);
+      /* Same-page links like films.html#diary only change the hash; switch tab and scroll to it. */
+      window.addEventListener("hashchange", () => {
+        const k = location.hash.slice(1);
+        if (!defs.some(d => d[0] === k)) return;
+        show(k);
+        const strip = $(".tabs"); if (strip) strip.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
     };
     return [html, start];
   }
