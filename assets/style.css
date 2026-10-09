@@ -864,3 +864,43 @@ body > main { flex: 1 0 auto; }
 /* ---------- links to things in my vault ---------- */
 .vlink { color: inherit; text-decoration: underline dotted color-mix(in srgb, var(--accent) 80%, transparent); text-decoration-thickness: 1.5px; text-underline-offset: 3px; transition: color .15s, text-decoration-color .15s; }
 .vlink:hover { color: var(--accent); text-decoration-style: solid; }
+
+/* ---------- vault: selected note + reading panel ---------- */
+.graph-focus[hidden] { display: none; }
+.note-panel { position: absolute; z-index: 7; top: 0; right: 0; bottom: 0; width: min(420px, 46%); display: flex; flex-direction: column; background: color-mix(in srgb, var(--bg-raised) 94%, transparent);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: -1px 0 0 var(--line), -18px 0 40px -24px rgba(0,0,0,.6);
+  transform: translateX(104%); visibility: hidden; transition: transform .38s var(--ease), visibility 0s .38s; }
+.note-panel.open { transform: none; visibility: visible; transition: transform .38s var(--ease), visibility 0s; }
+.np-scroll { flex: 1; overflow-y: auto; padding: 22px 24px 28px; overscroll-behavior: contain; }
+.np-close { position: absolute; top: 10px; right: 10px; z-index: 1; width: 30px; height: 30px; border: 0; border-radius: 50%; background: var(--surface); color: var(--text-strong); font-size: 17px; cursor: pointer; }
+.np-close:hover { background: var(--line-strong); }
+.np-kicker { margin: 0 36px 6px 0; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.np-title { margin: 0 30px 14px 0; font: var(--dw, 700) 21px/1.25 var(--display); color: var(--heading); letter-spacing: -.015em; }
+.np-body { font-size: 14.5px; line-height: 1.65; color: var(--text); overflow-wrap: anywhere; }
+.np-body p, .np-body ul, .np-body ol, .np-body blockquote, .np-body table, .np-body pre { margin: 0 0 12px; }
+.np-body ul, .np-body ol { padding-left: 20px; }
+.np-body li { margin: 3px 0; }
+.np-body li > ul, .np-body li > ol { margin: 4px 0 6px; }
+.np-body h4, .np-body h5, .np-body h6 { margin: 18px 0 8px; font: 700 11px/1.3 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.np-body h4:first-child { margin-top: 0; }
+.np-body blockquote { padding: 4px 0 4px 14px; border-left: 2px solid var(--accent); color: var(--text-strong); font-style: italic; }
+.np-body .callout-title { font-style: normal; font-weight: 700; margin-bottom: 4px; }
+.np-body code { font-size: 12.5px; background: var(--surface); padding: 1px 5px; border-radius: 4px; }
+.np-body pre { overflow-x: auto; background: var(--surface); padding: 10px; border-radius: 6px; }
+.np-body table { border-collapse: collapse; font-size: 13px; display: block; overflow-x: auto; }
+.np-body th, .np-body td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; }
+.np-body mark { background: color-mix(in srgb, var(--accent) 28%, transparent); color: inherit; padding: 0 2px; border-radius: 2px; }
+.np-body hr { border: 0; border-top: 1px solid var(--line); margin: 16px 0; }
+.np-body a.wl, .np-links a.wl { color: var(--heading); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent) 60%, transparent); text-underline-offset: 3px; cursor: pointer; }
+.np-body a.wl:hover, .np-links a.wl:hover { color: var(--accent); }
+.np-body .wl-off { color: var(--text-strong); }
+.np-loading { color: var(--muted); font-style: italic; }
+.np-links h3 { margin: 22px 0 8px; padding-top: 14px; border-top: 1px solid var(--line); font: 700 11px/1.3 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.np-links ul { list-style: none; margin: 0; padding: 0; }
+.np-links li { margin: 0; }
+.np-links a.wl { display: flex; gap: 9px; align-items: baseline; padding: 5px 0; font-size: 13.5px; line-height: 1.4; text-decoration: none; }
+.np-links a.wl i { flex: none; width: 7px; height: 7px; border-radius: 50%; transform: translateY(-1px); }
+@media (max-width: 700px) {
+  .note-panel { top: auto; left: 0; width: auto; height: 62%; border-radius: 14px 14px 0 0; transform: translateY(104%); box-shadow: 0 -1px 0 var(--line), 0 -18px 40px -24px rgba(0,0,0,.6); }
+  .np-scroll { padding: 18px 18px 24px; }
+}

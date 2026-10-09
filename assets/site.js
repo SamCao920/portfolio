@@ -686,12 +686,11 @@
   function vaultPage() {
     return `
       <h1 class="page-title">The Vault</h1>
-      <p class="page-sub">A live map of my reading notes. Every idea I have written down, and the links between them: the same graph I read and write in. Hover a node to trace what connects to what, drag one to disturb its neighbourhood, scroll to zoom, double-click to reset.</p>
+      <p class="page-sub">A live map of my reading notes. Every idea I have written down, and the links between them: the same graph I read and write in. Hover a node to trace what connects to what, click one to read the note, drag one to disturb its neighbourhood, scroll to zoom, double-click to reset.</p>
       <div id="graph-wrap">
         <canvas id="graph" aria-label="Interactive map of my notes"></canvas>
         <div class="graph-tip" id="graph-tip" aria-hidden="true"></div>
         <div class="graph-legend" id="graph-legend"></div>
-        ${new URLSearchParams(location.search).get("note") ? `<div class="graph-focus"><span>Showing</span><b>${esc(new URLSearchParams(location.search).get("note"))}</b><a href="vault.html">Show everything</a></div>` : ""}
       </div>
       ${vaultStamp()}`;
   }

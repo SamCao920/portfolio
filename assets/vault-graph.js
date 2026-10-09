@@ -368,12 +368,14 @@
             var running = false, visible = true, drifting = true;
             function needsFrame() {
                 return alpha > ALPHA_MIN
+                    || cam !== null
                     || Math.abs(dimTarget - dimT) > 0.004
                     || pendingIdx >= 0
                     || (drifting && visible && !document.hidden);
             }
             function frame(ts) {
                 T = ts || 0;
+                if (cam) stepCam();
                 if (alpha > ALPHA_MIN) { alpha *= (1 - DECAY); tick(); }
                 else if (alpha !== 0) { alpha = 0; active.fill(0); anyActive = false; }
 
@@ -424,7 +426,10 @@
                 tipEl.style.top  = Math.max(8, Math.min(H - th - 8, py + 16)) + 'px';
             }
 
-            function setHover(i, px, py) {
+            /* `hover` is the node drawn lit: the one under the pointer, else the
+               selected (focused) note, which stays lit until something else is picked. */
+            var focus = -1, pointerOn = -1;
+            function light(i) {
                 if (i !== hover) {
                     hover = i;
                     isNeighbour.fill(0);
@@ -432,10 +437,14 @@
                         isNeighbour[i] = 1;
                         for (var k = adjStart[i]; k < adjStart[i + 1]; k++) isNeighbour[adj[k]] = 1;
                     }
-                    canvas.classList.toggle('on-node', i >= 0);
                 }
                 dimTarget = i >= 0 ? 1 : 0;
                 kick();
+            }
+            function setHover(i, px, py) {
+                pointerOn = i;
+                light(i >= 0 ? i : focus);
+                canvas.classList.toggle('on-node', i >= 0);
                 if (i >= 0) {
                     var n = adjStart[i + 1] - adjStart[i];
                     tipEl.innerHTML = TITLE[i].replace(/&/g, '&amp;').replace(/</g, '&lt;') +
@@ -447,14 +456,14 @@
                 }
             }
 
-            var pointerDown = false, moved = false, lastX = 0, lastY = 0;
+            var pointerDown = false, moved = false, lastX = 0, lastY = 0, downX = 0, downY = 0;
             var pendingIdx = -1, pendingSince = 0, DWELL = 110;
             var lastPX = 0, lastPY = 0;
 
             canvas.addEventListener('pointerdown', function (ev) {
                 canvas.setPointerCapture(ev.pointerId);
                 pointerDown = true; moved = false;
-                lastX = ev.offsetX; lastY = ev.offsetY;
+                lastX = ev.offsetX; lastY = ev.offsetY; downX = lastX; downY = lastY;
                 var i = pick(lastX, lastY, 4);
                 if (i >= 0) { dragIdx = i; activateAround(i); heat(0.05); }
                 canvas.classList.add('dragging');
@@ -463,6 +472,7 @@
             canvas.addEventListener('pointermove', function (ev) {
                 var px = ev.offsetX, py = ev.offsetY;
                 if (pointerDown) {
+                    if (!moved && Math.abs(px - downX) + Math.abs(py - downY) < 5) return;   /* a click, not a drag */
                     moved = true;
                     var dx = px - lastX, dy = py - lastY;
                     lastX = px; lastY = py;
@@ -471,7 +481,7 @@
                         VX[dragIdx] = VY[dragIdx] = 0;
                         heat(0.05);
                     } else {
-                        tx += dx; ty += dy;
+                        tx += dx; ty += dy; userMoved = true; cam = null;
                         kick();
                     }
                     return;
@@ -485,16 +495,16 @@
                 var now = (window.performance && performance.now) ? performance.now() : Date.now();
                 var over = pick(px, py, 0);
 
-                if (over < 0 && hover >= 0) {
+                if (over < 0 && pointerOn >= 0) {
                     /* still inside the looser keep-radius of the current node? */
-                    var hx = sx(hover) - px, hy = sy(hover) - py;
-                    var keep = Math.max(7, R[hover] * scale * 2.2 + 4) + 10;
-                    if (hx * hx + hy * hy < keep * keep) over = hover;
+                    var hx = sx(pointerOn) - px, hy = sy(pointerOn) - py;
+                    var keep = Math.max(7, R[pointerOn] * scale * 2.2 + 4) + 10;
+                    if (hx * hx + hy * hy < keep * keep) over = pointerOn;
                 }
 
-                if (over === hover) {
+                if (over === pointerOn) {
                     pendingIdx = -1;
-                    if (hover >= 0) moveTip(px, py);
+                    if (pointerOn >= 0) moveTip(px, py);
                 } else if (over < 0) {
                     pendingIdx = -1;
                     setHover(-1, px, py);
@@ -508,7 +518,12 @@
                 pointerDown = false; dragIdx = -1;
                 canvas.classList.remove('dragging');
             }
-            canvas.addEventListener('pointerup', endPointer);
+            canvas.addEventListener('pointerup', function () {
+                var clicked = pointerDown && !moved ? dragIdx : -2;
+                endPointer();
+                if (clicked >= 0) select(clicked, true);
+                else if (clicked === -1 && focus >= 0) select(-1, true);
+            });
             canvas.addEventListener('pointercancel', endPointer);
             canvas.addEventListener('pointerleave', function () { endPointer(); setHover(-1, 0, 0); });
 
@@ -519,12 +534,12 @@
                 var ns = Math.max(0.10, Math.min(4, scale * f));
                 tx = px - (px - tx) * (ns / scale);
                 ty = py - (py - ty) * (ns / scale);
-                scale = ns;
+                scale = ns; userMoved = true; cam = null;
                 if (!running) draw();
                 kick();
             }, { passive: false });
 
-            canvas.addEventListener('dblclick', function () { fit(); kick(); });
+            canvas.addEventListener('dblclick', function () { cam = null; fit(); userMoved = false; if (focus >= 0) flyTo(focus, false); kick(); });
 
             /* ── Legend ── */
             function legend() {
@@ -541,8 +556,14 @@
             legend();
 
             /* ── Wire up ── */
-            var ro = window.ResizeObserver ? new ResizeObserver(fit) : null;
-            if (ro) ro.observe(wrap); else window.addEventListener('resize', fit);
+            function onResize() {
+                var r = wrap.getBoundingClientRect();
+                if (Math.abs(r.width - W) < 1 && Math.abs(r.height - H) < 1) return;   /* first callback: nothing changed */
+                var c = cam; cam = null; fit();
+                if (focus >= 0 && !userMoved) flyTo(focus, !!c);
+            }
+            var ro = window.ResizeObserver ? new ResizeObserver(onResize) : null;
+            if (ro) ro.observe(wrap); else window.addEventListener('resize', onResize);
             if (window.matchMedia) {
                 var mq = window.matchMedia('(prefers-color-scheme: dark)');
                 if (mq.addEventListener) mq.addEventListener('change', function () { refreshPalette(); draw(); });
@@ -551,18 +572,125 @@
             fit();
             kick();
 
-            /* ?note=Title opens the graph zoomed in on that note, with its links lit */
-            var want = new URLSearchParams(location.search).get('note');
-            if (want) {
-                var fi = TITLE.indexOf(want);
-                if (fi < 0) { var lw = want.toLowerCase(); for (var q = 0; q < N; q++) if (TITLE[q].toLowerCase() === lw) { fi = q; break; } }
-                if (fi >= 0) {
-                    scale = Math.min(Math.max(scale * 2.6, 0.6), 3);
-                    tx = W / 2 - X[fi] * scale; ty = H / 2 - Y[fi] * scale;
-                    setHover(fi, W / 2, H / 2 - 18);
-                    wrap.scrollIntoView({ block: 'center' });
-                }
+            /* ── Camera: fly to a note ── */
+            var cam = null, userMoved = false, FOCUS_SCALE = 1.15;
+            function panelSpace() {
+                if (!panel || !panel.classList.contains('open')) return { w: W, h: H };
+                return W > 700 ? { w: W - panel.offsetWidth, h: H } : { w: W, h: H - panel.offsetHeight };
             }
+            function flyTo(i, animate) {
+                var sp = panelSpace();
+                var s1 = Math.max(scale, FOCUS_SCALE);
+                var t1x = sp.w / 2 - (X[i] + dx_(i)) * s1, t1y = sp.h / 2 - (Y[i] + dy_(i)) * s1;
+                if (!animate || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+                    scale = s1; tx = t1x; ty = t1y; cam = null; draw(); return;
+                }
+                cam = { s0: scale, x0: tx, y0: ty, s1: s1, x1: t1x, y1: t1y, t0: performance.now(), dur: 750 };
+                kick();
+            }
+            function stepCam() {
+                var k = Math.min(1, (performance.now() - cam.t0) / cam.dur);
+                var e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+                /* interpolate in screen space around the target so the note glides to the centre */
+                scale = cam.s0 + (cam.s1 - cam.s0) * e;
+                tx = cam.x0 + (cam.x1 - cam.x0) * e;
+                ty = cam.y0 + (cam.y1 - cam.y0) * e;
+                if (k >= 1) cam = null;
+            }
+
+            /* ── Reading panel ── */
+            var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+            var norm = function (t) { return String(t).replace(/[’‘]/g, "'").toLowerCase().trim(); };
+            var byTitle = {};
+            for (var ti = 0; ti < N; ti++) byTitle[norm(TITLE[ti])] = ti;
+            var panel = document.createElement('aside');
+            panel.className = 'note-panel';
+            panel.setAttribute('aria-label', 'Note');
+            panel.innerHTML = '<button type="button" class="np-close" aria-label="Close note">×</button><div class="np-scroll"><p class="np-kicker"></p><h2 class="np-title"></h2><div class="np-body"></div><div class="np-links"></div></div>';
+            wrap.appendChild(panel);
+            var banner = wrap.querySelector('.graph-focus');
+            if (!banner) { banner = document.createElement('div'); banner.className = 'graph-focus'; banner.hidden = true; wrap.appendChild(banner); }
+
+            var notesData = null, notesLoading = null;
+            function loadNotes() {
+                if (notesData) return Promise.resolve(notesData);
+                if (!notesLoading) notesLoading = new Promise(function (res) {
+                    var sc = document.createElement('script');
+                    sc.src = 'data/vault-notes.js?v=' + encodeURIComponent(raw.built || '');
+                    sc.onload = function () { notesData = window.VAULT_NOTES || {}; res(notesData); };
+                    sc.onerror = function () { notesData = {}; res(notesData); };
+                    document.head.appendChild(sc);
+                });
+                return notesLoading;
+            }
+            var noteHref = function (t) { return 'vault.html?note=' + encodeURIComponent(t); };
+            function fillPanel(i) {
+                var n = adjStart[i + 1] - adjStart[i];
+                panel.querySelector('.np-kicker').textContent = folderLabel(FOLD[i]) + ' · ' + n + (n === 1 ? ' link' : ' links');
+                panel.querySelector('.np-title').textContent = TITLE[i];
+                var body = panel.querySelector('.np-body');
+                body.innerHTML = '<p class="np-loading">Opening note…</p>';
+                var nb = [];
+                for (var k = adjStart[i]; k < adjStart[i + 1]; k++) nb.push(adj[k]);
+                nb.sort(function (a, b) { return DEG[b] - DEG[a]; });
+                panel.querySelector('.np-links').innerHTML = nb.length ? '<h3>Linked notes</h3><ul>' + nb.map(function (j) {
+                    return '<li><a class="wl" data-note="' + esc(TITLE[j]) + '" href="' + noteHref(TITLE[j]) + '"><i style="background:' + folderColor(FOLD[j]) + '"></i>' + esc(TITLE[j]) + '</a></li>';
+                }).join('') + '</ul>' : '';
+                panel.querySelector('.np-scroll').scrollTop = 0;
+                loadNotes().then(function (d) {
+                    if (focus !== i) return;
+                    var h = d[TITLE[i]];
+                    body.innerHTML = h || '<p class="np-loading">This note has no text yet.</p>';
+                    body.querySelectorAll('a.wl[data-note]').forEach(function (a) { a.href = noteHref(a.dataset.note); });
+                });
+            }
+            function setBanner(i) {
+                if (i < 0) { banner.hidden = true; return; }
+                banner.hidden = false;
+                banner.innerHTML = '<span>Showing</span><b>' + esc(TITLE[i]) + '</b><a href="vault.html" data-all>Show everything</a>';
+            }
+            function select(i, push) {
+                focus = i;
+                if (push) {
+                    var url = i >= 0 ? noteHref(TITLE[i]) : 'vault.html';
+                    if (location.pathname.split('/').pop() + location.search !== url) history.pushState({ note: i >= 0 ? TITLE[i] : null }, '', url);
+                }
+                setBanner(i);
+                if (i < 0) {
+                    panel.classList.remove('open');
+                    light(pointerOn);
+                    return;
+                }
+                panel.classList.add('open');
+                fillPanel(i);
+                light(i);
+                userMoved = false;
+                flyTo(i, true);
+            }
+            function fromUrl(push) {
+                var want = new URLSearchParams(location.search).get('note');
+                var i = want ? byTitle[norm(want)] : undefined;
+                select(i === undefined ? -1 : i, push);
+                return i;
+            }
+            panel.addEventListener('click', function (ev) {
+                if (ev.target.closest('.np-close')) { select(-1, true); return; }
+                var a = ev.target.closest('a.wl[data-note]');
+                if (!a || ev.metaKey || ev.ctrlKey || ev.shiftKey) return;
+                var j = byTitle[norm(a.dataset.note)];
+                if (j === undefined) return;
+                ev.preventDefault();
+                select(j, true);
+            });
+            banner.addEventListener('click', function (ev) {
+                if (!ev.target.closest('[data-all]')) return;
+                ev.preventDefault(); select(-1, true); cam = null; fit(); userMoved = false;
+            });
+            document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && focus >= 0 && !document.querySelector('dialog[open]')) select(-1, true); });
+            window.addEventListener('popstate', function () { fromUrl(false); });
+
+            /* ?note=Title opens the graph flown in on that note, lit, with the note open */
+            if (fromUrl(false) !== undefined) wrap.scrollIntoView({ block: 'center' });
         })();
 
 
