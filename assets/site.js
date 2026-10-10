@@ -31,6 +31,8 @@
   const FILMS = FILMS_ALL.filter(shown);
   const WATCH = FD.watchlist.map((f, i) => ({ ...f, kind: "watch", i }));
   const ART = ((window.ART || {}).items || []).map((a, i) => ({ ...a, kind: "art", i }));
+  /* listening aggregates from tools/import-music.py */
+  const MU = window.MUSIC || null;
   const STUDIO = ((S.studio || {}).items || []).map((w, i) => ({ ...w, t: w.title, artist: S.profile.name, movements: [], kind: "studio", i }));
   const POOL = { book: BOOKS, film: FILMS_ALL, watch: WATCH, art: ART, studio: STUDIO };
   const byDateDesc = k => (a, b) => String(b[k] || "").localeCompare(String(a[k] || ""));
@@ -52,6 +54,7 @@
     ["books.html", "Books", "books"],
     ["films.html", "Films", "films"],
     ["art.html", "Art", "art"],
+    ["music.html", "Music", "music"],
     ["vault.html", "Vault", "vault"],
     ["about.html", "About", "about"],
     ["socials.html", "Socials", "socials"]
@@ -61,11 +64,11 @@
   /* grouped menu items: each group is one entry in the top bar with a dropdown, and a switcher on its pages */
   const GROUPS = [
     { label: "Work", after: "home", items: [["writings.html", "Writing", "writings"], ["studio.html", "Studio", "studio"]] },
-    { label: "Taste", after: "studio", items: [["books.html", "Books", "books"], ["films.html", "Films", "films"], ["art.html", "Art", "art"]] }
+    { label: "Taste", after: "studio", items: [["books.html", "Books", "books"], ["films.html", "Films", "films"], ["art.html", "Art", "art"], ["music.html", "Music", "music"]] }
   ];
   const TASTE = GROUPS[1].items;
   const groupCount = k => ({ writings: S.writings.filter(w => w.type !== "appearance").length, studio: STUDIO.length,
-    books: BOOKS.filter(b => b.shelf === "read").length, films: FILMS.length, art: ART.length })[k];
+    books: BOOKS.filter(b => b.shelf === "read").length, films: FILMS.length, art: ART.length, music: "" })[k];
   const tasteCount = groupCount;
   const groupOf = key => GROUPS.find(g => g.items.some(it => it[2] === key));
   function header() {
@@ -658,6 +661,97 @@
     return html;
   }
 
+
+  /* ---------- music: aggregates of my Spotify history (data/music.js) ---------- */
+  const spotifyTrack = id => `https://open.spotify.com/track/${id}`;
+  const coverMemo = id => store.get("cv:m:" + id);
+  function albumTile(a, opts = {}) {
+    const src = a.cover || (coverMemo(a.id) && coverMemo(a.id) !== "none" ? coverMemo(a.id) : null);
+    const label = `${a.t} by ${a.a}`;
+    return `<li class="art-item">${opts.rank ? `<span class="rank">${opts.rank}</span>` : ""}<a class="art-tile album-tile" href="${spotifyTrack(a.id)}" target="_blank" rel="noopener" data-sp="${a.id}"${src ? "" : " data-nocover"} title="${esc(label)}" aria-label="${esc(label)}, on Spotify">${coverFace(a.t, a.a)}${src ? `<img alt="" loading="lazy" src="${esc(src)}" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}</a>
+      <div class="art-cap"><b>${esc(a.t)}</b><span>${esc(a.a)}${opts.caption ? ` · ${esc(opts.caption)}` : ""}</span></div></li>`;
+  }
+  /* Album art the importer did not cache: ask Spotify's public oEmbed once per album, remember the answer. */
+  function fillAlbumCovers(root) {
+    const els = $$(".album-tile[data-nocover]", root).filter(el => coverMemo(el.dataset.sp) !== "none");
+    let next = 0;
+    const work = async () => {
+      while (next < els.length) {
+        const el = els[next++], id = el.dataset.sp;
+        let url = null;
+        try {
+          const r = await fetch("https://open.spotify.com/oembed?url=" + encodeURIComponent(spotifyTrack(id)));
+          if (r.ok) url = (await r.json()).thumbnail_url || null;
+          store.set("cv:m:" + id, url || "none");
+        } catch (e) { return; }  /* blocked or offline: keep the typeset cover */
+        el.removeAttribute("data-nocover");
+        if (!url) continue;
+        $$(`.album-tile[data-sp="${id}"]`).forEach(t => {
+          if (t.querySelector("img")) return;
+          const img = new Image(); img.alt = ""; img.className = "fade"; img.referrerPolicy = "no-referrer";
+          img.onload = () => img.classList.add("in"); img.onerror = () => img.remove();
+          img.src = url; t.appendChild(img);
+        });
+      }
+    };
+    for (let i = 0; i < 4; i++) work();
+  }
+
+  const SIDE_LABEL = { classical: "Classical", other: "Non-classical" };
+  /* Top five: my own picks from admin (content.js, music), else my most played artists. */
+  function topFive(side) {
+    const picked = (((S.music || {})[side]) || []).filter(Boolean);
+    const names = (picked.length ? picked : MU.periods[side].all.artists).slice(0, 5);
+    return `<div class="top5"><h3>${SIDE_LABEL[side]}</h3><ol>${names.map((a, n) => `<li><i>${n + 1}</i><b>${esc(a)}</b></li>`).join("")}</ol></div>`;
+  }
+  function musicPage() {
+    if (!MU) return `<h1 class="page-title">Music</h1><p class="page-sub">No listening data yet. Run tools/import-music.py.</p>`;
+    const A = MU.albums, T = MU.tracks;
+    const html = `
+      <div class="page-head"><div><h1 class="page-title">Music</h1><p class="page-sub">The music I love, split into classical and everything else. Click an album or track to hear it.</p></div></div>
+      <section class="section">${sectionHead("My top five")}<div class="top5s">${topFive("classical")}${topFive("other")}</div></section>
+      <div class="cols">
+        <div>
+          <nav class="seg side-seg" aria-label="Classical or not">${["classical", "other"].map(k => `<button type="button" data-side="${k}" aria-pressed="false">${SIDE_LABEL[k]}</button>`).join("")}</nav>
+          <section class="section" id="m-top">
+            <div class="filterbar"><div class="group" role="group" aria-label="Period" id="m-periods"></div></div>
+            <nav class="tabs m-tabs" role="tablist" aria-label="Favorites">${[["albums", "Albums"], ["artists", "Artists"], ["tracks", "Tracks"]].map(([k, l], n) => `<button type="button" role="tab" class="tab" data-mtab="${k}" aria-selected="${n === 0}">${l}</button>`).join("")}</nav>
+            <div id="m-body"></div>
+          </section>
+        </div>
+        <aside><section class="side-block" id="m-recent"></section></aside>
+      </div>`;
+    setTimeout(() => {
+      let side = store.get("music-side") === "other" ? "other" : "classical", period = "all", tab = "albums", shown = 30;
+      const drawSide = () => {
+        $$("[data-side]").forEach(b => b.setAttribute("aria-pressed", b.dataset.side === side));
+        const rec = MU.recent.filter(r => r.side === side).slice(0, 12);
+        $("#m-recent").innerHTML = rec.length ? `${sectionHead("Recently played")}<ul class="recent-albums">${rec.map(r => { const a = A[r.al]; return `<li><span class="ra-d">${fmtDate(r.date).replace(/, \d{4}$/, "")}</span><a href="${spotifyTrack(a.id)}" target="_blank" rel="noopener"><b>${esc(a.t)}</b><span>${esc(a.a)}</span></a></li>`; }).join("")}</ul>` : "";
+        const keys = ["all", ...MU.years.map(String).filter(y => MU.periods[side][y])];
+        if (!keys.includes(period)) period = "all";
+        $("#m-periods").innerHTML = keys.map(k => `<button class="chip" type="button" data-period="${k}" aria-pressed="${k === period}">${k === "all" ? "All time" : k}</button>`).join("");
+        draw();
+      };
+      const draw = () => {
+        const P = MU.periods[side][period], body = $("#m-body");
+        $$("[data-period]").forEach(x => x.setAttribute("aria-pressed", x.dataset.period === period));
+        if (tab === "albums") {
+          body.innerHTML = `<ul class="art-grid five ranked-albums">${P.albums.slice(0, shown).map((i, n) => albumTile(A[i], { rank: n + 1 })).join("")}</ul>`
+            + (P.albums.length > shown ? `<div class="more-wrap"><button class="btn" type="button" id="m-more">Show ${P.albums.length - shown} more</button></div>` : "");
+          const more = $("#m-more"); if (more) more.onclick = () => { shown = P.albums.length; draw(); };
+        }
+        if (tab === "artists") body.innerHTML = `<ol class="rank-list">${P.artists.map((a, n) => `<li><i>${n + 1}</i><span>${esc(a)}</span></li>`).join("")}</ol>`;
+        if (tab === "tracks") body.innerHTML = `<ol class="rank-list tracks">${P.tracks.map((i, n) => { const t = T[i]; return `<li><i>${n + 1}</i><a href="${spotifyTrack(t.id)}" target="_blank" rel="noopener"><b>${esc(t.t)}</b><span>${esc(t.a)}</span></a></li>`; }).join("")}</ol>`;
+        fillAlbumCovers(body);
+      };
+      $("#m-periods").addEventListener("click", e => { const b = e.target.closest("[data-period]"); if (!b) return; period = b.dataset.period; shown = 30; draw(); });
+      $$("[data-side]").forEach(b => b.addEventListener("click", () => { side = b.dataset.side; store.set("music-side", side); shown = 30; drawSide(); }));
+      $$("[data-mtab]").forEach(b => b.addEventListener("click", () => { tab = b.dataset.mtab; $$("[data-mtab]").forEach(x => x.setAttribute("aria-selected", x === b)); draw(); }));
+      drawSide();
+    });
+    return html;
+  }
+
   /* "Last synced" line: build time written by tools/build-graph.py, else the page's own modified date */
   function vaultStamp() {
     const el = document.getElementById("vault-data");
@@ -887,6 +981,8 @@
       ...BOOKS.filter(b => b.shelf !== "to-read").map(b => ({ type: "Book", t: b.t, sub: b.a, it: b, href: "books.html" })),
       ...FILMS.map(f => ({ type: "Film", t: f.t, sub: String(f.y || ""), it: f, href: "films.html" })),
       ...ART.map(a => ({ type: "Art", t: a.t, sub: a.artist, it: a, href: "art.html" })),
+      ...(MU ? [...MU.periods.classical.all.artists, ...MU.periods.other.all.artists].map(a => ({ type: "Music", t: a, sub: MU.artistSide[a] === "classical" ? "Classical" : "Artist", href: "music.html" })) : []),
+      ...(MU ? MU.albums.map(a => ({ type: "Album", t: a.t, sub: a.a, href: "music.html" })) : []),
       ...STUDIO.map(w => ({ type: "Studio", t: w.t, sub: `${w.year} · my work`, it: w, href: "studio.html" }))
     ];
     const pal = document.createElement("dialog");
@@ -1029,7 +1125,7 @@
     document.body.appendChild(sc);
   }
 
-  const PAGES = { notfound: notFoundPage, home, writings: writingsPage, books: booksPage, films: filmsPage, art: artPage, studio: studioPage, vault: vaultPage, about: aboutPage, socials: socialsPage };
+  const PAGES = { notfound: notFoundPage, home, writings: writingsPage, books: booksPage, films: filmsPage, art: artPage, music: musicPage, studio: studioPage, vault: vaultPage, about: aboutPage, socials: socialsPage };
   document.body.insertAdjacentHTML("afterbegin", header());
   const app = document.getElementById("app");
   app.innerHTML = `<div class="wrap">${groupOf(page) ? tasteNav() : ""}${(PAGES[page] || home)()}</div>`;

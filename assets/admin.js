@@ -13,7 +13,7 @@
   let dir = null, dirty = false, section = "theme";
   let loadedStamp = 0, staleArmed = false;
   /* top-level keys this editor edits; everything else in content.js (studio, hiddenFilms, …) is kept from disk on save */
-  const MANAGED = ["theme", "analytics", "studio", "profile", "about", "interests", "facts", "record", "writings", "socials", "homeBooks", "showDidNotFinish", "posterOverrides"];
+  const MANAGED = ["theme", "analytics", "studio", "profile", "about", "interests", "facts", "record", "writings", "socials", "homeBooks", "showDidNotFinish", "posterOverrides", "music"];
   const readDisk = async () => {
     const f = await (await (await dir.getDirectoryHandle("data")).getFileHandle("content.js")).getFile();
     const box = {}; new Function("window", await f.text())(box);
@@ -317,6 +317,27 @@ window.SITE = ${JSON.stringify(data, null, 2)};
         }).filter(s => s.name);
       }
     },
+    music: {
+      label: "Music",
+      help: "Your top five artists, shown at the top of the Music page. Type a name (suggestions come from your listening history) and use the arrows to reorder. Leave a list empty to show your most played artists instead.",
+      render: () => {
+        const MS = (window.MUSIC || {}).artistSide || {};
+        const opts = side => Object.entries(MS).filter(([, v]) => v === side).map(([a]) => `<option value="${esc(a)}"></option>`).join("");
+        const list = (side, title) => {
+          const names = ((data.music || {})[side] || []).slice(0, 5);
+          while (names.length < 5) names.push("");
+          return `<div class="section-head"${side === "other" ? ' style="margin-top:28px"' : ""}><h2>${title}</h2></div>
+            <div class="rows top5-rows" data-rows="m-${side}">${names.map((n, i) => `<div class="row rank-row"><span class="rank-n" aria-hidden="true"></span><input value="${esc(n)}" list="dl-${side}" placeholder="Artist" aria-label="${title} artist ${i + 1}">
+              <button class="icon-btn" type="button" data-rowmove="-1" aria-label="Move up">↑</button><button class="icon-btn" type="button" data-rowmove="1" aria-label="Move down">↓</button></div>`).join("")}</div>
+            <datalist id="dl-${side}">${opts(side)}</datalist>`;
+        };
+        return list("classical", "Classical") + list("other", "Non-classical");
+      },
+      collect: el => {
+        const read = side => $$(`[data-rows=m-${side}] input`, el).map(i => i.value.trim()).filter(Boolean);
+        data.music = { classical: read("classical"), other: read("other") };
+      }
+    },
     settings: {
       label: "Settings",
       help: "Home page books, the Did-not-finish shelf, and cover fixes.",
@@ -584,7 +605,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
   });
 
   Object.assign(SECTIONS, LOG_SECTIONS);
-  const ORDER = ["theme", "profile", "now", "writings", "studio", "reading", "watching", "about", "socials", "settings"];
+  const ORDER = ["theme", "profile", "now", "writings", "studio", "reading", "watching", "music", "about", "socials", "settings"];
 
   const KINDS = [["Drawing", "Drawing"], ["Painting", "Painting"], ["Photography", "Photography"]];
   function scard(w, i) {

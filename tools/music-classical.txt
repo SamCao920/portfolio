@@ -1,0 +1,126 @@
+# Artists counted as classical on the Music page, one per line (as Spotify spells them).
+# Artists not listed here are classical only if most of their plays have titles like
+# "Symphony No. 5", "Op. 64" or "BWV 1001". Start a line with ! to keep an artist out of
+# classical even when their titles look classical. Edit and re-run tools/import-music.py.
+Wolfgang Amadeus Mozart
+Johann Sebastian Bach
+Pyotr Ilyich Tchaikovsky
+Gustav Mahler
+Ludwig van Beethoven
+Johann Strauss II
+Frédéric Chopin
+Fritz Kreisler
+Johannes Brahms
+Georg Philipp Telemann
+Francis Poulenc
+Franz Schubert
+Joseph Haydn
+Felix Mendelssohn
+Robert Schumann
+Franz Liszt
+Jean Sibelius
+Camille Saint-Saëns
+Sergei Rachmaninoff
+George Frideric Handel
+Anton Bruckner
+Antonín Dvořák
+Maurice Ravel
+Claude Debussy
+Tomaso Antonio Vitali
+Richard Strauss
+Edvard Grieg
+Mily Balakirev
+Gustav Holst
+Arcangelo Corelli
+Alexander Borodin
+Richard Wagner
+Charles-Auguste de Bériot
+Edward Elgar
+Antonio Vivaldi
+Erich Wolfgang Korngold
+Erik Satie
+Heinrich Wilhelm Ernst
+Max Bruch
+Henryk Wieniawski
+Giuseppe Tartini
+Gerhard Trede
+Arnold Schoenberg
+Dmitri Shostakovich
+Ralph Vaughan Williams
+Niccolò Paganini
+Alexander Scriabin
+Émile Waldteufel
+Giuseppe Valentini
+César Franck
+Leopold Stokowski
+Bedřich Smetana
+Hector Berlioz
+Sergei Prokofiev
+Jascha Heifetz
+Sergei Bortkiewicz
+Georges Bizet
+Eugène Ysaÿe
+Aram Khachaturian
+Carl Maria von Weber
+Ottorino Respighi
+Louis Spohr
+Giovanni Bottesini
+Gabriel Fauré
+Christoph Willibald Gluck
+Mario Castelnuovo-Tedesco
+Carl Philipp Emanuel Bach
+Ensemble Freesia
+Amy Beach
+Anton Webern
+Heinrich Ignaz Franz von Biber
+Modest Mussorgsky
+Janos Sebestyen
+Domenico Scarlatti
+Giacomo Puccini
+Seattle Symphony Orchestra
+Henri Vieuxtemps
+Slovak Philharmonic
+Vittorio Monti
+Pablo de Sarasate
+Jules Massenet
+Gioachino Rossini
+Giuseppe Verdi
+Igor Stravinsky
+Béla Bartók
+Johann Pachelbel
+Henry Purcell
+Claudio Monteverdi
+Josef Suk
+Leoš Janáček
+Nikolai Rimsky-Korsakov
+Mikhail Glinka
+Alexander Glazunov
+Ernest Chausson
+Édouard Lalo
+Samuel Barber
+Aaron Copland
+Leonard Bernstein
+George Gershwin
+Johann Strauss I
+Josef Strauss
+Franz von Suppé
+Jacques Offenbach
+Carl Nielsen
+Ferruccio Busoni
+Isaac Albéniz
+Manuel de Falla
+Enrique Granados
+Joaquín Rodrigo
+Die 12 Cellisten der Berliner Philharmoniker
+John Philip Sousa
+Johann Bach
+
+# never classical (jazz and rock whose titles or band names look classical)
+!Queen
+!Miles Davis Quintet
+!Miles Davis And His Quintet
+!Chet Baker Quartet
+!All That Jazz
+!Sonny Rollins
+!The Classical Jazz Quartet
+!Charl du Plessis Trio

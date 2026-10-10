@@ -10,7 +10,7 @@
 <link rel="icon" href="assets/website/my-notion-face-transparent.ico" type="image/x-icon">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="assets/style.css?v=982b9f8f">
+<link rel="stylesheet" href="assets/style.css?v=bde7a0af">
 <style>
   /* Editor layout: sticky toolbar, section list on the left, form on the right. */
   body { min-height: 100vh; }
@@ -65,6 +65,10 @@
   .rows .row input { width: 100%; min-width: 0; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--bg-glow); color: var(--text-strong); font: 14px var(--body); padding: 7px 9px; }
   .rows .row.three { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr) minmax(0, 2fr) minmax(0, 1fr) auto auto auto; }
   @media (max-width: 600px) { .rows .row, .rows .row.three { grid-template-columns: minmax(0, 1fr) auto auto auto; } .rows .row input:not(:first-child) { grid-column: 1 / 2; } }
+  .top5-rows { counter-reset: rk; max-width: 520px; }
+  .rows .row.rank-row { grid-template-columns: 28px minmax(0, 1fr) auto auto; counter-increment: rk; }
+  .rank-n::before { content: counter(rk); font: 700 16px/1 var(--body); color: var(--accent); }
+  @media (max-width: 600px) { .rows .row.rank-row { grid-template-columns: 28px minmax(0, 1fr) auto auto; } .rows .row.rank-row input { grid-column: auto; } }
   .confirm { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; color: var(--accent); }
   .add { margin: 6px 0 22px; }
   .ed-tools { margin-top: 30px; padding: 16px; border-radius: 8px; background: var(--bg-raised); border: 1px dashed var(--line-strong); font-size: 13px; }
@@ -136,6 +140,7 @@
 <script src="data/content.js?v=21d6554a"></script>
 <script src="data/books.js?v=c1886f1f"></script>
 <script src="data/films.js?v=37eedd60"></script>
-<script src="assets/admin.js?v=3c082c1e"></script>
+<script src="data/music.js?v=8e55ff1d"></script>
+<script src="assets/admin.js?v=d6d949bc"></script>
 </body>
 </html>
