@@ -238,7 +238,8 @@ window.SITE = {
       "end": "2026-10-11",
       "place": "Berkeley",
       "claim": "A private gathering of around fifty students from across the country on how science, technology, and institutions raise living standards, hosted by Abundance Corps with the Roots of Progress Institute and Emergent Ventures.",
-      "featured": false
+      "featured": false,
+      "body": "Chosen to present a lightning talk on how the Abundance movement might be able deal with the fertility crisis."
     },
     {
       "title": "Madrid Annual Conference on Austrian Economics",
