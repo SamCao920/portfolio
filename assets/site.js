@@ -31,11 +31,14 @@
   const FILMS = FILMS_ALL.filter(shown);
   const WATCH = FD.watchlist.map((f, i) => ({ ...f, kind: "watch", i }));
   const ART = ((window.ART || {}).items || []).map((a, i) => ({ ...a, kind: "art", i }));
-  /* my music log: albums, diary, lists and to-listen queue (data/listening.js, written by admin) */
+  /* my music log (data/listening.js, written by admin). Each entry is a piece of music at whatever
+     size I rate it: an album, a song, or a classical work (rated as a piece; who played it goes on each diary entry). */
   const LD = window.LISTENING || {};
   ["items", "diary", "lists", "queue", "favorites"].forEach(k => { LD[k] = LD[k] || []; });
   const ALBUMS = LD.items.map((m, i) => ({ ...m, kind: "album", i, notes: [] }));
   const QUEUE = LD.queue.map((m, i) => ({ ...m, kind: "queue", i, notes: [] }));
+  const FORMS = { album: "Album", song: "Song", work: "Work" };
+  const formOf = it => FORMS[it.form] ? it.form : "album";
   const albumDiary = LD.diary.map(d => ({ ...d, rewatch: d.again, it: ALBUMS[d.m] })).filter(d => d.it).sort((a, b) => String(b.date).localeCompare(String(a.date)));
   const byArtist = k => k === "album" || k === "queue" || k === "book";
   const STUDIO = ((S.studio || {}).items || []).map((w, i) => ({ ...w, t: w.title, artist: S.profile.name, movements: [], kind: "studio", i }));
@@ -173,6 +176,8 @@
       if (it.sp) {
         const r = await fetch("https://open.spotify.com/oembed?url=" + encodeURIComponent("https://open.spotify.com/" + it.sp));
         url = r.ok ? (await r.json()).thumbnail_url || null : null;
+      } else if ((it.kind === "album" || it.kind === "queue") && formOf(it) !== "album") {
+        url = null;   /* a work or song with no Spotify link: the typeset cover with the composer reads better than a guess */
       } else if (it.kind === "album" || it.kind === "queue") {
         const q = new URLSearchParams({ action: "query", generator: "search", gsrsearch: `${it.t} ${it.a} album`, gsrlimit: 1,
           prop: "pageimages", piprop: "thumbnail", pithumbsize: 342, pilicense: "any", format: "json", origin: "*" });
@@ -237,7 +242,7 @@
       const { y, m, d } = parse(e.date), key = `${y}-${m}`;
       const cal = key !== last ? `<span class="cal"><b>${MONTHS[m]}</b><span>${y}</span></span>` : "";
       last = key;
-      const sub = byArtist(e.it.kind) ? e.it.a : (e.it.y || "");
+      const sub = byArtist(e.it.kind) ? [e.it.a, e.perf].filter(Boolean).join(" · ") : (e.it.y || "");
       const again = e.it.kind === "album" ? "Relisten" : "Rewatch";
       return `<tr><td class="month">${cal}</td><td class="day">${d ? String(d).padStart(2, "0") : "–"}</td>
         <td class="book"><button type="button" class="linkish" data-kind="${e.it.kind}" data-i="${e.it.i}"><b>${esc(e.it.t)}</b></button><span>${esc(sub)}</span></td>
@@ -679,13 +684,12 @@
 
 
   /* ---------- music: aggregates of my Spotify history (data/music.js) ---------- */
-  const SIDE_LABEL = { classical: "Classical", other: "Non-classical" };
-  /* Top five artists: my own picks from admin (content.js, music). */
-  const topPicks = side => (((S.music || {})[side]) || []).filter(Boolean).slice(0, 5);
-  function topFive(side) {
-    const names = topPicks(side);
+  /* Top five composers and artists: my picks from admin (content.js, music.top). */
+  const topPicks = () => { const m = S.music || {}; return (m.top || [...(m.classical || []), ...(m.other || [])]).filter(Boolean).slice(0, 5); };
+  function topFive() {
+    const names = topPicks();
     if (!names.length) return "";
-    return `<div class="top5"><h3>${SIDE_LABEL[side]}</h3><ol>${names.map((a, n) => `<li><i>${n + 1}</i><b>${esc(a)}</b></li>`).join("")}</ol></div>`;
+    return `<div class="top5"><ol>${names.map((a, n) => `<li><i>${n + 1}</i><b>${esc(a)}</b></li>`).join("")}</ol></div>`;
   }
   function musicPage() {
     const sideOf = it => it.side === "classical" ? "classical" : "other";
@@ -693,42 +697,44 @@
     const favs = LD.favorites.map(i => ALBUMS[i]).filter(Boolean);
     const yearCount = new Set(albumDiary.filter(d => parse(d.date).y === thisYear).map(d => d.m)).size;
     const empty = msg => `<p class="note">${msg}</p>`;
-    const sideFilter = { id: "ag-side", label: "Type", options: [["all", "All"], ["classical", "Classical"], ["other", "Non-classical"]], test: (a, v) => sideOf(a) === v };
-    const defs = [
-      ["albums", "Albums", body => ALBUMS.length ? grid(body, ALBUMS, {
-        id: "ag", noun: "album",
-        filters: [sideFilter,
+    const forms = Object.keys(FORMS).filter(f => ALBUMS.some(a => formOf(a) === f) || QUEUE.some(a => formOf(a) === f));
+    const formFilter = id => ({ id, label: "Show", options: [["all", "Everything"], ...forms.map(f => [f, FORMS[f] + "s"])], test: (a, v) => formOf(a) === v });
+    const sideFilter = id => ({ id, label: "Classical", options: [["all", "Either"], ["classical", "Classical"], ["other", "Not classical"]], test: (a, v) => sideOf(a) === v });
+      const defs = [
+      ["library", "Library", body => ALBUMS.length ? grid(body, ALBUMS, {
+        id: "ag", noun: "piece",
+        filters: [formFilter("ag-form"), sideFilter("ag-side"),
           { id: "ag-decade", label: "Decade", options: [["all", "All"], ...decades.map(d => [String(d), d + "s"])], test: (a, v) => a.y && Math.floor(a.y / 10) * 10 === +v },
           { id: "ag-rating", ...ratingFilter(0.5) },
-          { id: "ag-liked", label: "Show", options: [["all", "All"], ["liked", "Liked"]], test: a => a.liked }],
+          { id: "ag-liked", label: "Liked", options: [["all", "All"], ["liked", "Liked"]], test: a => a.liked }],
         sorts: [["added", "When added", (a, b) => String(b.added || "").localeCompare(String(a.added || "")) || b.i - a.i],
                 ["rating", "Rating", (a, b) => (b.r ?? 0) - (a.r ?? 0)],
-                ["new", "Newest release", (a, b) => (b.y || 0) - (a.y || 0)],
-                ["old", "Oldest release", (a, b) => (a.y || 9999) - (b.y || 9999)],
+                ["new", "Newest", (a, b) => (b.y || 0) - (a.y || 0)],
+                ["old", "Oldest", (a, b) => (a.y || 9999) - (b.y || 9999)],
                 ["title", "Title", (a, b) => a.t.localeCompare(b.t)],
-                ["artist", "Artist", (a, b) => String(a.a).localeCompare(String(b.a))]]
-      }) : (body.innerHTML = empty("No albums logged yet."))],
-      ["diary", "Diary", body => { body.innerHTML = albumDiary.length ? diaryTable(albumDiary, { label: "Album" }) : empty("Nothing in the diary yet."); }],
+                ["artist", "Artist or composer", (a, b) => String(a.a).localeCompare(String(b.a))]]
+      }) : (body.innerHTML = empty("Nothing logged yet."))],
+      ["diary", "Diary", body => { body.innerHTML = albumDiary.length ? diaryTable(albumDiary, { label: "Music" }) : empty("Nothing in the diary yet."); }],
       ["lists", "Lists", body => {
         body.innerHTML = LD.lists.length ? LD.lists.map(l => `<section class="list-block"><h3 class="list-title">${esc(l.name)}</h3>
-          ${l.desc ? `<p class="list-desc">${esc(l.desc)}</p>` : ""}<p class="list-count">${plural(l.items.length, "album")}</p>
+          ${l.desc ? `<p class="list-desc">${esc(l.desc)}</p>` : ""}<p class="list-count">${plural(l.items.length, "piece")}</p>
           <ul class="posters six ranked">${l.items.map(x => ALBUMS[x.m] ? posterItem(ALBUMS[x.m], { rank: x.pos }) : "").join("")}</ul></section>`).join("") : empty("No lists yet.");
       }],
       ["to-listen", "To listen", body => QUEUE.length ? grid(body, QUEUE, {
-        id: "aq", noun: "album", filters: [{ ...sideFilter, id: "aq-side" }],
-        sorts: [["added", "Recently added", byDateDesc("added")], ["title", "Title", (a, b) => a.t.localeCompare(b.t)], ["artist", "Artist", (a, b) => String(a.a).localeCompare(String(b.a))]],
+        id: "aq", noun: "piece", filters: [formFilter("aq-form"), sideFilter("aq-side")],
+        sorts: [["added", "Recently added", byDateDesc("added")], ["title", "Title", (a, b) => a.t.localeCompare(b.t)], ["artist", "Artist or composer", (a, b) => String(a.a).localeCompare(String(b.a))]],
         item: () => ({ caption: "" })
-      }) : (body.innerHTML = empty("Nothing queued."))],
+      }) : (body.innerHTML = empty("Nothing queued."))]
     ];
     const [tabHtml, start] = tabs("music", defs);
     setTimeout(start);
     return `
       <div class="page-head"><div><h1 class="page-title">Music</h1><p class="page-sub">${esc(LD.bio || "The music I love, classical and otherwise.")}</p></div>
-        ${statsRow([[ALBUMS.length, "Albums"], [yearCount, "This year"], [LD.lists.length, "Lists"], [QUEUE.length, "To listen"]])}</div>
+        ${statsRow([[ALBUMS.length, "Pieces"], [yearCount, "This year"], [LD.lists.length, "Lists"], [QUEUE.length, "To listen"]])}</div>
       <div class="cols">
         <div>
-          ${favs.length ? `<section class="section">${sectionHead("Favorite albums")}<ul class="posters four">${favs.map(a => posterItem(a)).join("")}</ul></section>` : ""}
-          ${topPicks("classical").length || topPicks("other").length ? `<section class="section">${sectionHead("My top five artists")}<div class="top5s">${topFive("classical")}${topFive("other")}</div></section>` : ""}
+          ${favs.length ? `<section class="section">${sectionHead("Favorites")}<ul class="posters four">${favs.map(a => posterItem(a)).join("")}</ul></section>` : ""}
+          ${topPicks().length ? `<section class="section">${sectionHead("Top five composers and artists")}${topFive()}</section>` : ""}
           ${albumDiary.length ? `<section class="section">${sectionHead("Recent activity", "music.html#diary", "All")}
             <ul class="posters four">${albumDiary.slice(0, 4).map(d => posterItem(d.it, { r: d.r })).join("")}</ul></section>` : ""}
           <section class="section">${tabHtml}</section>
@@ -894,9 +900,9 @@
       } else if (it.kind === "album" || it.kind === "queue") {
         sub = [it.a, it.y].filter(Boolean).join(" · ");
         const logs = it.kind === "album" ? albumDiary.filter(d => d.m === it.i) : [];
-        if (logs.length) meta.push("Listened " + logs.map(d => fmtDate(d.date) + (d.again ? " (relisten)" : "")).join(", "));
+        meta.push(FORMS[formOf(it)] + (it.side === "classical" ? " · Classical" : ""));
+        if (logs.length) meta.push("Listened " + logs.map(d => fmtDate(d.date) + [d.perf, d.again && "relisten"].filter(Boolean).map(x => ` (${x})`).join("")).join(", "));
         else if (it.kind === "queue") meta.push("On my listening list");
-        if (it.side) meta.push(it.side === "classical" ? "Classical" : "Non-classical");
         body = logs.filter(d => d.review).map(d => esc(d.review)).join("<br>");
         if (it.sp) link = `<a class="read-link" href="https://open.spotify.com/${esc(it.sp)}" target="_blank" rel="noopener">Listen on Spotify <span class="arr">→</span></a>`;
       } else {
@@ -978,7 +984,7 @@
       ...BOOKS.filter(b => b.shelf !== "to-read").map(b => ({ type: "Book", t: b.t, sub: b.a, it: b, href: "books.html" })),
       ...FILMS.map(f => ({ type: "Film", t: f.t, sub: String(f.y || ""), it: f, href: "films.html" })),
       ...ART.map(a => ({ type: "Art", t: a.t, sub: a.artist, it: a, href: "art.html" })),
-      ...ALBUMS.map(a => ({ type: "Album", t: a.t, sub: a.a, it: a, href: "music.html" })),
+      ...ALBUMS.map(a => ({ type: FORMS[formOf(a)], t: a.t, sub: a.a, it: a, href: "music.html" })),
       ...STUDIO.map(w => ({ type: "Studio", t: w.t, sub: `${w.year} · my work`, it: w, href: "studio.html" }))
     ];
     const pal = document.createElement("dialog");

@@ -385,7 +385,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     films: { lists: () => films.lists, items: () => films.items, label: f => filmLabel(f), noun: "film",
       find: label => films.items.findIndex(f => filmLabel(f) === label),
       entry: (fi, pos) => ({ pos, f: fi, t: films.items[fi].t, y: String(films.items[fi].y || "") }), idx: x => x.f },
-    listening: { lists: () => listening.lists, items: () => listening.items, label: a => albumLabel(a), noun: "album",
+    listening: { lists: () => listening.lists, items: () => listening.items, label: a => albumLabel(a), noun: "piece",
       find: label => listening.items.findIndex(a => albumLabel(a) === label),
       entry: (m, pos) => ({ pos, m }), idx: x => x.m }
   };
@@ -536,31 +536,36 @@ window.SITE = ${JSON.stringify(data, null, 2)};
   const plural = (n, one, many) => `${n} ${n === 1 ? one : many || one + "s"}`;
 
   /* ----- Music ----- */
-  const SIDES = [["other", "Non-classical"], ["classical", "Classical"]];
+  /* An entry is a piece of music at whatever size I rate it: an album, a song, or a classical work.
+     Works are rated as pieces; who played it goes on each diary entry ("perf"). Classical is a tag ("side"). */
+  const FORMS = [["album", "Album"], ["song", "Song"], ["work", "Work (classical piece)"]];
   const albumLabel = a => `${a.t} · ${a.a || "Unknown"}`;
   const findAlbum = (t, a) => listening.items.findIndex(x => norm(x.t) === norm(t) && (!a || !x.a || norm(x.a) === norm(a)));
   /* "https://open.spotify.com/album/ID?si=…" or "spotify:album:ID" → "album/ID" */
   const spPath = v => { const m = String(v || "").match(/(album|track|playlist)[/:]([A-Za-z0-9]{10,})/); return m ? `${m[1]}/${m[2]}` : ""; };
-  const MU_ALBUMS = () => { const M = window.MUSIC || {}; return (M.albums || []).map(a => ({ t: a.t, a: a.a, sp: "track/" + a.id, side: (M.artistSide || {})[a.a] || "other" })); };
-  let albumForm = { mode: "log", v: { date: today(), side: "other" } };
+  const MU_SIDE = () => (window.MUSIC || {}).artistSide || {};
+  const MU_ALBUMS = () => { const M = window.MUSIC || {}; return (M.albums || []).map(a => ({ t: a.t, a: a.a, sp: "track/" + a.id, form: "album", side: (M.artistSide || {})[a.a] || "other" })); };
+  const freshForm = () => ({ mode: "log", v: { date: today(), form: "album" } });
+  let albumForm = freshForm();
   let queueForm = {};
-  const albumVals = (a, extra = {}) => ({ t: a.t, a: a.a || "", y: a.y ? String(a.y) : "", side: a.side || "other", r: a.r == null ? "" : String(a.r), liked: !!a.liked,
+  const albumVals = (a, extra = {}) => ({ t: a.t, a: a.a || "", y: a.y ? String(a.y) : "", form: a.form || "album", classical: a.side === "classical", r: a.r == null ? "" : String(a.r), liked: !!a.liked,
     sp: a.sp ? "https://open.spotify.com/" + a.sp : "", cover: a.cover || "", added: a.added || "", ...extra });
+  const formLabel = f => (FORMS.find(x => x[0] === f) || FORMS[0])[1].split(" (")[0];
   function albumFormHtml() {
     const f = albumForm, v = f.v, p = { prefix: "al-" };
-    const common = `<div class="grid2">${field(v, "sp", "Spotify link (optional)", { ...p, placeholder: "https://open.spotify.com/album/…", hint: "Used for the cover and a Listen link." })}${field(v, "cover", "Cover image (optional)", { ...p, type: "file", dir: "assets/music", accept: "image/*" })}</div>`;
-    if (f.mode === "album") return `<div class="logform" id="al-form"><h2>Edit album</h2>
-      <div class="grid3">${field(v, "t", "Title", p)}${field(v, "a", "Artist or composer", p)}${field(v, "y", "Year", p)}</div>
-      <div class="grid3">${field(v, "side", "Type", { ...p, type: "select", options: SIDES })}${field(v, "r", "Rating", { ...p, type: "select", options: FILM_R })}<div>${field(v, "liked", "Liked ♥", { type: "check" })}</div></div>
-      ${common}${field(v, "added", "Date added", { ...p, type: "date" })}
-      <p class="ed-help">${plural(listening.diary.filter(d => d.m === f.i).length, "diary entry", "diary entries")}. Deleting the album also removes them and takes it off your lists and favorites.</p>
-      <div class="logbtns"><button class="btn go" type="button" data-act="al-save">Update album</button><button class="btn" type="button" data-act="al-cancel">Cancel</button><button class="btn danger-btn" type="button" data-act="al-del">Delete album</button></div></div>`;
+    const common = `<div class="grid2">${field(v, "sp", "Spotify link (optional)", { ...p, placeholder: "https://open.spotify.com/album/… or /track/…", hint: "Gives it a cover and a Listen link. For a work, link the recording you like." })}${field(v, "cover", "Cover image (optional)", { ...p, type: "file", dir: "assets/music", accept: "image/*" })}</div>`;
+    const what = `<div class="grid3">${field(v, "form", "What is it", { ...p, type: "select", options: FORMS })}${field(v, "y", "Year", { ...p, placeholder: "Released or composed" })}<div>${field(v, "classical", "Classical", { type: "check" })}</div></div>`;
+    if (f.mode === "album") return `<div class="logform" id="al-form"><h2>Edit ${formLabel(v.form).toLowerCase()}</h2>
+      <div class="grid3">${field(v, "t", "Title", p)}${field(v, "a", "Artist or composer", p)}${field(v, "r", "Rating", { ...p, type: "select", options: FILM_R })}</div>
+      ${what}<div class="grid3"><div>${field(v, "liked", "Liked ♥", { type: "check" })}</div>${field(v, "added", "Date added", { ...p, type: "date" })}<div></div></div>${common}
+      <p class="ed-help">${plural(listening.diary.filter(d => d.m === f.i).length, "diary entry", "diary entries")}. Deleting it also removes them and takes it off your lists and favorites.</p>
+      <div class="logbtns"><button class="btn go" type="button" data-act="al-save">Update</button><button class="btn" type="button" data-act="al-cancel">Cancel</button><button class="btn danger-btn" type="button" data-act="al-del">Delete</button></div></div>`;
     const diary = f.mode === "diary", ro = diary ? "readonly " : "";
     const known = [...listening.items.map(albumLabel), ...MU_ALBUMS().map(albumLabel)].filter((x, i, a) => a.indexOf(x) === i);
-    return `<div class="logform" id="al-form"><h2>${diary ? "Edit diary entry" : "Log an album"}</h2>
-      <div class="grid3">${field(v, "t", "Album", { ...p, placeholder: "Start typing; logged and most-played albums are suggested" }).replace("<input ", `<input list="al-titles" autocomplete="off" ${ro}`)}${field(v, "a", "Artist or composer", p).replace("<input ", "<input " + ro)}${field(v, "date", "Date listened", { ...p, type: "date" })}</div>
-      <div class="grid3">${field(v, "r", "Rating", { ...p, type: "select", options: FILM_R })}<div>${field(v, "liked", "Liked ♥", { type: "check" })}</div><div>${field(v, "again", "Relisten", { type: "check" })}</div></div>
-      ${diary ? "" : `<div class="grid3">${field(v, "y", "Year released", { ...p, placeholder: "1959" })}${field(v, "side", "Type", { ...p, type: "select", options: SIDES })}<div></div></div>${common}`}
+    return `<div class="logform" id="al-form"><h2>${diary ? "Edit diary entry" : "Log a listen"}</h2>
+      <div class="grid3">${field(v, "t", "Title", { ...p, placeholder: "Album, song or work, e.g. String Quartet No. 14, Op. 131" }).replace("<input ", `<input list="al-titles" autocomplete="off" ${ro}`)}${field(v, "a", "Artist or composer", p).replace("<input ", "<input " + ro)}${field(v, "date", "Date listened", { ...p, type: "date" })}</div>
+      <div class="grid3">${field(v, "perf", "Performed by (optional)", { ...p, placeholder: "e.g. Takács Quartet", hint: "Who played it this time. Useful for classical." })}${field(v, "r", "Rating", { ...p, type: "select", options: FILM_R })}<div>${field(v, "liked", "Liked ♥", { type: "check" })}${field(v, "again", "Relisten", { type: "check" })}</div></div>
+      ${diary ? "" : what + common}
       ${field(v, "review", "Review", { ...p, type: "textarea", rows: 3 })}
       <div class="logbtns">${diary ? `<button class="btn go" type="button" data-act="al-save">Update entry</button><button class="btn" type="button" data-act="al-cancel">Cancel</button><button class="btn danger-btn" type="button" data-act="al-del">Delete entry</button>`
         : `<button class="btn go" type="button" data-act="al-save">Log it</button>`}</div>
@@ -568,32 +573,32 @@ window.SITE = ${JSON.stringify(data, null, 2)};
   }
   function commitAlbum(v) {
     const f = albumForm;
-    if (!v.t) { toast("Give the album a title."); return; }
-    const y = v.y ? +v.y || null : null, sp = spPath(v.sp) || null;
+    if (!v.t) { toast("Give it a title."); return; }
+    const y = v.y ? +v.y || null : null, sp = spPath(v.sp) || null, side = v.classical ? "classical" : "other", form = v.form || "album";
     if (f.mode === "album") {
       const it = listening.items[f.i];
-      Object.assign(it, { t: v.t, a: v.a || "", y, side: v.side || "other", r: v.r ? +v.r : null, liked: !!v.liked, sp, cover: v.cover || null, added: v.added || it.added });
+      Object.assign(it, { t: v.t, a: v.a || "", y, form, side, r: v.r ? +v.r : null, liked: !!v.liked, sp, cover: v.cover || null, added: v.added || it.added });
       toast("Updated " + v.t);
     } else if (f.mode === "diary") {
       const d = listening.diary[f.i], it = listening.items[d.m];
-      Object.assign(d, { date: v.date || d.date, r: v.r ? +v.r : null, again: !!v.again, review: v.review || null });
+      Object.assign(d, { date: v.date || d.date, perf: v.perf || null, r: v.r ? +v.r : null, again: !!v.again, review: v.review || null });
       it.liked = !!v.liked; if (v.r) it.r = +v.r;
       toast("Updated entry");
     } else {
       let mi = findAlbum(v.t, v.a);
-      if (mi < 0) { listening.items.push({ t: v.t, a: v.a || "", y, side: v.side || "other", r: null, liked: false, added: today(), sp, cover: v.cover || null }); mi = listening.items.length - 1; }
+      if (mi < 0) { listening.items.push({ t: v.t, a: v.a || "", y, form, side, r: null, liked: false, added: today(), sp, cover: v.cover || null }); mi = listening.items.length - 1; }
       const it = listening.items[mi];
       if (v.r) it.r = +v.r;
       it.liked = !!v.liked;
       if (y && !it.y) it.y = y;
       if (sp && !it.sp) it.sp = sp;
       if (v.cover && !it.cover) it.cover = v.cover;
-      listening.diary.unshift({ m: mi, date: v.date || today(), r: v.r ? +v.r : null, again: !!v.again, review: v.review || null });
+      listening.diary.unshift({ m: mi, date: v.date || today(), perf: v.perf || null, r: v.r ? +v.r : null, again: !!v.again, review: v.review || null });
       listening.queue = listening.queue.filter(q => !(norm(q.t) === norm(it.t) && (!q.a || norm(q.a) === norm(it.a))));
       toast("Logged " + it.t);
     }
     listening.diary.sort((a, b) => String(b.date).localeCompare(String(a.date)));
-    albumForm = { mode: "log", v: { date: today(), side: "other" } };
+    albumForm = freshForm();
     markLog("listening"); render();
   }
   function deleteAlbum(mi) {
@@ -607,29 +612,24 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     const q = norm(($("#al-q") || {}).value), mode = ($("#al-show") || {}).value || "diary";
     if (mode === "albums") {
       const L = listening.items.map((a, i) => [a, i]).filter(([a]) => !q || norm(albumLabel(a)).includes(q)).reverse();
-      return L.slice(0, 100).map(([a, i]) => `<li><button type="button" class="lrow f4" data-act="al-edit" data-i="${i}"><b>${esc(a.t)}</b><span>${esc(a.a || "")}</span>
+      return L.slice(0, 100).map(([a, i]) => `<li><button type="button" class="lrow f4" data-act="al-edit" data-i="${i}"><b>${esc(a.t)}</b><span>${esc(a.a || "")} · ${formLabel(a.form)}</span>
         <span class="lr-stars">${starTxt(a.r)}${a.liked ? " ♥" : ""}</span><span class="lr-date">${esc(a.added || "")}</span></button></li>`).join("") || '<li class="lempty">Nothing logged yet.</li>';
     }
-    const L = listening.diary.map((d, i) => [d, i, listening.items[d.m] || { t: "?" }]).filter(([, , a]) => !q || norm(albumLabel(a)).includes(q));
-    return (L.slice(0, 100).map(([d, i, a]) => `<li><button type="button" class="lrow f4" data-act="al-diary" data-i="${i}"><b>${esc(a.t)}</b><span>${esc(a.a || "")}</span>
+    const L = listening.diary.map((d, i) => [d, i, listening.items[d.m] || { t: "?" }]).filter(([d, , a]) => !q || norm(albumLabel(a) + " " + (d.perf || "")).includes(q));
+    return (L.slice(0, 100).map(([d, i, a]) => `<li><button type="button" class="lrow f4" data-act="al-diary" data-i="${i}"><b>${esc(a.t)}</b><span>${esc([a.a, d.perf].filter(Boolean).join(" · "))}</span>
       <span class="lr-stars">${starTxt(d.r)}${d.again ? " ↻" : ""}${d.review ? " ✎" : ""}</span><span class="lr-date">${esc(d.date)}</span></button></li>`).join("") || '<li class="lempty">Nothing logged yet.</li>')
       + (L.length > 100 ? `<li class="lempty">Showing 100 of ${L.length}. Search to narrow.</li>` : "");
   }
-  /* top five artists: kept in content.js as data.music = { classical: [...], other: [...] } */
+  /* top five composers and artists: one ranked list in content.js as data.music.top */
   function topFiveHtml() {
-    const MS = (window.MUSIC || {}).artistSide || {};
-    const opts = side => Object.entries(MS).filter(([, v]) => v === side).map(([a]) => `<option value="${esc(a)}"></option>`).join("");
-    const list = (side, title) => {
-      const names = ((data.music || {})[side] || []).slice(0, 5);
-      while (names.length < 5) names.push("");
-      return `<h3 class="sub-h">${title}</h3>
-        <div class="rows top5-rows" data-rows="m-${side}">${names.map((n, i) => `<div class="row rank-row"><span class="rank-n" aria-hidden="true"></span><input value="${esc(n)}" list="dl-${side}" placeholder="Artist" aria-label="${title} artist ${i + 1}">
-          <button class="icon-btn" type="button" data-rowmove="-1" aria-label="Move up">↑</button><button class="icon-btn" type="button" data-rowmove="1" aria-label="Move down">↓</button></div>`).join("")}</div>
-        <datalist id="dl-${side}">${opts(side)}</datalist>`;
-    };
-    return `<div class="section-head" style="margin-top:26px"><h2>Top five artists</h2></div>
-      <p class="ed-help">Shown at the top of the Music page. Leave a list empty to show your most played artists instead.</p>
-      ${list("classical", "Classical")}${list("other", "Non-classical")}`;
+    const m = data.music || {};
+    const names = (m.top || [...(m.classical || []), ...(m.other || [])]).slice(0, 5);
+    while (names.length < 5) names.push("");
+    return `<div class="section-head" style="margin-top:26px"><h2>Top five composers and artists</h2></div>
+      <p class="ed-help">One ranked list, shown near the top of the Music page. Leave it empty to hide it.</p>
+      <div class="rows top5-rows" data-rows="m-top">${names.map((n, i) => `<div class="row rank-row"><span class="rank-n" aria-hidden="true"></span><input value="${esc(n)}" list="dl-top" placeholder="Composer or artist" aria-label="Top five, number ${i + 1}">
+        <button class="icon-btn" type="button" data-rowmove="-1" aria-label="Move up">↑</button><button class="icon-btn" type="button" data-rowmove="1" aria-label="Move down">↓</button></div>`).join("")}</div>
+      <datalist id="dl-top">${Object.keys(MU_SIDE()).map(a => `<option value="${esc(a)}"></option>`).join("")}</datalist>`;
   }
 
   const LOG_SECTIONS = {
@@ -680,16 +680,16 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     },
     music: {
       label: "Music",
-      help: "Log albums here, like films: logging adds a diary entry, adds the album if it’s new, updates its rating and takes it off your to-listen list. Pick a suggestion to fill in the artist, type and Spotify link. Save writes data/listening.js.",
+      help: "Log music here, like films. An entry can be an album, a song or a classical work: rate a Beethoven quartet as a work, and note who played it on each listen. Logging adds a diary entry, adds the piece if it’s new, updates its rating and takes it off To listen. Save writes data/listening.js.",
       render: () => {
         const opts = listening.items.map((a, i) => [a, i]).sort(([a], [b]) => a.t.localeCompare(b.t));
         return `<div data-nodirty>${albumFormHtml()}
-        <div class="section-head" style="margin-top:26px"><h2>Favorite albums</h2></div>
+        <div class="section-head" style="margin-top:26px"><h2>Favorites</h2></div>
         <div class="grid2 favs">${[0, 1, 2, 3].map(k => `<label class="f"><span>Favorite ${k + 1}</span><select data-afav="${k}"><option value="">None</option>${opts.map(([a, i]) =>
           `<option value="${i}" ${listening.favorites[k] === i ? "selected" : ""}>${esc(albumLabel(a))}</option>`).join("")}</select></label>`).join("")}</div>
         <div class="section-head" style="margin-top:26px"><h2>To listen</h2></div>
-        <div class="lfilter" id="ql-form"><input type="text" data-ql="t" placeholder="Album" aria-label="Album" value="${esc(queueForm.t || "")}" list="al-titles-q"><input type="text" data-ql="a" placeholder="Artist" aria-label="Artist" value="${esc(queueForm.a || "")}">
-          <select data-ql="side" aria-label="Type">${SIDES.map(([k, l]) => `<option value="${k}" ${queueForm.side === k ? "selected" : ""}>${l}</option>`).join("")}</select>
+        <div class="lfilter" id="ql-form"><input type="text" data-ql="t" placeholder="Title" aria-label="Title" value="${esc(queueForm.t || "")}" list="al-titles-q"><input type="text" data-ql="a" placeholder="Artist or composer" aria-label="Artist or composer" value="${esc(queueForm.a || "")}">
+          <select data-ql="form" aria-label="What is it">${FORMS.map(([k, l]) => `<option value="${k}" ${queueForm.form === k ? "selected" : ""}>${l.split(" (")[0]}</option>`).join("")}</select>
           <button class="btn" type="button" data-act="ql-add">+ Add</button></div>
         <datalist id="al-titles-q">${MU_ALBUMS().map(x => `<option value="${esc(x.t)}">${esc(x.a)}</option>`).join("")}</datalist>
         <ul class="llist">${listening.queue.map((q, i) => `<li class="lrow static"><b>${esc(q.t)}</b><span>${esc(q.a || "")}</span><span class="lr-date">${esc(q.added || "")}</span>
@@ -697,7 +697,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
         ${listsHtml("listening")}
         <div class="section-head" style="margin-top:26px"><h2>History</h2></div>
         <div class="lfilter"><input type="search" id="al-q" placeholder="Search" aria-label="Search albums">
-          <select id="al-show" aria-label="Show"><option value="diary">Diary (${listening.diary.length})</option><option value="albums">Albums (${listening.items.length})</option></select></div>
+          <select id="al-show" aria-label="Show"><option value="diary">Diary (${listening.diary.length})</option><option value="albums">Library (${listening.items.length})</option></select></div>
         <ul class="llist" id="al-list">${albumRows()}</ul></div>
         ${topFiveHtml()}`;
       },
@@ -706,7 +706,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
         $$("[data-ql]", el).forEach(i => { queueForm[i.dataset.ql] = i.value; });
         collectLists(el, "listening");
         const read = side => $$(`[data-rows=m-${side}] input`, el).map(i => i.value.trim()).filter(Boolean);
-        if ($("[data-rows=m-classical]", el)) data.music = { classical: read("classical"), other: read("other") };
+        if ($("[data-rows=m-top]", el)) data.music = { top: read("top") };
       }
     }
   };
@@ -721,7 +721,8 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       const hit = listening.items.find(a => albumLabel(a) === t.value) || MU_ALBUMS().find(a => albumLabel(a) === t.value);
       if (hit) {
         const F = $("#al-form"), set = (k, v) => { const i = $(`[data-k=${k}]`, F); if (i && v != null && v !== "") i.type === "checkbox" ? i.checked = !!v : i.value = v; };
-        t.value = hit.t; set("a", hit.a); set("side", hit.side); set("y", hit.y); if (hit.sp) set("sp", "https://open.spotify.com/" + hit.sp);
+        t.value = hit.t; set("a", hit.a); set("y", hit.y); if (hit.sp) set("sp", "https://open.spotify.com/" + hit.sp);
+        set("form", hit.form || "album"); set("classical", (hit.side || MU_SIDE()[hit.a]) === "classical");
         if (listening.items.includes(hit)) { set("liked", hit.liked); set("again", true); }
       }
     }
@@ -740,6 +741,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     if (t.id === "bk-shelf") { $("#bk-list").innerHTML = bookRows(); return; }
     if (t.id === "fm-show") { $("#fm-list").innerHTML = filmRows(); return; }
     if (t.id === "al-show") { $("#al-list").innerHTML = albumRows(); return; }
+    if (t.matches("#al-form [data-k=form]") && t.value === "work") { const c = $("#al-form [data-k=classical]"); if (c) c.checked = true; }
     if (t.matches("[data-afav]")) {
       const sel = $$("[data-afav]").map(s => s.value).filter(Boolean).map(Number);
       listening.favorites = sel.filter((v, i) => sel.indexOf(v) === i); markLog("listening"); return;
@@ -785,14 +787,14 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       toReadForm = {}; markLog("books"); render(); toast("Added to Want to read");
     }
     else if (act === "al-save") { SECTIONS.music.collect(el); commitAlbum(albumForm.v); }
-    else if (act === "al-cancel") { albumForm = { mode: "log", v: { date: today(), side: "other" } }; render(); }
+    else if (act === "al-cancel") { albumForm = freshForm(); render(); }
     else if (act === "al-edit") { albumForm = { mode: "album", i, v: albumVals(listening.items[i]) }; top(); }
-    else if (act === "al-diary") { const d = listening.diary[i], a = listening.items[d.m] || {}; albumForm = { mode: "diary", i, v: albumVals(a, { date: d.date, r: d.r == null ? "" : String(d.r), again: !!d.again, review: d.review || "" }) }; top(); }
+    else if (act === "al-diary") { const d = listening.diary[i], a = listening.items[d.m] || {}; albumForm = { mode: "diary", i, v: albumVals(a, { date: d.date, perf: d.perf || "", r: d.r == null ? "" : String(d.r), again: !!d.again, review: d.review || "" }) }; top(); }
     else if (act === "al-del") {
       if (!armed()) return;
       if (albumForm.mode === "album") { const t = listening.items[albumForm.i].t; deleteAlbum(albumForm.i); toast("Deleted " + t); }
       else { listening.diary.splice(albumForm.i, 1); toast("Deleted entry"); }
-      albumForm = { mode: "log", v: { date: today(), side: "other" } }; markLog("listening"); render();
+      albumForm = freshForm(); markLog("listening"); render();
     }
     else if (act === "ql-add") {
       SECTIONS.music.collect(el);
@@ -800,11 +802,12 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       if (!t) { toast("Give the album a title."); return; }
       const [tt, aa] = t.includes(" · ") && !queueForm.a ? t.split(" · ") : [t, queueForm.a || ""];
       const hit = MU_ALBUMS().find(a => norm(a.t) === norm(tt) && (!aa || norm(a.a) === norm(aa)));
-      listening.queue.unshift({ t: tt.trim(), a: aa.trim(), side: queueForm.side || (hit ? hit.side : "other"), sp: hit ? hit.sp : null, added: today() });
+      const form = queueForm.form || "album", side = form === "work" || MU_SIDE()[aa.trim()] === "classical" ? "classical" : "other";
+      listening.queue.unshift({ t: tt.trim(), a: aa.trim(), form, side, sp: hit ? hit.sp : null, added: today() });
       queueForm = {}; markLog("listening"); render(); toast("Added to To listen");
     }
     else if (act === "ql-del") { const q = listening.queue.splice(i, 1)[0]; markLog("listening"); collect(); render(); toast("Removed " + q.t); }
-    else if (act === "ql-done") { const q = listening.queue[i]; albumForm = { mode: "log", v: { t: q.t, a: q.a || "", side: q.side || "other", sp: q.sp ? "https://open.spotify.com/" + q.sp : "", date: today() } }; top(); $("#al-r").focus(); }
+    else if (act === "ql-done") { const q = listening.queue[i]; albumForm = { mode: "log", v: { t: q.t, a: q.a || "", form: q.form || "album", classical: q.side === "classical", sp: q.sp ? "https://open.spotify.com/" + q.sp : "", date: today() } }; top(); $("#al-r").focus(); }
     else if (act === "ls-new" || act === "ls-add" || act === "ls-del") {
       const kind = a.dataset.kind, j = +a.dataset.j;
       if (act === "ls-del" && !armed()) return;
