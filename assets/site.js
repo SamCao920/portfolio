@@ -31,8 +31,6 @@
   const FILMS = FILMS_ALL.filter(shown);
   const WATCH = FD.watchlist.map((f, i) => ({ ...f, kind: "watch", i }));
   const ART = ((window.ART || {}).items || []).map((a, i) => ({ ...a, kind: "art", i }));
-  /* listening aggregates from tools/import-music.py */
-  const MU = window.MUSIC || null;
   /* my music log: albums, diary, lists and to-listen queue (data/listening.js, written by admin) */
   const LD = window.LISTENING || {};
   ["items", "diary", "lists", "queue", "favorites"].forEach(k => { LD[k] = LD[k] || []; });
@@ -681,80 +679,13 @@
 
 
   /* ---------- music: aggregates of my Spotify history (data/music.js) ---------- */
-  const spotifyTrack = id => `https://open.spotify.com/track/${id}`;
-  const coverMemo = id => store.get("cv:m:" + id);
-  function albumTile(a, opts = {}) {
-    const src = a.cover || (coverMemo(a.id) && coverMemo(a.id) !== "none" ? coverMemo(a.id) : null);
-    const label = `${a.t} by ${a.a}`;
-    return `<li class="art-item">${opts.rank ? `<span class="rank">${opts.rank}</span>` : ""}<a class="art-tile album-tile" href="${spotifyTrack(a.id)}" target="_blank" rel="noopener" data-sp="${a.id}"${src ? "" : " data-nocover"} title="${esc(label)}" aria-label="${esc(label)}, on Spotify">${coverFace(a.t, a.a)}${src ? `<img alt="" loading="lazy" src="${esc(src)}" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}</a>
-      <div class="art-cap"><b>${esc(a.t)}</b><span>${esc(a.a)}${opts.caption ? ` · ${esc(opts.caption)}` : ""}</span></div></li>`;
-  }
-  /* Album art the importer did not cache: ask Spotify's public oEmbed once per album, remember the answer. */
-  function fillAlbumCovers(root) {
-    const els = $$(".album-tile[data-nocover]", root).filter(el => coverMemo(el.dataset.sp) !== "none");
-    let next = 0;
-    const work = async () => {
-      while (next < els.length) {
-        const el = els[next++], id = el.dataset.sp;
-        let url = null;
-        try {
-          const r = await fetch("https://open.spotify.com/oembed?url=" + encodeURIComponent(spotifyTrack(id)));
-          if (r.ok) url = (await r.json()).thumbnail_url || null;
-          store.set("cv:m:" + id, url || "none");
-        } catch (e) { return; }  /* blocked or offline: keep the typeset cover */
-        el.removeAttribute("data-nocover");
-        if (!url) continue;
-        $$(`.album-tile[data-sp="${id}"]`).forEach(t => {
-          if (t.querySelector("img")) return;
-          const img = new Image(); img.alt = ""; img.className = "fade"; img.referrerPolicy = "no-referrer";
-          img.onload = () => img.classList.add("in"); img.onerror = () => img.remove();
-          img.src = url; t.appendChild(img);
-        });
-      }
-    };
-    for (let i = 0; i < 4; i++) work();
-  }
-
   const SIDE_LABEL = { classical: "Classical", other: "Non-classical" };
-  /* Top five: my own picks from admin (content.js, music), else my most played artists. */
+  /* Top five artists: my own picks from admin (content.js, music). */
+  const topPicks = side => (((S.music || {})[side]) || []).filter(Boolean).slice(0, 5);
   function topFive(side) {
-    const picked = (((S.music || {})[side]) || []).filter(Boolean);
-    const names = (picked.length ? picked : MU.periods[side].all.artists).slice(0, 5);
+    const names = topPicks(side);
+    if (!names.length) return "";
     return `<div class="top5"><h3>${SIDE_LABEL[side]}</h3><ol>${names.map((a, n) => `<li><i>${n + 1}</i><b>${esc(a)}</b></li>`).join("")}</ol></div>`;
-  }
-  /* "Most played" tab: rankings from my Spotify history, no listening stats */
-  function mostPlayed(body) {
-    if (!MU) { body.innerHTML = `<p class="note">No listening history imported yet.</p>`; return; }
-    const A = MU.albums, T = MU.tracks;
-    body.innerHTML = `<p class="note mp-note">Ranked from my Spotify history${MU.since ? ` since ${MU.since.slice(0, 4)}` : ""}, study playlists left out.</p>
-      <div class="mp-bar"><nav class="seg side-seg" aria-label="Classical or not">${["classical", "other"].map(k => `<button type="button" data-side="${k}" aria-pressed="false">${SIDE_LABEL[k]}</button>`).join("")}</nav>
-        <nav class="seg side-seg" aria-label="Show">${[["albums", "Albums"], ["artists", "Artists"], ["tracks", "Tracks"]].map(([k, l]) => `<button type="button" data-mview="${k}" aria-pressed="${k === "albums"}">${l}</button>`).join("")}</nav></div>
-      <div class="filterbar slim"><div class="group" role="group" aria-label="Period" id="m-periods"></div></div>
-      <div id="m-body"></div>`;
-    let side = store.get("music-side") === "other" ? "other" : "classical", period = "all", view = "albums", shown = 30;
-    const drawSide = () => {
-      $$("[data-side]", body).forEach(b => b.setAttribute("aria-pressed", b.dataset.side === side));
-      const keys = ["all", ...MU.years.map(String).filter(y => MU.periods[side][y])];
-      if (!keys.includes(period)) period = "all";
-      $("#m-periods", body).innerHTML = keys.map(k => `<button class="chip" type="button" data-period="${k}" aria-pressed="${k === period}">${k === "all" ? "All time" : k}</button>`).join("");
-      draw();
-    };
-    const draw = () => {
-      const P = MU.periods[side][period], out = $("#m-body", body);
-      $$("[data-period]", body).forEach(x => x.setAttribute("aria-pressed", x.dataset.period === period));
-      if (view === "albums") {
-        out.innerHTML = `<ul class="art-grid five ranked-albums">${P.albums.slice(0, shown).map((i, n) => albumTile(A[i], { rank: n + 1 })).join("")}</ul>`
-          + (P.albums.length > shown ? `<div class="more-wrap"><button class="btn" type="button" id="m-more">Show ${P.albums.length - shown} more</button></div>` : "");
-        const more = $("#m-more", out); if (more) more.onclick = () => { shown = P.albums.length; draw(); };
-      }
-      if (view === "artists") out.innerHTML = `<ol class="rank-list">${P.artists.map((a, n) => `<li><i>${n + 1}</i><span>${esc(a)}</span></li>`).join("")}</ol>`;
-      if (view === "tracks") out.innerHTML = `<ol class="rank-list tracks">${P.tracks.map((i, n) => { const t = T[i]; return `<li><i>${n + 1}</i><a href="${spotifyTrack(t.id)}" target="_blank" rel="noopener"><b>${esc(t.t)}</b><span>${esc(t.a)}</span></a></li>`; }).join("")}</ol>`;
-      fillAlbumCovers(out);
-    };
-    $("#m-periods", body).addEventListener("click", e => { const b = e.target.closest("[data-period]"); if (!b) return; period = b.dataset.period; shown = 30; draw(); });
-    $$("[data-side]", body).forEach(b => b.addEventListener("click", () => { side = b.dataset.side; store.set("music-side", side); shown = 30; drawSide(); }));
-    $$("[data-mview]", body).forEach(b => b.addEventListener("click", () => { view = b.dataset.mview; $$("[data-mview]", body).forEach(x => x.setAttribute("aria-pressed", x === b)); draw(); }));
-    drawSide();
   }
   function musicPage() {
     const sideOf = it => it.side === "classical" ? "classical" : "other";
@@ -788,9 +719,7 @@
         sorts: [["added", "Recently added", byDateDesc("added")], ["title", "Title", (a, b) => a.t.localeCompare(b.t)], ["artist", "Artist", (a, b) => String(a.a).localeCompare(String(b.a))]],
         item: () => ({ caption: "" })
       }) : (body.innerHTML = empty("Nothing queued."))],
-      ["most-played", "Most played", mostPlayed]
     ];
-    if (!ALBUMS.length) defs.unshift(defs.pop());   /* nothing logged yet: open on the Spotify rankings */
     const [tabHtml, start] = tabs("music", defs);
     setTimeout(start);
     return `
@@ -799,7 +728,7 @@
       <div class="cols">
         <div>
           ${favs.length ? `<section class="section">${sectionHead("Favorite albums")}<ul class="posters four">${favs.map(a => posterItem(a)).join("")}</ul></section>` : ""}
-          ${MU ? `<section class="section">${sectionHead("My top five")}<div class="top5s">${topFive("classical")}${topFive("other")}</div></section>` : ""}
+          ${topPicks("classical").length || topPicks("other").length ? `<section class="section">${sectionHead("My top five artists")}<div class="top5s">${topFive("classical")}${topFive("other")}</div></section>` : ""}
           ${albumDiary.length ? `<section class="section">${sectionHead("Recent activity", "music.html#diary", "All")}
             <ul class="posters four">${albumDiary.slice(0, 4).map(d => posterItem(d.it, { r: d.r })).join("")}</ul></section>` : ""}
           <section class="section">${tabHtml}</section>
@@ -1050,7 +979,6 @@
       ...FILMS.map(f => ({ type: "Film", t: f.t, sub: String(f.y || ""), it: f, href: "films.html" })),
       ...ART.map(a => ({ type: "Art", t: a.t, sub: a.artist, it: a, href: "art.html" })),
       ...ALBUMS.map(a => ({ type: "Album", t: a.t, sub: a.a, it: a, href: "music.html" })),
-      ...(MU ? [...MU.periods.classical.all.artists, ...MU.periods.other.all.artists].map(a => ({ type: "Music", t: a, sub: MU.artistSide[a] === "classical" ? "Classical" : "Artist", href: "music.html" })) : []),
       ...STUDIO.map(w => ({ type: "Studio", t: w.t, sub: `${w.year} · my work`, it: w, href: "studio.html" }))
     ];
     const pal = document.createElement("dialog");
