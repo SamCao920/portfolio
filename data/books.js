@@ -1,6 +1,9 @@
 /* Books: what I have read, am reading and want to read.
    Edit it with admin.html. It must stay valid JavaScript. */
-window.BOOKS = {"updated":"2026-10-09","items":[
+window.BOOKS = {"updated":"2026-10-13","items":[
+  {"t":"Freedom’s Forge","full":"Freedom’s Forge","a":"Arthur Herman","isbn":null,"r":null,"read":null,"added":"2026-10-13","shelf":"to-read","fav":false,"review":null,"pages":null,"year":null},
+  {"t":"How Solar Energy Became Cheap","full":"How Solar Energy Became Cheap","a":"Gregory Nemet","isbn":null,"r":null,"read":null,"added":"2026-10-13","shelf":"to-read","fav":false,"review":null,"pages":null,"year":null},
+  {"t":"Cloud Atlas","full":"Cloud Atlas","a":"David Mitchell","isbn":null,"r":null,"read":null,"added":"2026-10-13","shelf":"to-read","fav":false,"review":null,"pages":null,"year":null},
   {"t":"The Tragedy of Great Power Politics","full":"The Tragedy of Great Power Politics","a":"John J. Mearsheimer","isbn":"9780393978391","r":null,"read":null,"added":"2026-09-30","shelf":"reading","fav":false,"review":null,"pages":576,"year":"2001"},
   {"t":"From Third World to First","full":"From Third World to First: The Singapore Story, 1965-2000","a":"Lee Kuan Yew","isbn":"9789812049841","r":null,"read":null,"added":"2026-09-30","shelf":"to-read","fav":false,"review":null,"pages":778,"year":"2000"},
   {"t":"Stubborn Attachments","full":"Stubborn Attachments: A Vision for a Society of Free, Prosperous, and Responsible Individuals","a":"Tyler Cowen","isbn":null,"r":null,"read":null,"added":"2026-09-28","shelf":"to-read","fav":false,"review":null,"pages":127,"year":"2018"},

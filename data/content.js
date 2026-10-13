@@ -239,10 +239,28 @@ window.SITE = {
       "place": "Berkeley",
       "claim": "A private gathering of around fifty students from across the country on how science, technology, and institutions raise living standards, hosted by Abundance Corps with the Roots of Progress Institute and Emergent Ventures.",
       "featured": false,
-      "body": "Chosen to present a lightning talk on how the Abundance movement might be able deal with the fertility crisis."
+      "body": "Chosen to present a lightning talk on how the Abundance movement might be able deal with the fertility crisis.",
+      "cover": "assets/plates/Pasted 2026-10-13 at 4.03.48 PM.png",
+      "gallery": [
+        {
+          "src": "assets/appearances/making-progress/20261012_003015_8EA4B3.jpg"
+        },
+        {
+          "src": "assets/appearances/making-progress/20261012_003015_88770D.jpg"
+        },
+        {
+          "src": "assets/appearances/making-progress/20261012_003015_890386.jpg"
+        },
+        {
+          "src": "assets/appearances/making-progress/20261012_003154_887B9C.jpg"
+        },
+        {
+          "src": "assets/appearances/making-progress/20261012_003154_8370B3.jpg"
+        }
+      ]
     },
     {
-      "title": "Madrid Annual Conference on Austrian Economics",
+      "title": "10th Madrid Annual Conference on Austrian Economics",
       "type": "appearance",
       "venue": "Universidad Rey Juan Carlos · Madrid · Oct 21–23, 2026",
       "award": "Invited to present",
@@ -250,7 +268,8 @@ window.SITE = {
       "end": "2026-10-23",
       "place": "Madrid",
       "claim": "The annual conference of the Fundación Jesús Huerta de Soto, where the three Youth Liberty Prize winners present their essays. I will be presenting <em>Programmable Money and the Abolition of Visible Failure</em>.",
-      "featured": false
+      "featured": false,
+      "cover": "assets/plates/call_for_papers2026-1.jpg"
     }
   ],
   "homeBooks": [
@@ -536,5 +555,8 @@ window.SITE = {
   },
   "analytics": {
     "goatcounter": "samcao"
+  },
+  "music": {
+    "top": []
   }
 };
