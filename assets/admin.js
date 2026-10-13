@@ -273,11 +273,15 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     },
     writings: {
       label: "Writing & events",
-      help: "Essays, research, projects and appearances, in the order they appear. Featured items also show on the home page. Appearances with dates drive the “Next:” line and drop off Upcoming after the end date. Simple HTML like <em>italic</em> works in text boxes.",
+      help: "Essays, research and projects show on the Writing page; appearances show on their own Appearances page, newest first, with an optional photo gallery. Featured items also show on the home page. Appearances with dates drive the “Next:” line and drop off Upcoming after the end date. Simple HTML like <em>italic</em> works in text boxes.",
       render: () => `<button class="btn go add" type="button" data-add="writings">+ Add entry</button>
         <div id="w-cards">${(data.writings || []).map((w, i) => card(w, i)).join("")}</div>`,
       collect: el => {
-        data.writings = $$(".card", el).map(c => { const o = clone((data.writings || [])[+c.dataset.i] || {}); readInto(c, o); return o; });
+        data.writings = $$(".card", el).map(c => {
+          const o = clone((data.writings || [])[+c.dataset.i] || {}); readInto(c, o);
+          if ($("[data-k=galleryText]", c)) { const g = parseGallery(o.galleryText); if (g.length) o.gallery = g; else delete o.gallery; }
+          delete o.galleryText; return o;
+        });
       }
     },
     studio: {
@@ -880,6 +884,49 @@ window.SITE = ${JSON.stringify(data, null, 2)};
         ${field(w, "note", "Statement", { type: "textarea", rows: 4, prefix: `s${i}-` })}
       </div></div>`;
   }
+  /* photo gallery for an appearance: one photo per line, "path | caption" */
+  const galleryText = w => (w.gallery || []).map(g => typeof g === "string" ? g : g.src + (g.cap ? " | " + g.cap : "")).join("\n");
+  const parseGallery = txt => String(txt || "").split("\n").map(l => l.trim()).filter(Boolean).map(l => { const [src, ...cap] = l.split("|"); const o = { src: src.trim() }; if (cap.join("|").trim()) o.cap = cap.join("|").trim(); return o; });
+  function galleryField(w, i) {
+    return `<label class="f" for="w${i}-gallery"><span>Photo gallery</span>
+      <textarea id="w${i}-gallery" data-k="galleryText" rows="${Math.min(8, Math.max(3, (w.gallery || []).length + 1))}" placeholder="assets/appearances/photo.jpg | Optional caption">${esc(galleryText(w))}</textarea>
+      <small>Shown under the entry on the Appearances page; click a photo to view it large. One per line; add “| caption” after the path for a caption. Reorder photos by moving lines.</small></label>
+      <label class="btn" tabindex="0">Add photos<input type="file" hidden multiple accept="image/*" data-gallery="${i}"></label>`;
+  }
+  /* re-encode a photo: at most 2000 px on the long side, JPEG; drops EXIF (GPS, camera) along the way */
+  async function cleanPhoto(file) {
+    const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
+    const k = Math.min(1, 2000 / Math.max(bmp.width, bmp.height));
+    const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+    c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+    return await new Promise(res => c.toBlob(res, "image/jpeg", 0.88));
+  }
+  document.addEventListener("change", async e => {
+    const inp = e.target.closest("input[type=file][data-gallery]"); if (!inp || !inp.files.length) return;
+    const cardEl = inp.closest(".card"), box = $("[data-k=galleryText]", cardEl);
+    const title = ($("[data-k=title]", cardEl) || {}).value || "event";
+    const folder = "assets/appearances/" + title.toLowerCase().normalize("NFKD").replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-").slice(0, 40);
+    let added = 0;
+    for (const f of inp.files) {
+      try {
+        const blob = await cleanPhoto(f);
+        const name = f.name.replace(/\.[^.]+$/, "").replace(/[^\w.\- ()]+/g, "_") + ".jpg";
+        const path = `${folder}/${name}`;
+        pendingFiles.push({ path, file: blob });
+        box.value = (box.value.trim() ? box.value.trim() + "\n" : "") + path; added++;
+      } catch (err) { toast(`Couldn’t read ${f.name}: ${err.message}`); }
+    }
+    inp.value = "";
+    box.rows = Math.min(8, box.value.split("\n").length + 1);
+    box.dispatchEvent(new Event("input", { bubbles: true }));
+    toast(`${added} photo${added === 1 ? "" : "s"} added (location data removed). ${dir ? "They’re copied in on Save." : "Connect the folder before saving."}`);
+  });
+  /* switching an entry to Appearance shows its gallery box */
+  document.addEventListener("change", e => {
+    const t = e.target; if (!t.matches || !t.matches(".card [data-k=type]") || section !== "writings") return;
+    const i = +t.closest(".card").dataset.i; collect(); render();
+    const c = $(`.card[data-i="${i}"]`); if (c) c.classList.add("open");
+  });
   function card(w, i) {
     const t = TYPES.find(x => x[0] === w.type);
     return `<div class="card" data-i="${i}" data-scope="w${i}">
@@ -898,6 +945,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
         ${field(w, "cover", "Cover image", { type: "file", dir: "assets/plates", accept: "image/*", prefix: `w${i}-` })}
         <div class="grid3">${field(w, "start", "Start date", { type: "date", prefix: `w${i}-` })}${field(w, "end", "End date", { type: "date", prefix: `w${i}-` })}${field(w, "place", "Place (short)", { prefix: `w${i}-`, placeholder: "Madrid" })}</div>
         ${field(w, "featured", "Feature on the home page", { type: "check" })}
+        ${w.type === "appearance" ? galleryField(w, i) : ""}
       </div></div>`;
   }
   function socialRow(s) {

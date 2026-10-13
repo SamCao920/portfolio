@@ -58,6 +58,7 @@
   const NAV = [
     ["index.html", "Home", "home"],
     ["writings.html", "Writing", "writings"],
+    ["appearances.html", "Appearances", "appearances"],
     ["studio.html", "Studio", "studio"],
     ["books.html", "Books", "books"],
     ["films.html", "Films", "films"],
@@ -71,11 +72,11 @@
   /* ---------- chrome ---------- */
   /* grouped menu items: each group is one entry in the top bar with a dropdown, and a switcher on its pages */
   const GROUPS = [
-    { label: "Work", after: "home", items: [["writings.html", "Writing", "writings"], ["studio.html", "Studio", "studio"]] },
+    { label: "Work", after: "home", items: [["writings.html", "Writing", "writings"], ["appearances.html", "Appearances", "appearances"], ["studio.html", "Studio", "studio"]] },
     { label: "Taste", after: "studio", items: [["books.html", "Books", "books"], ["films.html", "Films", "films"], ["art.html", "Art", "art"], ["music.html", "Music", "music"]] }
   ];
   const TASTE = GROUPS[1].items;
-  const groupCount = k => ({ writings: S.writings.filter(w => w.type !== "appearance").length, studio: STUDIO.length,
+  const groupCount = k => ({ writings: S.writings.filter(w => w.type !== "appearance").length, appearances: S.writings.filter(w => w.type === "appearance").length, studio: STUDIO.length,
     books: BOOKS.filter(b => b.shelf === "read").length, films: FILMS.length, art: ART.length, music: ALBUMS.length })[k];
   const tasteCount = groupCount;
   const groupOf = key => GROUPS.find(g => g.items.some(it => it[2] === key));
@@ -301,10 +302,40 @@
 
   /* ---------- writing ---------- */
   const TYPE_LABEL = { essay: "Essay", research: "Research", project: "Project", appearance: "Appearance" };
+  const workHref = w => `${w.type === "appearance" ? "appearances" : "writings"}.html#${slug(w.title)}`;
   function workCover(w) { return w.cover ? `<img alt="" loading="lazy" src="${esc(w.cover)}">` : coverFace(w.title, w.venue.split(/[,·]/)[0]); }
   function workPoster(w) {
-    return `<li class="poster-item"><a class="poster" href="writings.html#${slug(w.title)}" title="${esc(w.title)}" aria-label="${esc(w.title)}">${workCover(w)}</a>
+    return `<li class="poster-item"><a class="poster" href="${workHref(w)}" title="${esc(w.title)}" aria-label="${esc(w.title)}">${workCover(w)}</a>
       <div class="poster-meta"><span class="poster-caption">${esc(w.award || TYPE_LABEL[w.type])}</span></div></li>`;
+  }
+  /* photo gallery for an entry: w.gallery = [{ src, cap }] */
+  const galleryOf = w => (w.gallery || []).map(g => typeof g === "string" ? { src: g } : g).filter(g => g && g.src);
+  function galleryStrip(w) {
+    const g = galleryOf(w);
+    if (!g.length) return "";
+    return `<ul class="gallery" aria-label="Photos">${g.map((p, k) => `<li><button type="button" class="gal-thumb" data-gal="${esc(slug(w.title))}" data-k="${k}" aria-label="${esc(p.cap || "Photo " + (k + 1))}">
+      <img src="${esc(p.src)}" alt="" loading="lazy"></button></li>`).join("")}</ul>`;
+  }
+  /* full-size viewer with arrows; one dialog for the whole page */
+  function lightbox() {
+    const dlg = document.createElement("dialog"); dlg.className = "lightbox"; document.body.appendChild(dlg);
+    let set = [], k = 0;
+    const show = () => {
+      const p = set[k];
+      dlg.innerHTML = `<button class="dlg-close" type="button" aria-label="Close">×</button>
+        <figure><img src="${esc(p.src)}" alt="${esc(p.cap || "")}">${p.cap ? `<figcaption>${esc(p.cap)}</figcaption>` : ""}</figure>
+        ${set.length > 1 ? `<div class="dlg-nav"><button type="button" class="nav-btn" data-step="-1" aria-label="Previous">←</button><span>${k + 1} / ${set.length}</span><button type="button" class="nav-btn" data-step="1" aria-label="Next">→</button></div>` : ""}`;
+      $(".dlg-close", dlg).onclick = () => dlg.close();
+      $$("[data-step]", dlg).forEach(b => b.onclick = () => step(+b.dataset.step));
+    };
+    const step = d => { if (set.length < 2) return; k = (k + d + set.length) % set.length; show(); };
+    document.addEventListener("click", e => {
+      const t = e.target.closest("[data-gal]"); if (!t) return;
+      const w = S.writings.find(x => slug(x.title) === t.dataset.gal); if (!w) return;
+      set = galleryOf(w); k = +t.dataset.k; show(); if (!dlg.open) dlg.showModal();
+    });
+    dlg.addEventListener("keydown", e => { if (e.key === "ArrowRight") step(1); if (e.key === "ArrowLeft") step(-1); });
+    dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
   }
   function entry(w) {
     const ext = w.link && !w.link.endsWith(".html") ? ' target="_blank" rel="noopener"' : "";
@@ -320,7 +351,7 @@
         ${w.result ? `<div class="entry-result">${esc(w.result)}</div>` : ""}
         <p class="claim">${w.claim}</p>
         ${w.body ? `<details><summary>More</summary><p>${w.body}</p></details>` : ""}
-        ${link}</div></li>`;
+        ${link}${galleryStrip(w)}</div></li>`;
   }
 
   /* ---------- activity heatmap: books finished, films logged, art logged ---------- */
@@ -396,7 +427,7 @@
         </div>
         <aside>
           ${upcoming.length ? `<section class="side-block">${sectionHead("Upcoming")}<ul class="upcoming">${upcoming.map(w =>
-            `<li><a href="writings.html#${slug(w.title)}">${esc(w.title)}</a><span>${esc(w.venue)}</span></li>`).join("")}</ul></section>` : ""}
+            `<li><a href="${workHref(w)}">${esc(w.title)}</a><span>${esc(w.venue)}</span></li>`).join("")}</ul></section>` : ""}
           <section class="side-block">${sectionHead("Now")}<ul>${p.now.map(n => `<li>${esc(n)}</li>`).join("")}</ul></section>
           <section class="side-block">${sectionHead("Reading")}
             <ul class="posters two">${booksReading().map(b => posterItem(b, { caption: "Since " + fmtDate(b.added) })).join("") || '<li class="empty">Nothing right now.</li>'}</ul></section>
@@ -477,10 +508,11 @@
   }
 
   function writingsPage() {
-    const types = ["all", ...new Set(S.writings.map(w => w.type))];
+    const WR = S.writings.filter(w => w.type !== "appearance");
+    const types = ["all", ...new Set(WR.map(w => w.type))];
     const html = `
       <h1 class="page-title">Writing &amp; projects</h1>
-      <p class="page-sub">Essays, research, projects and appearances.</p>
+      <p class="page-sub">Essays, research and projects. Talks and conferences are under <a href="appearances.html">Appearances</a>.</p>
       <div class="filterbar"><div class="group" role="group" aria-label="Filter by type">
         ${types.map(t => `<button class="chip" type="button" data-type="${t}" aria-pressed="${t === "all"}">${t === "all" ? "All" : (TYPE_LABEL[t] || t) + (t === "research" ? "" : "s")}</button>`).join("")}
       </div><div class="group"><span id="w-count"></span></div></div>
@@ -488,7 +520,7 @@
     setTimeout(() => {
       let type = "all";
       const draw = () => {
-        const list = S.writings.filter(w => type === "all" || w.type === type);
+        const list = WR.filter(w => type === "all" || w.type === type);
         $("#w-list").innerHTML = list.map(entry).join("") || '<li class="empty">Nothing here yet.</li>';
         linkVault($("#w-list"));
         $("#w-count").textContent = plural(list.length, "entry").replace("entrys", "entries");
@@ -502,6 +534,24 @@
       if (location.hash) { const t = document.getElementById(location.hash.slice(1)); if (t) { t.scrollIntoView(); t.classList.add("flash"); } }
     });
     return html;
+  }
+
+  function appearancesPage() {
+    const AP = S.writings.filter(w => w.type === "appearance");
+    const when = w => String(w.start || w.end || "");
+    const upcoming = AP.filter(isUpcoming).sort((a, b) => when(a).localeCompare(when(b)));
+    const past = AP.filter(w => !isUpcoming(w)).sort((a, b) => when(b).localeCompare(when(a)));
+    const photos = AP.reduce((n, w) => n + galleryOf(w).length, 0);
+    setTimeout(() => {
+      linkVault($("#app"));
+      if (location.hash) { const t = document.getElementById(location.hash.slice(1)); if (t) { t.scrollIntoView(); t.classList.add("flash"); } }
+    });
+    return `
+      <div class="page-head"><div><h1 class="page-title">Appearances</h1><p class="page-sub">Conferences, talks and events I’ve been part of.</p></div>
+        ${statsRow([[AP.length, "Events"], [upcoming.length, "Upcoming"], [photos, "Photos"]])}</div>
+      ${upcoming.length ? `<section class="section">${sectionHead("Upcoming")}<ul class="entries">${upcoming.map(entry).join("")}</ul></section>` : ""}
+      ${past.length ? `<section class="section">${sectionHead("Past")}<ul class="entries">${past.map(entry).join("")}</ul></section>` : ""}
+      ${AP.length ? "" : '<p class="note">Nothing here yet.</p>'}`;
   }
 
   function booksPage() {
@@ -959,7 +1009,7 @@
   function searchPalette() {
     const index = [
       ...NAV.map(([href, label]) => ({ type: "Page", t: label, sub: "", href })),
-      ...S.writings.map(w => ({ type: TYPE_LABEL[w.type] || "Writing", t: w.title, sub: w.venue, href: "writings.html#" + slug(w.title) })),
+      ...S.writings.map(w => ({ type: TYPE_LABEL[w.type] || "Writing", t: w.title, sub: w.venue, href: workHref(w) })),
       ...BOOKS.filter(b => b.shelf !== "to-read").map(b => ({ type: "Book", t: b.t, sub: b.a, it: b, href: "books.html" })),
       ...FILMS.map(f => ({ type: "Film", t: f.t, sub: String(f.y || ""), it: f, href: "films.html" })),
       ...ART.map(a => ({ type: "Art", t: a.t, sub: a.artist, it: a, href: "art.html" })),
@@ -1106,12 +1156,13 @@
     document.body.appendChild(sc);
   }
 
-  const PAGES = { notfound: notFoundPage, home, writings: writingsPage, books: booksPage, films: filmsPage, art: artPage, music: musicPage, studio: studioPage, vault: vaultPage, about: aboutPage, socials: socialsPage };
+  const PAGES = { notfound: notFoundPage, home, writings: writingsPage, appearances: appearancesPage, books: booksPage, films: filmsPage, art: artPage, music: musicPage, studio: studioPage, vault: vaultPage, about: aboutPage, socials: socialsPage };
   document.body.insertAdjacentHTML("afterbegin", header());
   const app = document.getElementById("app");
   app.innerHTML = `<div class="wrap">${groupOf(page) ? tasteNav() : ""}${(PAGES[page] || home)()}</div>`;
   document.body.insertAdjacentHTML("beforeend", footer());
   detailDialog();
+  lightbox();
   themeToggle();
   searchPalette();
   chrome();
