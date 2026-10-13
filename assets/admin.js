@@ -1,4 +1,4 @@
-/* admin.js: a small local editor for data/content.js, data/books.js and data/films.js.
+/* admin.js: a small local editor for data/content.js, data/books.js, data/films.js and data/listening.js.
    Open admin.html in Chrome or Edge, click "Connect site folder", pick the portfolio folder,
    edit, then Save. Files you attach (PDFs, covers, photos) are copied into assets/.
    Other browsers can still edit and use "Download content.js". */
@@ -55,7 +55,7 @@
       if (sandbox.SITE && !dirty) { data = sandbox.SITE; loadedStamp = f.lastModified; applyTheme(); if (data.theme && data.theme.fonts) applyFonts(data.theme.fonts); render(); }
     } catch (e) { toast("Could not read data/content.js: " + e.message); }
     let fresh = false;
-    for (const n of ["books", "films"]) {
+    for (const n of LOGS) {
       if (logState[n].dirty) continue;
       try { const r = await readLog(n); if (r.val) { setLog(n, r.val); logState[n].stamp = r.stamp; fresh = true; } }
       catch (e) { toast(`Could not read data/${n}.js: ${e.message}`); }
@@ -110,7 +110,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
         toast("content.js changed since you opened the editor. Click Save again to keep your edits anyway, or reload to start from the new file.");
         return;
       }
-      for (const n of ["books", "films"]) {
+      for (const n of LOGS) {
         const st = logState[n]; if (!st.dirty) continue;
         const d = await readLog(n).catch(() => null);
         if (d && st.stamp && d.stamp > st.stamp && !st.armed) { st.armed = true; toast(`${n}.js changed on disk since you opened the editor. Click Save again to overwrite it, or reload.`); return; }
@@ -125,7 +125,8 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       await writeFile("data/theme.js", new Blob([themeJs(data.theme || {})], { type: "text/javascript" }));
       if (logState.books.dirty) await writeFile("data/books.js", new Blob([booksJs()], { type: "text/javascript" }));
       if (logState.films.dirty) await writeFile("data/films.js", new Blob([filmsJs()], { type: "text/javascript" }));
-      for (const n of ["books", "films"]) { const st = logState[n]; if (st.dirty) { st.dirty = st.armed = false; st.stamp = (await readLog(n)).stamp; } }
+      if (logState.listening.dirty) await writeFile("data/listening.js", new Blob([listeningJs()], { type: "text/javascript" }));
+      for (const n of LOGS) { const st = logState[n]; if (st.dirty) { st.dirty = st.armed = false; st.stamp = (await readLog(n)).stamp; } }
       loadedStamp = (await readDisk()).stamp;
       dirty = false; $("#dirty").hidden = true; $("#save").disabled = true;
       toast("Saved. Reload the site to see it.");
@@ -317,27 +318,6 @@ window.SITE = ${JSON.stringify(data, null, 2)};
         }).filter(s => s.name);
       }
     },
-    music: {
-      label: "Music",
-      help: "Your top five artists, shown at the top of the Music page. Type a name (suggestions come from your listening history) and use the arrows to reorder. Leave a list empty to show your most played artists instead.",
-      render: () => {
-        const MS = (window.MUSIC || {}).artistSide || {};
-        const opts = side => Object.entries(MS).filter(([, v]) => v === side).map(([a]) => `<option value="${esc(a)}"></option>`).join("");
-        const list = (side, title) => {
-          const names = ((data.music || {})[side] || []).slice(0, 5);
-          while (names.length < 5) names.push("");
-          return `<div class="section-head"${side === "other" ? ' style="margin-top:28px"' : ""}><h2>${title}</h2></div>
-            <div class="rows top5-rows" data-rows="m-${side}">${names.map((n, i) => `<div class="row rank-row"><span class="rank-n" aria-hidden="true"></span><input value="${esc(n)}" list="dl-${side}" placeholder="Artist" aria-label="${title} artist ${i + 1}">
-              <button class="icon-btn" type="button" data-rowmove="-1" aria-label="Move up">↑</button><button class="icon-btn" type="button" data-rowmove="1" aria-label="Move down">↓</button></div>`).join("")}</div>
-            <datalist id="dl-${side}">${opts(side)}</datalist>`;
-        };
-        return list("classical", "Classical") + list("other", "Non-classical");
-      },
-      collect: el => {
-        const read = side => $$(`[data-rows=m-${side}] input`, el).map(i => i.value.trim()).filter(Boolean);
-        data.music = { classical: read("classical"), other: read("other") };
-      }
-    },
     settings: {
       label: "Settings",
       help: "Home page books, the Did-not-finish shelf, and cover fixes.",
@@ -363,7 +343,9 @@ window.SITE = ${JSON.stringify(data, null, 2)};
   /* ---------- reading & watching logs: data/books.js and data/films.js ---------- */
   let books = clone(window.BOOKS || {}); books.items = books.items || [];
   let films = clone(window.FILMS || {}); ["items", "diary", "lists", "watchlist", "favorites"].forEach(k => { films[k] = films[k] || []; });
-  const logState = { books: { dirty: false, stamp: 0, armed: false }, films: { dirty: false, stamp: 0, armed: false } };
+  let listening = clone(window.LISTENING || {}); ["items", "diary", "lists", "queue", "favorites"].forEach(k => { listening[k] = listening[k] || []; });
+  const LOGS = ["books", "films", "listening"];
+  const logState = Object.fromEntries(LOGS.map(n => [n, { dirty: false, stamp: 0, armed: false }]));
   const today = () => new Date().toLocaleDateString("en-CA");
   const norm = s => String(s ?? "").normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
   const starTxt = r => r == null || r === "" ? "" : "★".repeat(Math.floor(+r)) + (+r % 1 ? "½" : "");
@@ -372,7 +354,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
   const FILM_R = [["", "No rating"], ...Array.from({ length: 10 }, (_, k) => (k + 1) / 2).map(n => [String(n), starTxt(n)])];
   let bookForm = { mode: "add", v: { shelf: "read", read: today() } };
   let filmForm = { mode: "log", v: { date: today() } };
-  let watchForm = {};
+  let watchForm = {}, toReadForm = {};
 
   async function readLog(n) {
     const f = await (await (await dir.getDirectoryHandle("data")).getFileHandle(n + ".js")).getFile();
@@ -381,6 +363,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
   }
   function setLog(n, v) {
     if (n === "books") { books = v; books.items = books.items || []; }
+    else if (n === "listening") { listening = v; ["items", "diary", "lists", "queue", "favorites"].forEach(k => { listening[k] = listening[k] || []; }); }
     else { films = v; ["items", "diary", "lists", "watchlist", "favorites"].forEach(k => { films[k] = films[k] || []; }); }
   }
   function markLog(n) { logState[n].dirty = true; markDirty(); }
@@ -395,6 +378,49 @@ window.SITE = ${JSON.stringify(data, null, 2)};
   }
   const booksJs = () => logJs("books", books, ["items"], "Books: what I have read, am reading and want to read.");
   const filmsJs = () => logJs("films", films, ["items", "diary", "watchlist"], "Films: everything I have seen, a dated diary, ranked lists and a watchlist.");
+  const listeningJs = () => logJs("listening", listening, ["items", "diary", "queue"], "Music: albums I've listened to, a dated diary, ranked lists and a to-listen list.");
+
+  /* ----- ranked lists, shared by Watching and Music ----- */
+  const LIST_KINDS = {
+    films: { lists: () => films.lists, items: () => films.items, label: f => filmLabel(f), noun: "film",
+      find: label => films.items.findIndex(f => filmLabel(f) === label),
+      entry: (fi, pos) => ({ pos, f: fi, t: films.items[fi].t, y: String(films.items[fi].y || "") }), idx: x => x.f },
+    listening: { lists: () => listening.lists, items: () => listening.items, label: a => albumLabel(a), noun: "album",
+      find: label => listening.items.findIndex(a => albumLabel(a) === label),
+      entry: (m, pos) => ({ pos, m }), idx: x => x.m }
+  };
+  const listRow = (kind, label = "") => `<div class="row rank-row"><span class="rank-n" aria-hidden="true"></span><input value="${esc(label)}" list="dl-${kind}-all" placeholder="Start typing a ${LIST_KINDS[kind].noun} you’ve logged" aria-label="List entry">
+    <button class="icon-btn" type="button" data-rowmove="-1" aria-label="Move up">↑</button><button class="icon-btn" type="button" data-rowmove="1" aria-label="Move down">↓</button><button class="icon-btn danger" type="button" data-rowdel aria-label="Remove">×</button></div>`;
+  function listsHtml(kind) {
+    const K = LIST_KINDS[kind], L = K.lists(), items = K.items();
+    return `<div class="section-head" style="margin-top:26px"><h2>Lists</h2></div>
+      <p class="ed-help">Ranked lists, shown on the Lists tab. Entries must be ${K.noun}s you’ve logged; use the arrows to rank them.</p>
+      <div data-lists="${kind}">${L.map((l, j) => `<div class="card open" data-list="${j}">
+        <div class="card-head"><b>${esc(l.name || "Untitled list")}</b><span class="pill">${(l.items || []).length}</span>
+          <button class="icon-btn danger" type="button" data-act="ls-del" data-kind="${kind}" data-j="${j}" aria-label="Delete list">×</button></div>
+        <div class="card-body"><div class="grid2"><label class="f"><span>Name</span><input type="text" data-ls="name" value="${esc(l.name || "")}"></label>
+          <label class="f"><span>Description</span><input type="text" data-ls="desc" value="${esc(l.desc || "")}"></label></div>
+          <div class="rows top5-rows wide" data-rows="ls-${kind}-${j}">${(l.items || []).map(x => listRow(kind, items[K.idx(x)] ? K.label(items[K.idx(x)]) : "")).join("")}</div>
+          <button class="btn add" type="button" data-act="ls-add" data-kind="${kind}" data-j="${j}">+ Add ${K.noun}</button></div></div>`).join("")}</div>
+      <button class="btn add" type="button" data-act="ls-new" data-kind="${kind}">+ New list</button>
+      <datalist id="dl-${kind}-all">${items.map(x => `<option value="${esc(K.label(x))}"></option>`).join("")}</datalist>`;
+  }
+  /* read the list editor back into data; unknown entries are reported, not saved */
+  function collectLists(el, kind) {
+    const box = $(`[data-lists=${kind}]`, el); if (!box) return;
+    const K = LIST_KINDS[kind], missing = [];
+    const next = $$("[data-list]", box).map(card => {
+      const entries = [];
+      $$(".rows input", card).forEach(i => {
+        const v = i.value.trim(); if (!v) return;
+        const k = K.find(v);
+        if (k < 0) missing.push(v); else if (!entries.some(e => K.idx(e) === k)) entries.push(K.entry(k, entries.length + 1));
+      });
+      return { name: $("[data-ls=name]", card).value.trim() || "Untitled list", desc: $("[data-ls=desc]", card).value.trim(), items: entries };
+    });
+    const L = K.lists(); L.splice(0, L.length, ...next);
+    if (missing.length) toast(`Not in your log, so left out: ${missing.slice(0, 3).join("; ")}${missing.length > 3 ? "…" : ""}. Log it first.`);
+  }
 
   /* ----- Reading ----- */
   const bookVals = b => ({ full: b.full || b.t, a: b.a || "", shelf: b.shelf || "read", read: b.read || "", added: b.added || "", r: b.r == null ? "" : String(b.r),
@@ -509,6 +535,103 @@ window.SITE = ${JSON.stringify(data, null, 2)};
   }
   const plural = (n, one, many) => `${n} ${n === 1 ? one : many || one + "s"}`;
 
+  /* ----- Music ----- */
+  const SIDES = [["other", "Non-classical"], ["classical", "Classical"]];
+  const albumLabel = a => `${a.t} · ${a.a || "Unknown"}`;
+  const findAlbum = (t, a) => listening.items.findIndex(x => norm(x.t) === norm(t) && (!a || !x.a || norm(x.a) === norm(a)));
+  /* "https://open.spotify.com/album/ID?si=…" or "spotify:album:ID" → "album/ID" */
+  const spPath = v => { const m = String(v || "").match(/(album|track|playlist)[/:]([A-Za-z0-9]{10,})/); return m ? `${m[1]}/${m[2]}` : ""; };
+  const MU_ALBUMS = () => { const M = window.MUSIC || {}; return (M.albums || []).map(a => ({ t: a.t, a: a.a, sp: "track/" + a.id, side: (M.artistSide || {})[a.a] || "other" })); };
+  let albumForm = { mode: "log", v: { date: today(), side: "other" } };
+  let queueForm = {};
+  const albumVals = (a, extra = {}) => ({ t: a.t, a: a.a || "", y: a.y ? String(a.y) : "", side: a.side || "other", r: a.r == null ? "" : String(a.r), liked: !!a.liked,
+    sp: a.sp ? "https://open.spotify.com/" + a.sp : "", cover: a.cover || "", added: a.added || "", ...extra });
+  function albumFormHtml() {
+    const f = albumForm, v = f.v, p = { prefix: "al-" };
+    const common = `<div class="grid2">${field(v, "sp", "Spotify link (optional)", { ...p, placeholder: "https://open.spotify.com/album/…", hint: "Used for the cover and a Listen link." })}${field(v, "cover", "Cover image (optional)", { ...p, type: "file", dir: "assets/music", accept: "image/*" })}</div>`;
+    if (f.mode === "album") return `<div class="logform" id="al-form"><h2>Edit album</h2>
+      <div class="grid3">${field(v, "t", "Title", p)}${field(v, "a", "Artist or composer", p)}${field(v, "y", "Year", p)}</div>
+      <div class="grid3">${field(v, "side", "Type", { ...p, type: "select", options: SIDES })}${field(v, "r", "Rating", { ...p, type: "select", options: FILM_R })}<div>${field(v, "liked", "Liked ♥", { type: "check" })}</div></div>
+      ${common}${field(v, "added", "Date added", { ...p, type: "date" })}
+      <p class="ed-help">${plural(listening.diary.filter(d => d.m === f.i).length, "diary entry", "diary entries")}. Deleting the album also removes them and takes it off your lists and favorites.</p>
+      <div class="logbtns"><button class="btn go" type="button" data-act="al-save">Update album</button><button class="btn" type="button" data-act="al-cancel">Cancel</button><button class="btn danger-btn" type="button" data-act="al-del">Delete album</button></div></div>`;
+    const diary = f.mode === "diary", ro = diary ? "readonly " : "";
+    const known = [...listening.items.map(albumLabel), ...MU_ALBUMS().map(albumLabel)].filter((x, i, a) => a.indexOf(x) === i);
+    return `<div class="logform" id="al-form"><h2>${diary ? "Edit diary entry" : "Log an album"}</h2>
+      <div class="grid3">${field(v, "t", "Album", { ...p, placeholder: "Start typing; logged and most-played albums are suggested" }).replace("<input ", `<input list="al-titles" autocomplete="off" ${ro}`)}${field(v, "a", "Artist or composer", p).replace("<input ", "<input " + ro)}${field(v, "date", "Date listened", { ...p, type: "date" })}</div>
+      <div class="grid3">${field(v, "r", "Rating", { ...p, type: "select", options: FILM_R })}<div>${field(v, "liked", "Liked ♥", { type: "check" })}</div><div>${field(v, "again", "Relisten", { type: "check" })}</div></div>
+      ${diary ? "" : `<div class="grid3">${field(v, "y", "Year released", { ...p, placeholder: "1959" })}${field(v, "side", "Type", { ...p, type: "select", options: SIDES })}<div></div></div>${common}`}
+      ${field(v, "review", "Review", { ...p, type: "textarea", rows: 3 })}
+      <div class="logbtns">${diary ? `<button class="btn go" type="button" data-act="al-save">Update entry</button><button class="btn" type="button" data-act="al-cancel">Cancel</button><button class="btn danger-btn" type="button" data-act="al-del">Delete entry</button>`
+        : `<button class="btn go" type="button" data-act="al-save">Log it</button>`}</div>
+      <datalist id="al-titles">${known.map(x => `<option value="${esc(x)}"></option>`).join("")}</datalist></div>`;
+  }
+  function commitAlbum(v) {
+    const f = albumForm;
+    if (!v.t) { toast("Give the album a title."); return; }
+    const y = v.y ? +v.y || null : null, sp = spPath(v.sp) || null;
+    if (f.mode === "album") {
+      const it = listening.items[f.i];
+      Object.assign(it, { t: v.t, a: v.a || "", y, side: v.side || "other", r: v.r ? +v.r : null, liked: !!v.liked, sp, cover: v.cover || null, added: v.added || it.added });
+      toast("Updated " + v.t);
+    } else if (f.mode === "diary") {
+      const d = listening.diary[f.i], it = listening.items[d.m];
+      Object.assign(d, { date: v.date || d.date, r: v.r ? +v.r : null, again: !!v.again, review: v.review || null });
+      it.liked = !!v.liked; if (v.r) it.r = +v.r;
+      toast("Updated entry");
+    } else {
+      let mi = findAlbum(v.t, v.a);
+      if (mi < 0) { listening.items.push({ t: v.t, a: v.a || "", y, side: v.side || "other", r: null, liked: false, added: today(), sp, cover: v.cover || null }); mi = listening.items.length - 1; }
+      const it = listening.items[mi];
+      if (v.r) it.r = +v.r;
+      it.liked = !!v.liked;
+      if (y && !it.y) it.y = y;
+      if (sp && !it.sp) it.sp = sp;
+      if (v.cover && !it.cover) it.cover = v.cover;
+      listening.diary.unshift({ m: mi, date: v.date || today(), r: v.r ? +v.r : null, again: !!v.again, review: v.review || null });
+      listening.queue = listening.queue.filter(q => !(norm(q.t) === norm(it.t) && (!q.a || norm(q.a) === norm(it.a))));
+      toast("Logged " + it.t);
+    }
+    listening.diary.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    albumForm = { mode: "log", v: { date: today(), side: "other" } };
+    markLog("listening"); render();
+  }
+  function deleteAlbum(mi) {
+    const m = i => i > mi ? i - 1 : i;
+    listening.items.splice(mi, 1);
+    listening.diary = listening.diary.filter(d => d.m !== mi).map(d => ({ ...d, m: m(d.m) }));
+    listening.lists.forEach(l => { l.items = (l.items || []).filter(x => x.m !== mi).map((x, k) => ({ ...x, m: m(x.m), pos: k + 1 })); });
+    listening.favorites = listening.favorites.filter(i => i !== mi).map(m);
+  }
+  function albumRows() {
+    const q = norm(($("#al-q") || {}).value), mode = ($("#al-show") || {}).value || "diary";
+    if (mode === "albums") {
+      const L = listening.items.map((a, i) => [a, i]).filter(([a]) => !q || norm(albumLabel(a)).includes(q)).reverse();
+      return L.slice(0, 100).map(([a, i]) => `<li><button type="button" class="lrow f4" data-act="al-edit" data-i="${i}"><b>${esc(a.t)}</b><span>${esc(a.a || "")}</span>
+        <span class="lr-stars">${starTxt(a.r)}${a.liked ? " ♥" : ""}</span><span class="lr-date">${esc(a.added || "")}</span></button></li>`).join("") || '<li class="lempty">Nothing logged yet.</li>';
+    }
+    const L = listening.diary.map((d, i) => [d, i, listening.items[d.m] || { t: "?" }]).filter(([, , a]) => !q || norm(albumLabel(a)).includes(q));
+    return (L.slice(0, 100).map(([d, i, a]) => `<li><button type="button" class="lrow f4" data-act="al-diary" data-i="${i}"><b>${esc(a.t)}</b><span>${esc(a.a || "")}</span>
+      <span class="lr-stars">${starTxt(d.r)}${d.again ? " ↻" : ""}${d.review ? " ✎" : ""}</span><span class="lr-date">${esc(d.date)}</span></button></li>`).join("") || '<li class="lempty">Nothing logged yet.</li>')
+      + (L.length > 100 ? `<li class="lempty">Showing 100 of ${L.length}. Search to narrow.</li>` : "");
+  }
+  /* top five artists: kept in content.js as data.music = { classical: [...], other: [...] } */
+  function topFiveHtml() {
+    const MS = (window.MUSIC || {}).artistSide || {};
+    const opts = side => Object.entries(MS).filter(([, v]) => v === side).map(([a]) => `<option value="${esc(a)}"></option>`).join("");
+    const list = (side, title) => {
+      const names = ((data.music || {})[side] || []).slice(0, 5);
+      while (names.length < 5) names.push("");
+      return `<h3 class="sub-h">${title}</h3>
+        <div class="rows top5-rows" data-rows="m-${side}">${names.map((n, i) => `<div class="row rank-row"><span class="rank-n" aria-hidden="true"></span><input value="${esc(n)}" list="dl-${side}" placeholder="Artist" aria-label="${title} artist ${i + 1}">
+          <button class="icon-btn" type="button" data-rowmove="-1" aria-label="Move up">↑</button><button class="icon-btn" type="button" data-rowmove="1" aria-label="Move down">↓</button></div>`).join("")}</div>
+        <datalist id="dl-${side}">${opts(side)}</datalist>`;
+    };
+    return `<div class="section-head" style="margin-top:26px"><h2>Top five artists</h2></div>
+      <p class="ed-help">Shown at the top of the Music page. Leave a list empty to show your most played artists instead.</p>
+      ${list("classical", "Classical")}${list("other", "Non-classical")}`;
+  }
+
   const LOG_SECTIONS = {
     reading: {
       label: "Reading",
@@ -518,12 +641,16 @@ window.SITE = ${JSON.stringify(data, null, 2)};
         return `<div data-nodirty>${bookFormHtml()}
         ${reading.length ? `<div class="section-head" style="margin-top:26px"><h2>Currently reading</h2></div><ul class="chips">${reading.map(([b, i]) =>
           `<li><span>${esc(b.full || b.t)}</span><button class="btn" type="button" data-act="bk-finish" data-i="${i}">Finished</button></li>`).join("")}</ul>` : ""}
+        <div class="section-head" style="margin-top:26px"><h2>Want to read</h2></div>
+        <div class="lfilter" id="tr-form"><input type="text" data-tr="t" placeholder="Title" aria-label="Title" value="${esc(toReadForm.t || "")}"><input type="text" data-tr="a" placeholder="Author" aria-label="Author" value="${esc(toReadForm.a || "")}">
+          <button class="btn" type="button" data-act="tr-add">+ Add</button></div>
+        <p class="ed-help">${plural(books.items.filter(b => b.shelf === "to-read").length, "book")} on the list. Use Finished or the form above when you read one.</p>
         <div class="section-head" style="margin-top:26px"><h2>Library</h2></div>
         <div class="lfilter"><input type="search" id="bk-q" placeholder="Search ${books.items.length} books" aria-label="Search books">
           <select id="bk-shelf" aria-label="Status"><option value="all">All</option>${SHELVES.map(([k, l]) => `<option value="${k}">${l} (${books.items.filter(b => b.shelf === k).length})</option>`).join("")}</select></div>
         <ul class="llist" id="bk-list">${bookRows()}</ul></div>`;
       },
-      collect: el => { const fm = $("#bk-form", el); if (fm) { const v = {}; readInto(fm, v); bookForm.v = v; } }
+      collect: el => { const fm = $("#bk-form", el); if (fm) { const v = {}; readInto(fm, v); bookForm.v = v; } $$("[data-tr]", el).forEach(i => { toReadForm[i.dataset.tr] = i.value; }); }
     },
     watching: {
       label: "Watching",
@@ -539,6 +666,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
           <button class="btn" type="button" data-act="wl-add">+ Add</button></div>
         <ul class="llist">${films.watchlist.map((w, i) => `<li class="lrow static"><b>${esc(w.t)}</b><span>${esc(w.y || "")}</span><span class="lr-date">${esc(w.added || "")}</span>
           <span class="lr-acts"><button class="btn" type="button" data-act="wl-watched" data-i="${i}">Watched</button><button class="icon-btn danger" type="button" data-act="wl-del" data-i="${i}" aria-label="Remove">×</button></span></li>`).join("") || '<li class="lempty">Empty.</li>'}</ul>
+        ${listsHtml("films")}
         <div class="section-head" style="margin-top:26px"><h2>History</h2></div>
         <div class="lfilter"><input type="search" id="fm-q" placeholder="Search" aria-label="Search films">
           <select id="fm-show" aria-label="Show"><option value="diary">Diary (${films.diary.length})</option><option value="films">Films (${films.items.length})</option></select></div>
@@ -547,6 +675,38 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       collect: el => {
         const fm = $("#fm-form", el); if (fm) { const v = {}; readInto(fm, v); filmForm.v = v; }
         $$("[data-wl]", el).forEach(i => { watchForm[i.dataset.wl] = i.value; });
+        collectLists(el, "films");
+      }
+    },
+    music: {
+      label: "Music",
+      help: "Log albums here, like films: logging adds a diary entry, adds the album if it’s new, updates its rating and takes it off your to-listen list. Pick a suggestion to fill in the artist, type and Spotify link. Save writes data/listening.js.",
+      render: () => {
+        const opts = listening.items.map((a, i) => [a, i]).sort(([a], [b]) => a.t.localeCompare(b.t));
+        return `<div data-nodirty>${albumFormHtml()}
+        <div class="section-head" style="margin-top:26px"><h2>Favorite albums</h2></div>
+        <div class="grid2 favs">${[0, 1, 2, 3].map(k => `<label class="f"><span>Favorite ${k + 1}</span><select data-afav="${k}"><option value="">None</option>${opts.map(([a, i]) =>
+          `<option value="${i}" ${listening.favorites[k] === i ? "selected" : ""}>${esc(albumLabel(a))}</option>`).join("")}</select></label>`).join("")}</div>
+        <div class="section-head" style="margin-top:26px"><h2>To listen</h2></div>
+        <div class="lfilter" id="ql-form"><input type="text" data-ql="t" placeholder="Album" aria-label="Album" value="${esc(queueForm.t || "")}" list="al-titles-q"><input type="text" data-ql="a" placeholder="Artist" aria-label="Artist" value="${esc(queueForm.a || "")}">
+          <select data-ql="side" aria-label="Type">${SIDES.map(([k, l]) => `<option value="${k}" ${queueForm.side === k ? "selected" : ""}>${l}</option>`).join("")}</select>
+          <button class="btn" type="button" data-act="ql-add">+ Add</button></div>
+        <datalist id="al-titles-q">${MU_ALBUMS().map(x => `<option value="${esc(x.t)}">${esc(x.a)}</option>`).join("")}</datalist>
+        <ul class="llist">${listening.queue.map((q, i) => `<li class="lrow static"><b>${esc(q.t)}</b><span>${esc(q.a || "")}</span><span class="lr-date">${esc(q.added || "")}</span>
+          <span class="lr-acts"><button class="btn" type="button" data-act="ql-done" data-i="${i}">Listened</button><button class="icon-btn danger" type="button" data-act="ql-del" data-i="${i}" aria-label="Remove">×</button></span></li>`).join("") || '<li class="lempty">Empty.</li>'}</ul>
+        ${listsHtml("listening")}
+        <div class="section-head" style="margin-top:26px"><h2>History</h2></div>
+        <div class="lfilter"><input type="search" id="al-q" placeholder="Search" aria-label="Search albums">
+          <select id="al-show" aria-label="Show"><option value="diary">Diary (${listening.diary.length})</option><option value="albums">Albums (${listening.items.length})</option></select></div>
+        <ul class="llist" id="al-list">${albumRows()}</ul></div>
+        ${topFiveHtml()}`;
+      },
+      collect: el => {
+        const fm = $("#al-form", el); if (fm) { const v = {}; readInto(fm, v); albumForm.v = v; }
+        $$("[data-ql]", el).forEach(i => { queueForm[i.dataset.ql] = i.value; });
+        collectLists(el, "listening");
+        const read = side => $$(`[data-rows=m-${side}] input`, el).map(i => i.value.trim()).filter(Boolean);
+        if ($("[data-rows=m-classical]", el)) data.music = { classical: read("classical"), other: read("other") };
       }
     }
   };
@@ -555,6 +715,16 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     const t = e.target;
     if (t.id === "bk-q") { $("#bk-list").innerHTML = bookRows(); return; }
     if (t.id === "fm-q") { $("#fm-list").innerHTML = filmRows(); return; }
+    if (t.id === "al-q") { $("#al-list").innerHTML = albumRows(); return; }
+    if (t.closest("[data-lists]")) { markLog(t.closest("[data-lists]").dataset.lists); return; }
+    if (t.matches("#al-form [data-k=t]") && albumForm.mode === "log") {
+      const hit = listening.items.find(a => albumLabel(a) === t.value) || MU_ALBUMS().find(a => albumLabel(a) === t.value);
+      if (hit) {
+        const F = $("#al-form"), set = (k, v) => { const i = $(`[data-k=${k}]`, F); if (i && v != null && v !== "") i.type === "checkbox" ? i.checked = !!v : i.value = v; };
+        t.value = hit.t; set("a", hit.a); set("side", hit.side); set("y", hit.y); if (hit.sp) set("sp", "https://open.spotify.com/" + hit.sp);
+        if (listening.items.includes(hit)) { set("liked", hit.liked); set("again", true); }
+      }
+    }
     if (t.matches("#bk-form [data-k=full]") && bookForm.mode === "add") {
       const i = books.items.findIndex(b => (b.full || b.t) === t.value);
       if (i >= 0) { bookForm = { mode: "edit", i, v: bookVals(books.items[i]) }; $("#bk-form").outerHTML = bookFormHtml(); toast("Editing your existing entry"); }
@@ -569,6 +739,11 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     const t = e.target;
     if (t.id === "bk-shelf") { $("#bk-list").innerHTML = bookRows(); return; }
     if (t.id === "fm-show") { $("#fm-list").innerHTML = filmRows(); return; }
+    if (t.id === "al-show") { $("#al-list").innerHTML = albumRows(); return; }
+    if (t.matches("[data-afav]")) {
+      const sel = $$("[data-afav]").map(s => s.value).filter(Boolean).map(Number);
+      listening.favorites = sel.filter((v, i) => sel.indexOf(v) === i); markLog("listening"); return;
+    }
     if (t.matches("[data-fav]")) {
       const sel = $$("[data-fav]").map(s => s.value).filter(Boolean).map(Number);
       films.favorites = sel.filter((v, i) => sel.indexOf(v) === i); markLog("films");
@@ -601,11 +776,53 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       films.watchlist.unshift({ t, y, added: today() }); watchForm = {}; markLog("films"); render(); toast("Added to watchlist");
     }
     else if (act === "wl-del") { const w = films.watchlist.splice(i, 1)[0]; markLog("films"); collect(); render(); toast("Removed " + w.t); }
+    else if (act === "tr-add") {
+      SECTIONS.reading.collect(el);
+      const t = (toReadForm.t || "").trim(), au = (toReadForm.a || "").trim();
+      if (!t) { toast("Give the book a title."); return; }
+      if (books.items.some(b => norm(b.full || b.t) === norm(t))) { toast(`${t} is already in your library.`); return; }
+      books.items.unshift({ t: t.split(/:\s/)[0].trim(), full: t, a: au, isbn: null, r: null, read: null, added: today(), shelf: "to-read", fav: false, review: null, pages: null, year: null });
+      toReadForm = {}; markLog("books"); render(); toast("Added to Want to read");
+    }
+    else if (act === "al-save") { SECTIONS.music.collect(el); commitAlbum(albumForm.v); }
+    else if (act === "al-cancel") { albumForm = { mode: "log", v: { date: today(), side: "other" } }; render(); }
+    else if (act === "al-edit") { albumForm = { mode: "album", i, v: albumVals(listening.items[i]) }; top(); }
+    else if (act === "al-diary") { const d = listening.diary[i], a = listening.items[d.m] || {}; albumForm = { mode: "diary", i, v: albumVals(a, { date: d.date, r: d.r == null ? "" : String(d.r), again: !!d.again, review: d.review || "" }) }; top(); }
+    else if (act === "al-del") {
+      if (!armed()) return;
+      if (albumForm.mode === "album") { const t = listening.items[albumForm.i].t; deleteAlbum(albumForm.i); toast("Deleted " + t); }
+      else { listening.diary.splice(albumForm.i, 1); toast("Deleted entry"); }
+      albumForm = { mode: "log", v: { date: today(), side: "other" } }; markLog("listening"); render();
+    }
+    else if (act === "ql-add") {
+      SECTIONS.music.collect(el);
+      const t = (queueForm.t || "").trim();
+      if (!t) { toast("Give the album a title."); return; }
+      const [tt, aa] = t.includes(" · ") && !queueForm.a ? t.split(" · ") : [t, queueForm.a || ""];
+      const hit = MU_ALBUMS().find(a => norm(a.t) === norm(tt) && (!aa || norm(a.a) === norm(aa)));
+      listening.queue.unshift({ t: tt.trim(), a: aa.trim(), side: queueForm.side || (hit ? hit.side : "other"), sp: hit ? hit.sp : null, added: today() });
+      queueForm = {}; markLog("listening"); render(); toast("Added to To listen");
+    }
+    else if (act === "ql-del") { const q = listening.queue.splice(i, 1)[0]; markLog("listening"); collect(); render(); toast("Removed " + q.t); }
+    else if (act === "ql-done") { const q = listening.queue[i]; albumForm = { mode: "log", v: { t: q.t, a: q.a || "", side: q.side || "other", sp: q.sp ? "https://open.spotify.com/" + q.sp : "", date: today() } }; top(); $("#al-r").focus(); }
+    else if (act === "ls-new" || act === "ls-add" || act === "ls-del") {
+      const kind = a.dataset.kind, j = +a.dataset.j;
+      if (act === "ls-del" && !armed()) return;
+      collect();
+      const L = LIST_KINDS[kind].lists();
+      if (act === "ls-new") L.push({ name: "New list", desc: "", items: [] });
+      if (act === "ls-del") L.splice(j, 1);
+      markLog(kind); render();
+      if (act === "ls-add") { $(`[data-rows=ls-${kind}-${j}]`).insertAdjacentHTML("beforeend", listRow(kind)); $(`[data-rows=ls-${kind}-${j}] .row:last-child input`).focus(); }
+      if (act === "ls-new") { const c = $$(`[data-lists=${kind}] [data-list]`).at(-1); c.scrollIntoView({ block: "center" }); $("[data-ls=name]", c).select(); }
+    }
     else if (act === "wl-watched") { const w = films.watchlist[i]; filmForm = { mode: "log", v: { t: w.t, y: w.y ? String(w.y) : "", date: today() } }; top(); $("#fm-r").focus(); }
   });
 
   Object.assign(SECTIONS, LOG_SECTIONS);
   const ORDER = ["theme", "profile", "now", "writings", "studio", "reading", "watching", "music", "about", "socials", "settings"];
+  /* moving or removing a list entry changes that log */
+  document.addEventListener("click", e => { const b = e.target.closest("[data-lists] [data-rowmove], [data-lists] [data-rowdel]"); if (b) markLog(b.closest("[data-lists]").dataset.lists); }, true);
 
   const KINDS = [["Drawing", "Drawing"], ["Painting", "Painting"], ["Photography", "Photography"]];
   function scard(w, i) {

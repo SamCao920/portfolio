@@ -958,3 +958,13 @@ body > main { flex: 1 0 auto; }
 .rank-list a:hover b { color: var(--accent); }
 .rank-list a span { display: block; font-size: 12px; color: var(--muted); }
 .seg a span:empty, .nav-menu a span:empty { display: none; }
+/* music log */
+.poster.sq { aspect-ratio: 1; }
+.poster.sq .cover-title { font-size: clamp(11px, 1.3vw, 14px); }
+.obj3d.record .side, .obj3d.record .back { background: #111114; }
+.mp-note { margin: 0 0 14px; }
+.mp-bar { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-bottom: 12px; }
+.mp-bar .side-seg { margin: 0; }
+.recent-albums .linkish { display: block; min-width: 0; text-align: left; padding: 0; }
+.recent-albums li:has(.ra-d:empty) { grid-template-columns: minmax(0, 1fr); }
+.recent-albums .ra-d:empty { display: none; }

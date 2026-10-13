@@ -4,7 +4,7 @@ Pull the quote bank from the Obsidian vault into data/quotes.js for the home pag
 
     python3 tools/import-quotes.py [path/to/Commonplace]
 
-Reads "4 - Maps of Content/quote bank.md". A quote is a top-level bullet (or an
+Reads "quote bank.md" wherever it sits in the vault. A quote is a top-level bullet (or an
 unbulleted *italic* block), and its attribution is the indented bullet under it.
 Indented bullets that read as commentary (long ones) are skipped, and the quote is
 credited to its section instead (e.g. "## [[Essays (book)]]" -> Montaigne, Essays).
@@ -18,7 +18,8 @@ import html, json, os, re, sys, datetime
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 VAULT = sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser('~/Commonplace')
-SRC = os.path.join(VAULT, '4 - Maps of Content', 'quote bank.md')
+SRC = next((os.path.join(dp, 'quote bank.md') for dp, dn, fn in os.walk(VAULT) if 'quote bank.md' in fn and '.trash' not in dp),
+           os.path.join(VAULT, '2 - Source Material', 'quote bank.md'))
 
 # credit for quotes in a section whose own attribution line is commentary or missing
 SECTION_CREDIT = {'Hamlet': 'William Shakespeare, *Hamlet*', 'Essays': 'Montaigne, *Essays*'}

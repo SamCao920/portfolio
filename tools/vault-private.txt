@@ -1,0 +1,20 @@
+# Vault notes and folders kept off the website: the Vault graph, its search and the note text.
+# One name per line. A folder name hides everything in it; a note name (without .md) hides that note.
+# A note can also hide itself with "publish: false" in its front matter.
+# The home page quotes still come from the quote bank (tools/import-quotes.py); only the note itself is hidden.
+
+# folders
+1 - Unsorted
+5 - Templates
+Word-Smith
+definitions
+
+# notes
+inbox
+notepad
+advice
+quote bank
+scratchpad
+writing ideas
+zettelkasten styleguide
+glossary

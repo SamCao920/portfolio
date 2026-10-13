@@ -5,7 +5,7 @@ Set-Location $site
 $mutex = New-Object System.Threading.Mutex($false, "Local\SiteAdminAutoPush")
 if (-not $mutex.WaitOne(0)) { exit 0 }   # already running
 
-$files = "data\content.js", "data\books.js", "data\films.js", "data\theme.js"
+$files = "data\content.js", "data\books.js", "data\films.js", "data\theme.js", "data\listening.js"
 function Stamp { ($files | ForEach-Object { if (Test-Path $_) { (Get-Item $_).LastWriteTimeUtc.Ticks } }) -join "," }
 
 "$(Get-Date -Format s) watcher started"
@@ -24,6 +24,7 @@ while ($true) {
     git diff --cached --quiet
     if ($LASTEXITCODE -ne 0) {
       git commit -m "Admin edit $(Get-Date -Format 'yyyy-MM-dd HH:mm')"   # pre-commit hook stamps cache-busting
+      git pull --rebase --autostash -q   # another computer may have pushed since
       git push
       "$(Get-Date -Format s) pushed"
     }

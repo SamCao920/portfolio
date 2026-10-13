@@ -10,7 +10,7 @@
 <link rel="icon" href="assets/website/my-notion-face-transparent.ico" type="image/x-icon">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="assets/style.css?v=bde7a0af">
+<link rel="stylesheet" href="assets/style.css?v=b19fbfd3">
 <style>
   /* Editor layout: sticky toolbar, section list on the left, form on the right. */
   body { min-height: 100vh; }
@@ -69,6 +69,12 @@
   .rows .row.rank-row { grid-template-columns: 28px minmax(0, 1fr) auto auto; counter-increment: rk; }
   .rank-n::before { content: counter(rk); font: 700 16px/1 var(--body); color: var(--accent); }
   @media (max-width: 600px) { .rows .row.rank-row { grid-template-columns: 28px minmax(0, 1fr) auto auto; } .rows .row.rank-row input { grid-column: auto; } }
+  .top5-rows.wide { max-width: none; }
+  .rows .row.rank-row:has([data-rowdel]) { grid-template-columns: 28px minmax(0, 1fr) auto auto auto; }
+  .sub-h { margin: 14px 0 8px; font: 600 12px/1 var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  [data-lists] .card { margin-bottom: 12px; }
+  [data-lists] .card-head { cursor: default; }
+  #ql-form select { flex: none; }
   .confirm { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; color: var(--accent); }
   .add { margin: 6px 0 22px; }
   .ed-tools { margin-top: 30px; padding: 16px; border-radius: 8px; background: var(--bg-raised); border: 1px dashed var(--line-strong); font-size: 13px; }
@@ -141,6 +147,7 @@
 <script src="data/books.js?v=c1886f1f"></script>
 <script src="data/films.js?v=37eedd60"></script>
 <script src="data/music.js?v=8e55ff1d"></script>
-<script src="assets/admin.js?v=d6d949bc"></script>
+<script src="data/listening.js?v=c805757f"></script>
+<script src="assets/admin.js?v=3450500f"></script>
 </body>
 </html>

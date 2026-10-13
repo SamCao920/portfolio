@@ -9,8 +9,8 @@ the simulation's fixed point and the graph opens settled), and rewrites the
 
     python3 tools/build-graph.py "/path/to/vault" [path/to/vault.html]
 
-Requires numpy. Excludes .trash, .obsidian, templates and assets by default —
-add folder names to SKIP to keep anything else off the public page.
+Requires numpy. Excludes .trash, .obsidian, templates and assets, plus every folder
+and note listed in tools/vault-private.txt and any note marked "publish: false".
 """
 import json, os, re, sys
 from datetime import datetime, timezone
@@ -19,8 +19,27 @@ import numpy as np
 SKIP = {'.trash', '.obsidian', '.claude', '.claudian', '.pandoc',
         '5 - Templates', '0 - Assets', '.git'}
 
-# Individual notes to keep off the public graph (matched case-insensitively).
-EXCLUDE_NOTES = {'inbox'}
+# Personal notes and folders kept off the site: tools/vault-private.txt, one name per line.
+# Notes with "publish: false" in their front matter are left out too.
+def load_private():
+    f = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'vault-private.txt')
+    names = set()
+    if os.path.exists(f):
+        for line in open(f, encoding='utf-8'):
+            line = line.strip()
+            if line and not line.startswith('#'):
+                names.add(line.lower())
+    return names or {'inbox'}
+PRIVATE = load_private()
+PRIVATE_FM = re.compile(r'\A---\s*\n(.*?)\n---', re.S)
+
+def is_private(path):
+    try:
+        head = open(path, encoding='utf-8', errors='ignore').read(4000)
+    except OSError:
+        return False
+    m = PRIVATE_FM.match(head)
+    return bool(m and re.search(r'^publish:\s*(false|no)\s*$', m.group(1), re.M | re.I))
 
 # Must match the constants in the page's vaultGraph() module.
 REPEL, SPRING, LINK_LEN, CENTER, DAMP = 26.0, 0.045, 26.0, 0.010, 0.72
@@ -32,15 +51,15 @@ LINK_RE = re.compile(r'\[\[([^\]\|#\^]+)(?:[#\^][^\]\|]*)?(?:\|[^\]]*)?\]\]')
 def scan(vault):
     notes = {}
     for dp, dn, fn in os.walk(vault):
-        dn[:] = [d for d in dn if d not in SKIP and not d.startswith('.')]
+        dn[:] = [d for d in dn if d not in SKIP and not d.startswith('.') and d.lower() not in PRIVATE]
         top = os.path.relpath(dp, vault).split(os.sep)[0]
-        if top in SKIP:
+        if top in SKIP or top.lower() in PRIVATE:
             continue
         for f in fn:
             if not f.endswith('.md') or f.endswith('.excalidraw.md'):
                 continue
             name = f[:-3]
-            if name.strip().lower() in EXCLUDE_NOTES:
+            if name.strip().lower() in PRIVATE or is_private(os.path.join(dp, f)):
                 continue
             notes[name] = {'folder': top if top != '.' else 'root',
                            'path': os.path.join(dp, f)}

@@ -33,8 +33,15 @@
   const ART = ((window.ART || {}).items || []).map((a, i) => ({ ...a, kind: "art", i }));
   /* listening aggregates from tools/import-music.py */
   const MU = window.MUSIC || null;
+  /* my music log: albums, diary, lists and to-listen queue (data/listening.js, written by admin) */
+  const LD = window.LISTENING || {};
+  ["items", "diary", "lists", "queue", "favorites"].forEach(k => { LD[k] = LD[k] || []; });
+  const ALBUMS = LD.items.map((m, i) => ({ ...m, kind: "album", i, notes: [] }));
+  const QUEUE = LD.queue.map((m, i) => ({ ...m, kind: "queue", i, notes: [] }));
+  const albumDiary = LD.diary.map(d => ({ ...d, rewatch: d.again, it: ALBUMS[d.m] })).filter(d => d.it).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  const byArtist = k => k === "album" || k === "queue" || k === "book";
   const STUDIO = ((S.studio || {}).items || []).map((w, i) => ({ ...w, t: w.title, artist: S.profile.name, movements: [], kind: "studio", i }));
-  const POOL = { book: BOOKS, film: FILMS_ALL, watch: WATCH, art: ART, studio: STUDIO };
+  const POOL = { book: BOOKS, film: FILMS_ALL, watch: WATCH, art: ART, studio: STUDIO, album: ALBUMS, queue: QUEUE };
   const byDateDesc = k => (a, b) => String(b[k] || "").localeCompare(String(a[k] || ""));
   const booksRead = () => BOOKS.filter(b => b.shelf === "read").sort((a, b) => String(b.read || "0" + b.added).localeCompare(String(a.read || "0" + a.added)));
   const booksReading = () => BOOKS.filter(b => b.shelf === "reading");
@@ -68,7 +75,7 @@
   ];
   const TASTE = GROUPS[1].items;
   const groupCount = k => ({ writings: S.writings.filter(w => w.type !== "appearance").length, studio: STUDIO.length,
-    books: BOOKS.filter(b => b.shelf === "read").length, films: FILMS.length, art: ART.length, music: "" })[k];
+    books: BOOKS.filter(b => b.shelf === "read").length, films: FILMS.length, art: ART.length, music: ALBUMS.length })[k];
   const tasteCount = groupCount;
   const groupOf = key => GROUPS.find(g => g.items.some(it => it[2] === key));
   function header() {
@@ -115,11 +122,12 @@
     return `<span class="cover" style="background:linear-gradient(160deg, ${clothFor(title)}, #14181c 140%)">
       <span class="cover-title">${esc(title)}</span><span class="cover-author">${esc(sub)}</span></span>`;
   }
-  const coverKey = it => it.kind === "book" ? `cv:b:${it.t}|${it.a}` : `cv:f:${it.t}|${it.y}`;
+  const coverKey = it => it.kind === "book" ? `cv:b:${it.t}|${it.a}` : byArtist(it.kind) ? `cv:a:${it.sp || it.t + "|" + it.a}` : `cv:f:${it.t}|${it.y}`;
   /* Known image: manual override, ISBN cover, or a URL found on an earlier visit. */
   function knownCover(it) {
     const o = (S.posterOverrides || {})[it.t];
     if (o) return o;
+    if (it.cover) return it.cover;
     const nc = it.kind === "book" && it.notes && it.notes.find(n => n.cover);
     if (nc) return nc.cover;
     const c = store.get(coverKey(it));
@@ -128,11 +136,11 @@
     return null;
   }
   function poster(it, extra = "") {
-    const sub = it.kind === "book" ? it.a : (it.y || "");
+    const sub = byArtist(it.kind) ? it.a : (it.y || "");
     const src = knownCover(it);
     const remote = !src && store.get(coverKey(it)) !== "none";
-    const label = `${it.t}${it.kind === "book" ? " by " + it.a : it.y ? ` (${it.y})` : ""}`;
-    return `<button class="poster${it.notes && it.notes.length ? " has-notes" : ""}" type="button" data-kind="${it.kind}" data-i="${it.i}"${remote ? " data-remote" : ""} title="${esc(label)}" aria-label="${esc(label)}"${extra}>${coverFace(it.t, sub)}${src ? `<img alt="" loading="lazy" src="${esc(src)}" onerror="window.__coverMiss(this)">` : ""}</button>`;
+    const label = `${it.t}${byArtist(it.kind) ? " by " + it.a : it.y ? ` (${it.y})` : ""}`;
+    return `<button class="poster${it.kind === "album" || it.kind === "queue" ? " sq" : ""}${it.notes && it.notes.length ? " has-notes" : ""}" type="button" data-kind="${it.kind}" data-i="${it.i}"${remote ? " data-remote" : ""} title="${esc(label)}" aria-label="${esc(label)}"${extra}>${coverFace(it.t, sub)}${src ? `<img alt="" loading="lazy" src="${esc(src)}" onerror="window.__coverMiss(this)">` : ""}</button>`;
   }
   function posterItem(it, opts = {}) {
     let meta;
@@ -164,7 +172,16 @@
     const key = coverKey(it);
     let url = null;
     try {
-      if (it.kind === "book") {
+      if (it.sp) {
+        const r = await fetch("https://open.spotify.com/oembed?url=" + encodeURIComponent("https://open.spotify.com/" + it.sp));
+        url = r.ok ? (await r.json()).thumbnail_url || null : null;
+      } else if (it.kind === "album" || it.kind === "queue") {
+        const q = new URLSearchParams({ action: "query", generator: "search", gsrsearch: `${it.t} ${it.a} album`, gsrlimit: 1,
+          prop: "pageimages", piprop: "thumbnail", pithumbsize: 342, pilicense: "any", format: "json", origin: "*" });
+        const j = await (await fetch("https://en.wikipedia.org/w/api.php?" + q)).json();
+        const pg = j.query && Object.values(j.query.pages)[0];
+        url = (pg && pg.thumbnail && pg.thumbnail.source) || null;
+      } else if (it.kind === "book") {
         const q = new URLSearchParams({ title: it.t, author: it.a, limit: 1, fields: "cover_i" });
         const j = await (await fetch("https://openlibrary.org/search.json?" + q)).json();
         const id = j.docs && j.docs[0] && j.docs[0].cover_i;
@@ -222,10 +239,11 @@
       const { y, m, d } = parse(e.date), key = `${y}-${m}`;
       const cal = key !== last ? `<span class="cal"><b>${MONTHS[m]}</b><span>${y}</span></span>` : "";
       last = key;
-      const sub = e.it.kind === "book" ? e.it.a : (e.it.y || "");
+      const sub = byArtist(e.it.kind) ? e.it.a : (e.it.y || "");
+      const again = e.it.kind === "album" ? "Relisten" : "Rewatch";
       return `<tr><td class="month">${cal}</td><td class="day">${d ? String(d).padStart(2, "0") : "–"}</td>
         <td class="book"><button type="button" class="linkish" data-kind="${e.it.kind}" data-i="${e.it.i}"><b>${esc(e.it.t)}</b></button><span>${esc(sub)}</span></td>
-        <td>${stars(e.r)}</td><td class="icons">${heart(e.it.liked)}${e.rewatch ? '<span class="rewatch" title="Rewatch" aria-label="Rewatch">↻</span>' : ""}${e.review ? '<span class="has-review" title="Has review" aria-label="Has review">≡</span>' : ""}</td></tr>`;
+        <td>${stars(e.r)}</td><td class="icons">${heart(e.it.liked)}${e.rewatch ? `<span class="rewatch" title="${again}" aria-label="${again}">↻</span>` : ""}${e.review ? '<span class="has-review" title="Has review" aria-label="Has review">≡</span>' : ""}</td></tr>`;
     }).join("");
     return `<div class="diary-wrap"><table class="diary"><thead><tr><th>Month</th><th>Day</th><th>${opts.label || "Title"}</th><th>Rating</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }
@@ -704,52 +722,94 @@
     const names = (picked.length ? picked : MU.periods[side].all.artists).slice(0, 5);
     return `<div class="top5"><h3>${SIDE_LABEL[side]}</h3><ol>${names.map((a, n) => `<li><i>${n + 1}</i><b>${esc(a)}</b></li>`).join("")}</ol></div>`;
   }
-  function musicPage() {
-    if (!MU) return `<h1 class="page-title">Music</h1><p class="page-sub">No listening data yet. Run tools/import-music.py.</p>`;
+  /* "Most played" tab: rankings from my Spotify history, no listening stats */
+  function mostPlayed(body) {
+    if (!MU) { body.innerHTML = `<p class="note">No listening history imported yet.</p>`; return; }
     const A = MU.albums, T = MU.tracks;
-    const html = `
-      <div class="page-head"><div><h1 class="page-title">Music</h1><p class="page-sub">The music I love, split into classical and everything else. Click an album or track to hear it.</p></div></div>
-      <section class="section">${sectionHead("My top five")}<div class="top5s">${topFive("classical")}${topFive("other")}</div></section>
+    body.innerHTML = `<p class="note mp-note">Ranked from my Spotify history${MU.since ? ` since ${MU.since.slice(0, 4)}` : ""}, study playlists left out.</p>
+      <div class="mp-bar"><nav class="seg side-seg" aria-label="Classical or not">${["classical", "other"].map(k => `<button type="button" data-side="${k}" aria-pressed="false">${SIDE_LABEL[k]}</button>`).join("")}</nav>
+        <nav class="seg side-seg" aria-label="Show">${[["albums", "Albums"], ["artists", "Artists"], ["tracks", "Tracks"]].map(([k, l]) => `<button type="button" data-mview="${k}" aria-pressed="${k === "albums"}">${l}</button>`).join("")}</nav></div>
+      <div class="filterbar slim"><div class="group" role="group" aria-label="Period" id="m-periods"></div></div>
+      <div id="m-body"></div>`;
+    let side = store.get("music-side") === "other" ? "other" : "classical", period = "all", view = "albums", shown = 30;
+    const drawSide = () => {
+      $$("[data-side]", body).forEach(b => b.setAttribute("aria-pressed", b.dataset.side === side));
+      const keys = ["all", ...MU.years.map(String).filter(y => MU.periods[side][y])];
+      if (!keys.includes(period)) period = "all";
+      $("#m-periods", body).innerHTML = keys.map(k => `<button class="chip" type="button" data-period="${k}" aria-pressed="${k === period}">${k === "all" ? "All time" : k}</button>`).join("");
+      draw();
+    };
+    const draw = () => {
+      const P = MU.periods[side][period], out = $("#m-body", body);
+      $$("[data-period]", body).forEach(x => x.setAttribute("aria-pressed", x.dataset.period === period));
+      if (view === "albums") {
+        out.innerHTML = `<ul class="art-grid five ranked-albums">${P.albums.slice(0, shown).map((i, n) => albumTile(A[i], { rank: n + 1 })).join("")}</ul>`
+          + (P.albums.length > shown ? `<div class="more-wrap"><button class="btn" type="button" id="m-more">Show ${P.albums.length - shown} more</button></div>` : "");
+        const more = $("#m-more", out); if (more) more.onclick = () => { shown = P.albums.length; draw(); };
+      }
+      if (view === "artists") out.innerHTML = `<ol class="rank-list">${P.artists.map((a, n) => `<li><i>${n + 1}</i><span>${esc(a)}</span></li>`).join("")}</ol>`;
+      if (view === "tracks") out.innerHTML = `<ol class="rank-list tracks">${P.tracks.map((i, n) => { const t = T[i]; return `<li><i>${n + 1}</i><a href="${spotifyTrack(t.id)}" target="_blank" rel="noopener"><b>${esc(t.t)}</b><span>${esc(t.a)}</span></a></li>`; }).join("")}</ol>`;
+      fillAlbumCovers(out);
+    };
+    $("#m-periods", body).addEventListener("click", e => { const b = e.target.closest("[data-period]"); if (!b) return; period = b.dataset.period; shown = 30; draw(); });
+    $$("[data-side]", body).forEach(b => b.addEventListener("click", () => { side = b.dataset.side; store.set("music-side", side); shown = 30; drawSide(); }));
+    $$("[data-mview]", body).forEach(b => b.addEventListener("click", () => { view = b.dataset.mview; $$("[data-mview]", body).forEach(x => x.setAttribute("aria-pressed", x === b)); draw(); }));
+    drawSide();
+  }
+  function musicPage() {
+    const sideOf = it => it.side === "classical" ? "classical" : "other";
+    const decades = [...new Set(ALBUMS.filter(a => a.y).map(a => Math.floor(a.y / 10) * 10))].sort((a, b) => b - a);
+    const favs = LD.favorites.map(i => ALBUMS[i]).filter(Boolean);
+    const yearCount = new Set(albumDiary.filter(d => parse(d.date).y === thisYear).map(d => d.m)).size;
+    const empty = msg => `<p class="note">${msg}</p>`;
+    const sideFilter = { id: "ag-side", label: "Type", options: [["all", "All"], ["classical", "Classical"], ["other", "Non-classical"]], test: (a, v) => sideOf(a) === v };
+    const defs = [
+      ["albums", "Albums", body => ALBUMS.length ? grid(body, ALBUMS, {
+        id: "ag", noun: "album",
+        filters: [sideFilter,
+          { id: "ag-decade", label: "Decade", options: [["all", "All"], ...decades.map(d => [String(d), d + "s"])], test: (a, v) => a.y && Math.floor(a.y / 10) * 10 === +v },
+          { id: "ag-rating", ...ratingFilter(0.5) },
+          { id: "ag-liked", label: "Show", options: [["all", "All"], ["liked", "Liked"]], test: a => a.liked }],
+        sorts: [["added", "When added", (a, b) => String(b.added || "").localeCompare(String(a.added || "")) || b.i - a.i],
+                ["rating", "Rating", (a, b) => (b.r ?? 0) - (a.r ?? 0)],
+                ["new", "Newest release", (a, b) => (b.y || 0) - (a.y || 0)],
+                ["old", "Oldest release", (a, b) => (a.y || 9999) - (b.y || 9999)],
+                ["title", "Title", (a, b) => a.t.localeCompare(b.t)],
+                ["artist", "Artist", (a, b) => String(a.a).localeCompare(String(b.a))]]
+      }) : (body.innerHTML = empty("No albums logged yet."))],
+      ["diary", "Diary", body => { body.innerHTML = albumDiary.length ? diaryTable(albumDiary, { label: "Album" }) : empty("Nothing in the diary yet."); }],
+      ["lists", "Lists", body => {
+        body.innerHTML = LD.lists.length ? LD.lists.map(l => `<section class="list-block"><h3 class="list-title">${esc(l.name)}</h3>
+          ${l.desc ? `<p class="list-desc">${esc(l.desc)}</p>` : ""}<p class="list-count">${plural(l.items.length, "album")}</p>
+          <ul class="posters six ranked">${l.items.map(x => ALBUMS[x.m] ? posterItem(ALBUMS[x.m], { rank: x.pos }) : "").join("")}</ul></section>`).join("") : empty("No lists yet.");
+      }],
+      ["to-listen", "To listen", body => QUEUE.length ? grid(body, QUEUE, {
+        id: "aq", noun: "album", filters: [{ ...sideFilter, id: "aq-side" }],
+        sorts: [["added", "Recently added", byDateDesc("added")], ["title", "Title", (a, b) => a.t.localeCompare(b.t)], ["artist", "Artist", (a, b) => String(a.a).localeCompare(String(b.a))]],
+        item: () => ({ caption: "" })
+      }) : (body.innerHTML = empty("Nothing queued."))],
+      ["most-played", "Most played", mostPlayed]
+    ];
+    if (!ALBUMS.length) defs.unshift(defs.pop());   /* nothing logged yet: open on the Spotify rankings */
+    const [tabHtml, start] = tabs("music", defs);
+    setTimeout(start);
+    return `
+      <div class="page-head"><div><h1 class="page-title">Music</h1><p class="page-sub">${esc(LD.bio || "The music I love, classical and otherwise.")}</p></div>
+        ${statsRow([[ALBUMS.length, "Albums"], [yearCount, "This year"], [LD.lists.length, "Lists"], [QUEUE.length, "To listen"]])}</div>
       <div class="cols">
         <div>
-          <nav class="seg side-seg" aria-label="Classical or not">${["classical", "other"].map(k => `<button type="button" data-side="${k}" aria-pressed="false">${SIDE_LABEL[k]}</button>`).join("")}</nav>
-          <section class="section" id="m-top">
-            <div class="filterbar"><div class="group" role="group" aria-label="Period" id="m-periods"></div></div>
-            <nav class="tabs m-tabs" role="tablist" aria-label="Favorites">${[["albums", "Albums"], ["artists", "Artists"], ["tracks", "Tracks"]].map(([k, l], n) => `<button type="button" role="tab" class="tab" data-mtab="${k}" aria-selected="${n === 0}">${l}</button>`).join("")}</nav>
-            <div id="m-body"></div>
-          </section>
+          ${favs.length ? `<section class="section">${sectionHead("Favorite albums")}<ul class="posters four">${favs.map(a => posterItem(a)).join("")}</ul></section>` : ""}
+          ${MU ? `<section class="section">${sectionHead("My top five")}<div class="top5s">${topFive("classical")}${topFive("other")}</div></section>` : ""}
+          ${albumDiary.length ? `<section class="section">${sectionHead("Recent activity", "music.html#diary", "All")}
+            <ul class="posters four">${albumDiary.slice(0, 4).map(d => posterItem(d.it, { r: d.r })).join("")}</ul></section>` : ""}
+          <section class="section">${tabHtml}</section>
         </div>
-        <aside><section class="side-block" id="m-recent"></section></aside>
+        <aside>
+          ${ALBUMS.some(a => a.r != null) ? ratingsBlock(ALBUMS.filter(a => a.r != null).map(a => a.r), 0.5) : ""}
+          ${albumDiary.length ? `<section class="side-block">${sectionHead("Diary", "music.html#diary", String(albumDiary.length))}${diaryMini(albumDiary, 3)}</section>` : ""}
+          ${QUEUE.length ? `<section class="side-block">${sectionHead("Up next", "music.html#to-listen", "All")}<ul class="recent-albums">${QUEUE.slice(0, 6).map(q => `<li><span class="ra-d"></span><button type="button" class="linkish" data-kind="queue" data-i="${q.i}"><b>${esc(q.t)}</b><span>${esc(q.a || "")}</span></button></li>`).join("")}</ul></section>` : ""}
+        </aside>
       </div>`;
-    setTimeout(() => {
-      let side = store.get("music-side") === "other" ? "other" : "classical", period = "all", tab = "albums", shown = 30;
-      const drawSide = () => {
-        $$("[data-side]").forEach(b => b.setAttribute("aria-pressed", b.dataset.side === side));
-        const rec = MU.recent.filter(r => r.side === side).slice(0, 12);
-        $("#m-recent").innerHTML = rec.length ? `${sectionHead("Recently played")}<ul class="recent-albums">${rec.map(r => { const a = A[r.al]; return `<li><span class="ra-d">${fmtDate(r.date).replace(/, \d{4}$/, "")}</span><a href="${spotifyTrack(a.id)}" target="_blank" rel="noopener"><b>${esc(a.t)}</b><span>${esc(a.a)}</span></a></li>`; }).join("")}</ul>` : "";
-        const keys = ["all", ...MU.years.map(String).filter(y => MU.periods[side][y])];
-        if (!keys.includes(period)) period = "all";
-        $("#m-periods").innerHTML = keys.map(k => `<button class="chip" type="button" data-period="${k}" aria-pressed="${k === period}">${k === "all" ? "All time" : k}</button>`).join("");
-        draw();
-      };
-      const draw = () => {
-        const P = MU.periods[side][period], body = $("#m-body");
-        $$("[data-period]").forEach(x => x.setAttribute("aria-pressed", x.dataset.period === period));
-        if (tab === "albums") {
-          body.innerHTML = `<ul class="art-grid five ranked-albums">${P.albums.slice(0, shown).map((i, n) => albumTile(A[i], { rank: n + 1 })).join("")}</ul>`
-            + (P.albums.length > shown ? `<div class="more-wrap"><button class="btn" type="button" id="m-more">Show ${P.albums.length - shown} more</button></div>` : "");
-          const more = $("#m-more"); if (more) more.onclick = () => { shown = P.albums.length; draw(); };
-        }
-        if (tab === "artists") body.innerHTML = `<ol class="rank-list">${P.artists.map((a, n) => `<li><i>${n + 1}</i><span>${esc(a)}</span></li>`).join("")}</ol>`;
-        if (tab === "tracks") body.innerHTML = `<ol class="rank-list tracks">${P.tracks.map((i, n) => { const t = T[i]; return `<li><i>${n + 1}</i><a href="${spotifyTrack(t.id)}" target="_blank" rel="noopener"><b>${esc(t.t)}</b><span>${esc(t.a)}</span></a></li>`; }).join("")}</ol>`;
-        fillAlbumCovers(body);
-      };
-      $("#m-periods").addEventListener("click", e => { const b = e.target.closest("[data-period]"); if (!b) return; period = b.dataset.period; shown = 30; draw(); });
-      $$("[data-side]").forEach(b => b.addEventListener("click", () => { side = b.dataset.side; store.set("music-side", side); shown = 30; drawSide(); }));
-      $$("[data-mtab]").forEach(b => b.addEventListener("click", () => { tab = b.dataset.mtab; $$("[data-mtab]").forEach(x => x.setAttribute("aria-selected", x === b)); draw(); }));
-      drawSide();
-    });
-    return html;
   }
 
   /* "Last synced" line: build time written by tools/build-graph.py, else the page's own modified date */
@@ -902,6 +962,14 @@
         const shelf = { read: it.read ? `Read ${fmtDate(it.read)}` : "Read", reading: `Reading since ${fmtDate(it.added)}`, "to-read": "Want to read", dnf: "Did not finish" }[it.shelf];
         meta.push(shelf); if (it.pages) meta.push(`${it.pages} pages`);
         body = it.review ? esc(it.review) : "";
+      } else if (it.kind === "album" || it.kind === "queue") {
+        sub = [it.a, it.y].filter(Boolean).join(" · ");
+        const logs = it.kind === "album" ? albumDiary.filter(d => d.m === it.i) : [];
+        if (logs.length) meta.push("Listened " + logs.map(d => fmtDate(d.date) + (d.again ? " (relisten)" : "")).join(", "));
+        else if (it.kind === "queue") meta.push("On my listening list");
+        if (it.side) meta.push(it.side === "classical" ? "Classical" : "Non-classical");
+        body = logs.filter(d => d.review).map(d => esc(d.review)).join("<br>");
+        if (it.sp) link = `<a class="read-link" href="https://open.spotify.com/${esc(it.sp)}" target="_blank" rel="noopener">Listen on Spotify <span class="arr">→</span></a>`;
       } else {
         sub = String(it.y || "");
         const logs = it.kind === "film" ? filmDiary.filter(d => d.f === it.i) : [];
@@ -935,7 +1003,7 @@
       dlg.classList.toggle("wide", !!notesHtml);
       linkVault(dlg);
       $(".dlg-close", dlg).onclick = () => dlg.close();
-      make3d($(".dlg .poster", dlg), it.kind === "book" ? "book" : "film", it.kind === "book" ? Math.round(Math.min(34, Math.max(10, (it.pages || 300) / 22))) : 4);
+      make3d($(".dlg .poster", dlg), it.kind === "book" ? "book" : byArtist(it.kind) ? "record" : "film", it.kind === "book" ? Math.round(Math.min(34, Math.max(10, (it.pages || 300) / 22))) : 4);
       if (!dlg.open) dlg.showModal();
     };
     const nav = () => {
@@ -981,8 +1049,8 @@
       ...BOOKS.filter(b => b.shelf !== "to-read").map(b => ({ type: "Book", t: b.t, sub: b.a, it: b, href: "books.html" })),
       ...FILMS.map(f => ({ type: "Film", t: f.t, sub: String(f.y || ""), it: f, href: "films.html" })),
       ...ART.map(a => ({ type: "Art", t: a.t, sub: a.artist, it: a, href: "art.html" })),
+      ...ALBUMS.map(a => ({ type: "Album", t: a.t, sub: a.a, it: a, href: "music.html" })),
       ...(MU ? [...MU.periods.classical.all.artists, ...MU.periods.other.all.artists].map(a => ({ type: "Music", t: a, sub: MU.artistSide[a] === "classical" ? "Classical" : "Artist", href: "music.html" })) : []),
-      ...(MU ? MU.albums.map(a => ({ type: "Album", t: a.t, sub: a.a, href: "music.html" })) : []),
       ...STUDIO.map(w => ({ type: "Studio", t: w.t, sub: `${w.year} · my work`, it: w, href: "studio.html" }))
     ];
     const pal = document.createElement("dialog");
