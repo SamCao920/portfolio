@@ -370,6 +370,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
   /* one array element per line, so git diffs stay readable */
   function logJs(n, obj, keys, note) {
     obj.updated = today();
+    keys.forEach(k => (obj[k] || []).forEach(x => { if (x && typeof x === "object") delete x.noCover; }));
     const o = { ...obj }, parts = {};
     keys.forEach(k => { parts[k] = "[\n" + (o[k] || []).map(x => "  " + JSON.stringify(x)).join(",\n") + "\n]"; o[k] = "@@" + k + "@@"; });
     let s = JSON.stringify(o);
@@ -379,6 +380,36 @@ window.SITE = ${JSON.stringify(data, null, 2)};
   const booksJs = () => logJs("books", books, ["items"], "Books: what I have read, am reading and want to read.");
   const filmsJs = () => logJs("films", films, ["items", "diary", "watchlist"], "Films: everything I have seen, a dated diary, ranked lists and a watchlist.");
   const listeningJs = () => logJs("listening", listening, ["items", "diary", "queue"], "Music: albums I've listened to, a dated diary, ranked lists and a to-listen list.");
+
+  /* ----- covers: find one with assets/covers.js and save it in the data, so visitors don't each search ----- */
+  const KIND_OF = { books: "book", films: "film", listening: "album" };
+  async function autoCover(log, item, kind) {
+    if (!window.findCover || item.cover || (log === "books" && item.isbn)) return false;
+    const url = await window.findCover({ ...item, kind: kind || KIND_OF[log], t: item.t || item.full });
+    if (!url) return false;
+    item.cover = url; markLog(log);
+    return true;
+  }
+  let coverRun = null;
+  /* every entry in a log (and its to-do list) that has no cover yet; one at a time, with progress */
+  async function fillCovers(log) {
+    if (coverRun) { toast("Already finding covers…"); return; }
+    const L = log === "books" ? books.items.map(b => [b, "book"])
+      : log === "films" ? [...films.items.map(f => [f, "film"]), ...films.watchlist.map(w => [w, "watch"])]
+      : [...listening.items.map(a => [a, "album"]), ...listening.queue.map(q => [q, "queue"])];
+    const todo = L.filter(([x]) => !x.cover && !(log === "books" && x.isbn) && !x.noCover);
+    if (!todo.length) { toast("Everything already has a cover."); return; }
+    coverRun = { done: 0, found: 0, total: todo.length };
+    for (const [x, kind] of todo) {
+      const ok = await autoCover(log, x, kind).catch(() => false);
+      if (!ok) x.noCover = true;   /* don't retry in this session */
+      coverRun.done++; if (ok) coverRun.found++;
+      const b = $(`[data-act=covers-${log}]`); if (b) b.textContent = `Finding covers… ${coverRun.done}/${coverRun.total}`;
+    }
+    toast(`Found ${coverRun.found} of ${coverRun.total} covers. Save to keep them.`);
+    coverRun = null; render();
+  }
+  const coversBtn = log => `<button class="btn" type="button" data-act="covers-${log}" title="Search Apple, Deezer, Open Library, Google Books and Wikipedia for missing covers">Find missing covers</button>`;
 
   /* ----- ranked lists, shared by Watching and Music ----- */
   const LIST_KINDS = {
@@ -464,6 +495,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     b.pages = +v.pages || null; b.year = v.year || null; b.isbn = (v.isbn || "").replace(/[^\dXx]/g, "") || null;
     bookForm = { mode: "add", v: { shelf: "read", read: today() } };
     markLog("books"); render(); toast(msg);
+    if (msg.startsWith("Added")) autoCover("books", b, "book");
   }
 
   /* ----- Watching ----- */
@@ -509,6 +541,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       films.diary.unshift({ f: fi, date: v.date || today(), r: v.r ? +v.r : null, rewatch: !!v.rewatch, review: v.review || null });
       films.watchlist = films.watchlist.filter(w => !(norm(w.t) === norm(it.t) && (!w.y || !it.y || w.y === it.y)));
       toast(isHidden(it.t, it.y) ? `Logged, but ${it.t} is on your hidden-films list, so the site won’t show it.` : "Logged " + it.t);
+      autoCover("films", it, "film");
     }
     films.diary.sort((a, b) => String(b.date).localeCompare(String(a.date)));
     filmForm = { mode: "log", v: { date: today() } };
@@ -596,6 +629,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       listening.diary.unshift({ m: mi, date: v.date || today(), perf: v.perf || null, r: v.r ? +v.r : null, again: !!v.again, review: v.review || null });
       listening.queue = listening.queue.filter(q => !(norm(q.t) === norm(it.t) && (!q.a || norm(q.a) === norm(it.a))));
       toast("Logged " + it.t);
+      autoCover("listening", it, "album").then(ok => { if (ok && section === "music") render(); });
     }
     listening.diary.sort((a, b) => String(b.date).localeCompare(String(a.date)));
     albumForm = freshForm();
@@ -645,7 +679,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
         <div class="lfilter" id="tr-form"><input type="text" data-tr="t" placeholder="Title" aria-label="Title" value="${esc(toReadForm.t || "")}"><input type="text" data-tr="a" placeholder="Author" aria-label="Author" value="${esc(toReadForm.a || "")}">
           <button class="btn" type="button" data-act="tr-add">+ Add</button></div>
         <p class="ed-help">${plural(books.items.filter(b => b.shelf === "to-read").length, "book")} on the list. Use Finished or the form above when you read one.</p>
-        <div class="section-head" style="margin-top:26px"><h2>Library</h2></div>
+        <div class="section-head" style="margin-top:26px"><h2>Library</h2>${coversBtn("books")}</div>
         <div class="lfilter"><input type="search" id="bk-q" placeholder="Search ${books.items.length} books" aria-label="Search books">
           <select id="bk-shelf" aria-label="Status"><option value="all">All</option>${SHELVES.map(([k, l]) => `<option value="${k}">${l} (${books.items.filter(b => b.shelf === k).length})</option>`).join("")}</select></div>
         <ul class="llist" id="bk-list">${bookRows()}</ul></div>`;
@@ -667,7 +701,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
         <ul class="llist">${films.watchlist.map((w, i) => `<li class="lrow static"><b>${esc(w.t)}</b><span>${esc(w.y || "")}</span><span class="lr-date">${esc(w.added || "")}</span>
           <span class="lr-acts"><button class="btn" type="button" data-act="wl-watched" data-i="${i}">Watched</button><button class="icon-btn danger" type="button" data-act="wl-del" data-i="${i}" aria-label="Remove">×</button></span></li>`).join("") || '<li class="lempty">Empty.</li>'}</ul>
         ${listsHtml("films")}
-        <div class="section-head" style="margin-top:26px"><h2>History</h2></div>
+        <div class="section-head" style="margin-top:26px"><h2>History</h2>${coversBtn("films")}</div>
         <div class="lfilter"><input type="search" id="fm-q" placeholder="Search" aria-label="Search films">
           <select id="fm-show" aria-label="Show"><option value="diary">Diary (${films.diary.length})</option><option value="films">Films (${films.items.length})</option></select></div>
         <ul class="llist" id="fm-list">${filmRows()}</ul></div>`;
@@ -695,7 +729,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
         <ul class="llist">${listening.queue.map((q, i) => `<li class="lrow static"><b>${esc(q.t)}</b><span>${esc(q.a || "")}</span><span class="lr-date">${esc(q.added || "")}</span>
           <span class="lr-acts"><button class="btn" type="button" data-act="ql-done" data-i="${i}">Listened</button><button class="icon-btn danger" type="button" data-act="ql-del" data-i="${i}" aria-label="Remove">×</button></span></li>`).join("") || '<li class="lempty">Empty.</li>'}</ul>
         ${listsHtml("listening")}
-        <div class="section-head" style="margin-top:26px"><h2>History</h2></div>
+        <div class="section-head" style="margin-top:26px"><h2>History</h2>${coversBtn("listening")}</div>
         <div class="lfilter"><input type="search" id="al-q" placeholder="Search" aria-label="Search albums">
           <select id="al-show" aria-label="Show"><option value="diary">Diary (${listening.diary.length})</option><option value="albums">Library (${listening.items.length})</option></select></div>
         <ul class="llist" id="al-list">${albumRows()}</ul></div>
@@ -776,6 +810,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       const t = (watchForm.t || "").trim(), y = +watchForm.y || null;
       if (!t) { toast("Give the film a title."); return; }
       films.watchlist.unshift({ t, y, added: today() }); watchForm = {}; markLog("films"); render(); toast("Added to watchlist");
+      autoCover("films", films.watchlist[0], "watch");
     }
     else if (act === "wl-del") { const w = films.watchlist.splice(i, 1)[0]; markLog("films"); collect(); render(); toast("Removed " + w.t); }
     else if (act === "tr-add") {
@@ -785,6 +820,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       if (books.items.some(b => norm(b.full || b.t) === norm(t))) { toast(`${t} is already in your library.`); return; }
       books.items.unshift({ t: t.split(/:\s/)[0].trim(), full: t, a: au, isbn: null, r: null, read: null, added: today(), shelf: "to-read", fav: false, review: null, pages: null, year: null });
       toReadForm = {}; markLog("books"); render(); toast("Added to Want to read");
+      autoCover("books", books.items[0], "book");
     }
     else if (act === "al-save") { SECTIONS.music.collect(el); commitAlbum(albumForm.v); }
     else if (act === "al-cancel") { albumForm = freshForm(); render(); }
@@ -804,6 +840,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       const hit = MU_ALBUMS().find(a => norm(a.t) === norm(tt) && (!aa || norm(a.a) === norm(aa)));
       const form = queueForm.form || "album", side = form === "work" || MU_SIDE()[aa.trim()] === "classical" ? "classical" : "other";
       listening.queue.unshift({ t: tt.trim(), a: aa.trim(), form, side, sp: hit ? hit.sp : null, added: today() });
+      autoCover("listening", listening.queue[0], "queue");
       queueForm = {}; markLog("listening"); render(); toast("Added to To listen");
     }
     else if (act === "ql-del") { const q = listening.queue.splice(i, 1)[0]; markLog("listening"); collect(); render(); toast("Removed " + q.t); }
@@ -819,6 +856,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       if (act === "ls-add") { $(`[data-rows=ls-${kind}-${j}]`).insertAdjacentHTML("beforeend", listRow(kind)); $(`[data-rows=ls-${kind}-${j}] .row:last-child input`).focus(); }
       if (act === "ls-new") { const c = $$(`[data-lists=${kind}] [data-list]`).at(-1); c.scrollIntoView({ block: "center" }); $("[data-ls=name]", c).select(); }
     }
+    else if (act.startsWith("covers-")) { fillCovers(act.slice(7)); }
     else if (act === "wl-watched") { const w = films.watchlist[i]; filmForm = { mode: "log", v: { t: w.t, y: w.y ? String(w.y) : "", date: today() } }; top(); $("#fm-r").focus(); }
   });
 

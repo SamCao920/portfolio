@@ -70,6 +70,7 @@
   .rank-n::before { content: counter(rk); font: 700 16px/1 var(--body); color: var(--accent); }
   @media (max-width: 600px) { .rows .row.rank-row { grid-template-columns: 28px minmax(0, 1fr) auto auto; } .rows .row.rank-row input { grid-column: auto; } }
   .top5-rows.wide { max-width: none; }
+  .section-head .btn[data-act^=covers-] { margin-left: auto; font-size: 11px; }
   .rows .row.rank-row:has([data-rowdel]) { grid-template-columns: 28px minmax(0, 1fr) auto auto auto; }
   .sub-h { margin: 14px 0 8px; font: 600 12px/1 var(--body); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
   [data-lists] .card { margin-bottom: 12px; }
@@ -148,6 +149,7 @@
 <script src="data/films.js?v=37eedd60"></script>
 <script src="data/music.js?v=8e55ff1d"></script>
 <script src="data/listening.js?v=c805757f"></script>
-<script src="assets/admin.js?v=b4a2b89f"></script>
+<script src="assets/covers.js?v=9bbcd3ae"></script>
+<script src="assets/admin.js?v=a24ddb7f"></script>
 </body>
 </html>

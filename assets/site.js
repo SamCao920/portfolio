@@ -123,7 +123,8 @@
     return `<span class="cover" style="background:linear-gradient(160deg, ${clothFor(title)}, #14181c 140%)">
       <span class="cover-title">${esc(title)}</span><span class="cover-author">${esc(sub)}</span></span>`;
   }
-  const coverKey = it => it.kind === "book" ? `cv:b:${it.t}|${it.a}` : byArtist(it.kind) ? `cv:a:${it.sp || it.t + "|" + it.a}` : `cv:f:${it.t}|${it.y}`;
+  /* "cv2": cache version; bumped when the cover finder improved so earlier misses are retried */
+  const coverKey = it => it.kind === "book" ? `cv2:b:${it.t}|${it.a}` : byArtist(it.kind) ? `cv2:a:${it.sp || it.t + "|" + it.a}` : `cv2:f:${it.t}|${it.y}`;
   /* Known image: manual override, ISBN cover, or a URL found on an earlier visit. */
   function knownCover(it) {
     const o = (S.posterOverrides || {})[it.t];
@@ -171,32 +172,10 @@
     const it = POOL[el.dataset.kind][+el.dataset.i];
     if (!it) return;
     const key = coverKey(it);
+    /* assets/covers.js tries several free sources and only accepts a believable match */
+    if (!window.findCover) return;
     let url = null;
-    try {
-      if (it.sp) {
-        const r = await fetch("https://open.spotify.com/oembed?url=" + encodeURIComponent("https://open.spotify.com/" + it.sp));
-        url = r.ok ? (await r.json()).thumbnail_url || null : null;
-      } else if ((it.kind === "album" || it.kind === "queue") && formOf(it) !== "album") {
-        url = null;   /* a work or song with no Spotify link: the typeset cover with the composer reads better than a guess */
-      } else if (it.kind === "album" || it.kind === "queue") {
-        const q = new URLSearchParams({ action: "query", generator: "search", gsrsearch: `${it.t} ${it.a} album`, gsrlimit: 1,
-          prop: "pageimages", piprop: "thumbnail", pithumbsize: 342, pilicense: "any", format: "json", origin: "*" });
-        const j = await (await fetch("https://en.wikipedia.org/w/api.php?" + q)).json();
-        const pg = j.query && Object.values(j.query.pages)[0];
-        url = (pg && pg.thumbnail && pg.thumbnail.source) || null;
-      } else if (it.kind === "book") {
-        const q = new URLSearchParams({ title: it.t, author: it.a, limit: 1, fields: "cover_i" });
-        const j = await (await fetch("https://openlibrary.org/search.json?" + q)).json();
-        const id = j.docs && j.docs[0] && j.docs[0].cover_i;
-        if (id) url = `https://covers.openlibrary.org/b/id/${id}-M.jpg`;
-      } else {
-        const q = new URLSearchParams({ action: "query", generator: "search", gsrsearch: `${it.t} ${it.y || ""} film`, gsrlimit: 1,
-          prop: "pageimages", piprop: "thumbnail", pithumbsize: 342, pilicense: "any", format: "json", origin: "*" });
-        const j = await (await fetch("https://en.wikipedia.org/w/api.php?" + q)).json();
-        const pg = j.query && Object.values(j.query.pages)[0];
-        url = (pg && pg.thumbnail && pg.thumbnail.source) || null;
-      }
-    } catch (e) { return; }  /* offline or blocked: try again next visit */
+    try { url = await window.findCover(it); } catch (e) { return; }  /* offline or blocked: try again next visit */
     store.set(key, url || "none");
     el.removeAttribute("data-remote");
     if (!url) return;
