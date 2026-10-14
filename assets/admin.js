@@ -603,7 +603,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     const known = [...listening.items.map(albumLabel), ...MU_ALBUMS().map(albumLabel)].filter((x, i, a) => a.indexOf(x) === i);
     return `<div class="logform" id="al-form"><h2>${diary ? "Edit diary entry" : "Log a listen"}</h2>
       <div class="grid3">${field(v, "t", "Title", { ...p, placeholder: "Type a work, album or song; pick a result to fill in the rest" }).replace("<input ", `<input autocomplete="off" ${ro}`)}${field(v, "a", "Artist or composer", p).replace("<input ", "<input " + ro)}${field(v, "date", "Date listened", { ...p, type: "date" })}</div>
-      <div class="grid3">${field(v, "perf", "Performed by (optional)", { ...p, placeholder: "Click to see recordings of this piece", hint: "Who played it this time. Picking a recording also uses its cover." })}${field(v, "r", "Rating", { ...p, type: "select", options: FILM_R })}<div>${field(v, "liked", "Liked ♥", { type: "check" })}${field(v, "again", "Relisten", { type: "check" })}</div></div>
+      <div class="grid3">${field(v, "perf", "Performed by (optional)", { ...p, placeholder: "Click to see recordings of this piece", hint: "Who played it this time. Picking a recording also uses its cover." })}${field(v, "r", "Rating", { ...p, type: "select", options: FILM_R })}<div>${field(v, "liked", "Liked ♥", { type: "check" })}</div></div>
       ${diary ? "" : what + common}
       ${field(v, "review", "Review", { ...p, type: "textarea", rows: 3 })}
       <div class="logbtns">${diary ? `<button class="btn go" type="button" data-act="al-save">Update entry</button><button class="btn" type="button" data-act="al-cancel">Cancel</button><button class="btn danger-btn" type="button" data-act="al-del">Delete entry</button>`
@@ -620,11 +620,12 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       toast("Updated " + v.t);
     } else if (f.mode === "diary") {
       const d = listening.diary[f.i], it = listening.items[d.m];
-      Object.assign(d, { date: v.date || d.date, perf: v.perf || null, r: v.r ? +v.r : null, again: !!v.again, review: v.review || null });
+      Object.assign(d, { date: v.date || d.date, perf: v.perf || null, r: v.r ? +v.r : null, review: v.review || null });
       it.liked = !!v.liked; if (v.r) it.r = +v.r;
       toast("Updated entry");
     } else {
       let mi = findAlbum(v.t, v.a);
+      const again = mi >= 0 && listening.diary.some(d => d.m === mi);   /* heard before: mark it a relisten */
       if (mi < 0) { listening.items.push({ t: v.t, a: v.a || "", y, form, side, r: null, liked: false, added: today(), sp, cover: v.cover || null }); mi = listening.items.length - 1; }
       const it = listening.items[mi];
       if (v.r) it.r = +v.r;
@@ -632,7 +633,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       if (y && !it.y) it.y = y;
       if (sp && !it.sp) it.sp = sp;
       if (v.cover && !it.cover) it.cover = v.cover;
-      listening.diary.unshift({ m: mi, date: v.date || today(), perf: v.perf || null, r: v.r ? +v.r : null, again: !!v.again, review: v.review || null });
+      listening.diary.unshift({ m: mi, date: v.date || today(), perf: v.perf || null, r: v.r ? +v.r : null, again, review: v.review || null });
       listening.queue = listening.queue.filter(q => !(norm(q.t) === norm(it.t) && (!q.a || norm(q.a) === norm(it.a))));
       toast("Logged " + it.t);
       autoCover("listening", it, "album").then(ok => { if (ok && section === "music") render(); });
@@ -763,7 +764,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
         const F = $("#al-form"), set = (k, v) => { const i = $(`[data-k=${k}]`, F); if (i && v != null && v !== "") i.type === "checkbox" ? i.checked = !!v : i.value = v; };
         t.value = hit.t; set("a", hit.a); set("y", hit.y); if (hit.sp) set("sp", "https://open.spotify.com/" + hit.sp);
         set("form", hit.form || "album"); set("classical", (hit.side || MU_SIDE()[hit.a]) === "classical");
-        if (listening.items.includes(hit)) { set("liked", hit.liked); set("again", true); }
+        if (listening.items.includes(hit)) set("liked", hit.liked);
       }
     }
     if (t.matches("#bk-form [data-k=full]") && bookForm.mode === "add") {
@@ -889,6 +890,43 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     return (j && j.results) || [];
   }
 
+  /* When a classical work was composed, from Wikidata. A range (1790–1792) or several dates give the
+     latest year, which is the house rule. Returns "" when Wikidata has no believable match. */
+  const wd = q => NET().json("https://www.wikidata.org/w/api.php?" + new URLSearchParams({ origin: "*", format: "json", ...q }));
+  async function composedYear(title, composer) {
+    if (!NET() || !title) return "";
+    const surname = NET().words(composer).slice(-1)[0] || "";
+    const plain = title.replace(/[“”"].*?[“”"]/g, "").replace(/\s+/g, " ").trim();
+    const tries = [...new Set([plain.split(",")[0], plain, `${plain.split(",")[0]} ${surname}`].map(x => x.trim()).filter(Boolean))];
+    const catNo = (plain.match(/\b(op\.?\s*\d+|k\.?\s*\d+|bwv\s*\d+|hob\.?\s*[\w:.]+|d\.?\s*\d+|rv\s*\d+)/i) || [""])[0].replace(/\s|\./g, "").toLowerCase();
+    let id = null;
+    for (const q of tries) {
+      const j = await wd({ action: "wbsearchentities", search: q, language: "en", type: "item", limit: 10 }).catch(() => null);
+      const hits = ((j && j.search) || []).filter(h => surname && NET().words(`${h.description || ""} ${h.label || ""}`).includes(surname));
+      /* prefer the hit whose label or aliases carry the same catalogue number (K. 551, Op. 131) */
+      const best = hits.find(h => catNo && `${h.label} ${(h.aliases || []).join(" ")} ${h.description}`.replace(/\s|\./g, "").toLowerCase().includes(catNo)) || hits[0];
+      if (best) { id = best.id; break; }
+    }
+    if (!id) return "";
+    const e = await wd({ action: "wbgetentities", ids: id, props: "claims" }).catch(() => null);
+    const claims = (e && e.entities && e.entities[id] && e.entities[id].claims) || {};
+    const years = [];
+    const take = snak => { const t = snak && snak.datavalue && snak.datavalue.value && snak.datavalue.value.time; const m = t && t.match(/^[+-](\d{3,4})-/); if (m) years.push(+m[1]); };
+    (claims.P571 || []).forEach(c => { take(c.mainsnak); ["P582", "P580", "P1326"].forEach(q => ((c.qualifiers || {})[q] || []).forEach(take)); });
+    if (!years.length) (claims.P1191 || []).forEach(c => take(c.mainsnak));   /* no composition date: first performance */
+    return years.length ? String(Math.max(...years)) : "";
+  }
+  let yearAsked = "";
+  async function fillComposedYear(form) {
+    const get = k => ($(`[data-k=${k}]`, form) || {}).value || "", y = $("[data-k=y]", form);
+    if (!y || y.value || get("form") !== "work") return;
+    const t = get("t"), a = get("a");
+    if (yearAsked === t + "|" + a) return;   /* one lookup per piece */
+    yearAsked = t + "|" + a;
+    const year = await composedYear(t, a).catch(() => "");
+    if (year && !y.value && get("t") === t) { y.value = year; y.dispatchEvent(new Event("input", { bubbles: true })); toast(`Composed ${year} (from Wikidata)`); }
+  }
+
   /* what each field searches, and what a pick fills in. fill: { field: value }, done(): extra work */
   const SOURCES = {
     /* Music: the piece */
@@ -999,6 +1037,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       else if (v !== "" || el === inp) el.value = v;
     });
     const next = $("[data-k=r], [data-k=review]", form); if (next && inp.dataset.k !== "perf") next.focus();
+    if (form && form.id === "al-form") fillComposedYear(form);
     toast("Filled in from " + (s.sub || "").split(" · ").slice(-1)[0].replace(/^\d{4}$/, "the catalogue"));
   }
   const idOf = el => el && el.matches && el.matches("input[data-k]") && !el.readOnly && SOURCES[el.id] ? el.id : null;
@@ -1013,6 +1052,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
   box.addEventListener("mousedown", e => { const it = e.target.closest(".sg-item"); if (it) { e.preventDefault(); pick(items[+it.dataset.n]); } });
   document.addEventListener("focusout", e => { if (e.target === active) setTimeout(() => { if (document.activeElement !== active) close(); }, 150); });
   addEventListener("scroll", place, true); addEventListener("resize", place);
+  document.addEventListener("change", e => { if (e.target.matches && e.target.matches("#al-form [data-k=t], #al-form [data-k=a], #al-form [data-k=form]")) fillComposedYear($("#al-form")); });
 
   Object.assign(SECTIONS, LOG_SECTIONS);
   const ORDER = ["theme", "profile", "now", "writings", "studio", "reading", "watching", "music", "about", "socials", "settings"];
