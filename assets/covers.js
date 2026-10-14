@@ -111,6 +111,8 @@
     }
     return null;
   }
+  /* shared with admin.js's autocomplete */
+  window.coverNet = { jsonp, json, believable, big, words };
   window.findCover = it => {
     if (it.kind === "book") return firstOf(it, [openLibrary, googleBooks, appleBooks]);
     if (it.kind === "album" || it.kind === "queue") return firstOf(it, [spotify, itunesMusic, deezer]);

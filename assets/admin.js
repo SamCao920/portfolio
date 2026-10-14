@@ -464,7 +464,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     const f = bookForm, v = f.v, editing = f.mode === "edit", p = { prefix: "bk-" };
     return `<div class="logform" id="bk-form">
       <h2>${editing ? "Edit book" : "Log a book"}</h2>
-      <div class="grid2">${field(v, "full", "Title", { ...p, placeholder: "Start typing; existing books are suggested" }).replace("<input ", '<input list="bk-titles" autocomplete="off" ')}${field(v, "a", "Author", p)}</div>
+      <div class="grid2">${field(v, "full", "Title", { ...p, placeholder: "Start typing a title; pick a result to fill in the rest" }).replace("<input ", '<input autocomplete="off" ')}${field(v, "a", "Author", p)}</div>
       <div class="grid3">${field(v, "shelf", "Status", { ...p, type: "select", options: SHELVES })}${field(v, "read", "Date finished", { ...p, type: "date", hint: "For Read and Did not finish." })}${field(v, "r", "Rating", { ...p, type: "select", options: BOOK_R })}</div>
       <div class="grid3">${field(v, "pages", "Pages", p)}${field(v, "year", "Year published", p)}${field(v, "isbn", "ISBN", { ...p, hint: "Used to find the cover." })}</div>
       ${field(v, "review", "Review", { ...p, type: "textarea", rows: 3 })}
@@ -515,8 +515,9 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       <div class="logbtns"><button class="btn go" type="button" data-act="fm-save">Update film</button><button class="btn" type="button" data-act="fm-cancel">Cancel</button><button class="btn danger-btn" type="button" data-act="fm-del">Delete film</button></div></div>`;
     const diary = f.mode === "diary";
     return `<div class="logform" id="fm-form"><h2>${diary ? "Edit diary entry" : "Log a film"}</h2>
-      <div class="grid3">${field(v, "t", "Title", { ...p, placeholder: "Start typing; films you’ve seen are suggested" }).replace("<input ", `<input list="fm-titles" autocomplete="off" ${diary ? "readonly " : ""}`)}${field(v, "y", "Year", { ...p, placeholder: "1957" }).replace("<input ", diary ? "<input readonly " : "<input ")}${field(v, "date", "Date watched", { ...p, type: "date" })}</div>
+      <div class="grid3">${field(v, "t", "Title", { ...p, placeholder: "Start typing a title; pick a result to fill in the rest" }).replace("<input ", `<input autocomplete="off" ${diary ? "readonly " : ""}`)}${field(v, "y", "Year", { ...p, placeholder: "1957" }).replace("<input ", diary ? "<input readonly " : "<input ")}${field(v, "date", "Date watched", { ...p, type: "date" })}</div>
       <div class="grid3">${field(v, "r", "Rating", { ...p, type: "select", options: FILM_R })}<div>${field(v, "liked", "Liked ♥", { type: "check" })}</div><div>${field(v, "rewatch", "Rewatch", { type: "check" })}</div></div>
+      <input type="hidden" data-k="cover" value="${esc(v.cover || "")}">
       ${field(v, "review", "Review", { ...p, type: "textarea", rows: 3 })}
       <div class="logbtns">${diary ? `<button class="btn go" type="button" data-act="fm-save">Update entry</button><button class="btn" type="button" data-act="fm-cancel">Cancel</button><button class="btn danger-btn" type="button" data-act="fm-del">Delete entry</button>`
         : `<button class="btn go" type="button" data-act="fm-save">Log it</button>`}</div>
@@ -539,6 +540,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       let fi = findFilm(v.t, y);
       if (fi < 0) { films.items.push({ t: v.t, y, r: null, liked: false, added: today() }); fi = films.items.length - 1; }
       const it = films.items[fi];
+      if (v.cover && !it.cover) it.cover = v.cover;
       if (v.r) it.r = +v.r;
       it.liked = !!v.liked;
       if (y && !it.y) it.y = y;
@@ -600,8 +602,8 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     const diary = f.mode === "diary", ro = diary ? "readonly " : "";
     const known = [...listening.items.map(albumLabel), ...MU_ALBUMS().map(albumLabel)].filter((x, i, a) => a.indexOf(x) === i);
     return `<div class="logform" id="al-form"><h2>${diary ? "Edit diary entry" : "Log a listen"}</h2>
-      <div class="grid3">${field(v, "t", "Title", { ...p, placeholder: "Album, song or work, e.g. String Quartet No. 14, Op. 131" }).replace("<input ", `<input list="al-titles" autocomplete="off" ${ro}`)}${field(v, "a", "Artist or composer", p).replace("<input ", "<input " + ro)}${field(v, "date", "Date listened", { ...p, type: "date" })}</div>
-      <div class="grid3">${field(v, "perf", "Performed by (optional)", { ...p, placeholder: "e.g. Takács Quartet", hint: "Who played it this time. Useful for classical." })}${field(v, "r", "Rating", { ...p, type: "select", options: FILM_R })}<div>${field(v, "liked", "Liked ♥", { type: "check" })}${field(v, "again", "Relisten", { type: "check" })}</div></div>
+      <div class="grid3">${field(v, "t", "Title", { ...p, placeholder: "Type a work, album or song; pick a result to fill in the rest" }).replace("<input ", `<input autocomplete="off" ${ro}`)}${field(v, "a", "Artist or composer", p).replace("<input ", "<input " + ro)}${field(v, "date", "Date listened", { ...p, type: "date" })}</div>
+      <div class="grid3">${field(v, "perf", "Performed by (optional)", { ...p, placeholder: "Click to see recordings of this piece", hint: "Who played it this time. Picking a recording also uses its cover." })}${field(v, "r", "Rating", { ...p, type: "select", options: FILM_R })}<div>${field(v, "liked", "Liked ♥", { type: "check" })}${field(v, "again", "Relisten", { type: "check" })}</div></div>
       ${diary ? "" : what + common}
       ${field(v, "review", "Review", { ...p, type: "textarea", rows: 3 })}
       <div class="logbtns">${diary ? `<button class="btn go" type="button" data-act="al-save">Update entry</button><button class="btn" type="button" data-act="al-cancel">Cancel</button><button class="btn danger-btn" type="button" data-act="al-del">Delete entry</button>`
@@ -863,6 +865,154 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     else if (act.startsWith("covers-")) { fillCovers(act.slice(7)); }
     else if (act === "wl-watched") { const w = films.watchlist[i]; filmForm = { mode: "log", v: { t: w.t, y: w.y ? String(w.y) : "", date: today() } }; top(); $("#fm-r").focus(); }
   });
+
+
+  /* ---------- autocomplete: type a few letters, pick a result, the rest of the form fills itself ----------
+     Sources (all free, no keys, called from this browser):
+       your own logs first, then
+       music: Open Opus (classical composers and works) and Apple iTunes (songs, albums, artists, recordings)
+       films: Apple iTunes movies       books: Open Library
+     Each source fails quietly; you can always type freely. */
+  const NET = () => window.coverNet || null;
+  const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+  const yearOf = d => (String(d || "").match(/\d{4}/) || [""])[0];
+  const art = (url, size = "100x100") => url ? url.replace(/\/\d+x\d+bb(-\d+)?\.(jpg|png)$/, `/${size}bb.$2`) : "";
+  const workTitle = t => String(t || "").replace(/\s*:\s*(I|II|III|IV|V|VI|VII|VIII|IX|X|\d+)\.\s.*$/, "").replace(/\s*-\s*Remaster(ed)?.*$/i, "").trim();
+  const near = (a, b) => norm(a).includes(norm(b)) || norm(b).includes(norm(a));
+  const uniq = (list, key) => { const seen = new Set(); return list.filter(x => { const k = key(x); if (seen.has(k)) return false; seen.add(k); return true; }); };
+  async function openOpus(q) {
+    const j = await NET().json(`https://api.openopus.org/omnisearch/${encodeURIComponent(q)}/0.json`);
+    return (j && j.results) || [];
+  }
+  async function itunes(q, params) {
+    const j = await NET().jsonp(`https://itunes.apple.com/search?limit=15&${params}&term=${encodeURIComponent(q)}`);
+    return (j && j.results) || [];
+  }
+
+  /* what each field searches, and what a pick fills in. fill: { field: value }, done(): extra work */
+  const SOURCES = {
+    /* Music: the piece */
+    "al-t": async q => {
+      const local = listening.items.filter(a => norm(albumLabel(a)).includes(norm(q))).slice(0, 4)
+        .map(a => ({ label: a.t, sub: `${a.a} · in your log`, img: a.cover, value: albumLabel(a) }));
+      const past = MU_ALBUMS().filter(a => norm(albumLabel(a)).includes(norm(q))).slice(0, 3)
+        .map(a => ({ label: a.t, sub: `${a.a} · from your Spotify history`, value: albumLabel(a) }));
+      if (!NET()) return [...local, ...past];
+      const [oo, it] = await Promise.all([openOpus(q).catch(() => []), itunes(q, "media=music&entity=song,album").catch(() => [])]);
+      const works = oo.filter(r => r.work && r.composer).slice(0, 6).map(r => ({
+        label: r.work.title + (r.work.subtitle ? ` ${r.work.subtitle}` : ""), sub: `${r.composer.complete_name} · ${r.work.genre || "work"} · Open Opus`,
+        fill: { t: r.work.title + (r.work.subtitle ? ` ${r.work.subtitle}` : ""), a: r.composer.complete_name, form: "work", classical: true } }));
+      const recs = it.slice(0, 10).map(x => {
+        const album = x.wrapperType === "collection", classical = /classical/i.test(x.primaryGenreName || "");
+        const t = album ? x.collectionName : classical ? workTitle(x.trackName) : x.trackName;
+        return { label: t, sub: `${x.artistName} · ${album ? "Album" : classical ? "Recording" : "Song"}${yearOf(x.releaseDate) ? " · " + yearOf(x.releaseDate) : ""}`, img: art(x.artworkUrl100),
+          fill: { t, a: x.artistName, y: classical ? "" : yearOf(x.releaseDate), form: album ? "album" : classical ? "work" : "song", classical, cover: art(x.artworkUrl100, "600x600"), perf: classical && !album ? x.artistName : "" } };
+      });
+      return uniq([...local, ...past, ...works, ...recs], s => norm(s.label + "|" + s.sub.split(" · ")[0]));
+    },
+    /* Music: artist or composer */
+    "al-a": async q => {
+      const mine = uniq(listening.items.map(a => a.a).filter(a => a && norm(a).includes(norm(q))), norm).slice(0, 4).map(a => ({ label: a, sub: "in your log", fill: { a } }));
+      const hist = Object.keys(MU_SIDE()).filter(a => norm(a).includes(norm(q))).slice(0, 4).map(a => ({ label: a, sub: "from your Spotify history", fill: { a, classical: MU_SIDE()[a] === "classical" } }));
+      if (!NET()) return uniq([...mine, ...hist], s => norm(s.label));
+      const [oo, it] = await Promise.all([openOpus(q).catch(() => []), itunes(q, "media=music&entity=musicArtist").catch(() => [])]);
+      const comps = uniq(oo.filter(r => r.composer && !r.work), r => r.composer.id).slice(0, 5).map(r => ({ label: r.composer.complete_name, sub: `Composer · ${r.composer.epoch || ""}`, fill: { a: r.composer.complete_name, classical: true } }));
+      const arts = it.slice(0, 6).map(x => ({ label: x.artistName, sub: x.primaryGenreName || "Artist", fill: { a: x.artistName, classical: /classical/i.test(x.primaryGenreName || "") } }));
+      return uniq([...mine, ...hist, ...comps, ...arts], s => norm(s.label));
+    },
+    /* Music: who played it — recordings of this piece, plus performers you've logged before */
+    "al-perf": async q => {
+      const F = $("#al-form"), t = ($("[data-k=t]", F) || {}).value || "", a = ($("[data-k=a]", F) || {}).value || "";
+      /* performers you've logged for this same piece rank above others you've logged */
+      const forThis = d => { const it = listening.items[d.m]; return it && norm(it.t) === norm(t) ? 0 : 1; };
+      const mine = uniq([...listening.diary].sort((x, y) => forThis(x) - forThis(y)).map(d => d.perf).filter(p => p && (!q || norm(p).includes(norm(q)))), norm).slice(0, 4)
+        .map(p => ({ label: p, sub: "you’ve logged them before", fill: { perf: p } }));
+      if (!NET() || !t) return mine;
+      const it = await itunes(`${a} ${t}`, "media=music&entity=album").catch(() => []);
+      const surname = NET().words(a).slice(-1)[0] || "";
+      const recs = it.filter(x => NET().believable({ t, a }, `${x.collectionName} ${x.artistName}`) || norm(x.collectionName).includes(norm(t)))
+        .map(x => ({ who: x.artistName, x })).filter(r => r.who && !norm(r.who).includes(surname) && (!q || norm(r.who).includes(norm(q))))
+        .slice(0, 8).map(({ who, x }) => ({ label: who, sub: `${x.collectionName}${yearOf(x.releaseDate) ? " · " + yearOf(x.releaseDate) : ""}`, img: art(x.artworkUrl100),
+          fill: { perf: who, cover: art(x.artworkUrl100, "600x600") } }));
+      /* recordings of this piece first; performers you've logged before after them */
+      return uniq([...recs, ...mine], s => norm(s.label));
+    },
+    /* Films */
+    "fm-t": async q => {
+      const local = films.items.filter(f => norm(filmLabel(f)).includes(norm(q))).slice(0, 5).map(f => ({ label: f.t, sub: `${f.y || ""} · in your log`, value: filmLabel(f) }));
+      if (!NET()) return local;
+      const it = await itunes(q, "media=movie&entity=movie").catch(() => []);
+      const web = it.slice(0, 8).map(x => ({ label: x.trackName, sub: `${yearOf(x.releaseDate)}${x.artistName ? " · dir. " + x.artistName : ""}`, img: art(x.artworkUrl100),
+        fill: { t: x.trackName, y: yearOf(x.releaseDate), cover: art(x.artworkUrl100, "400x600") } }));
+      return uniq([...local, ...web], s => norm(s.label + s.sub.slice(0, 4)));
+    },
+    /* Books */
+    "bk-full": async q => {
+      const local = books.items.filter(b => norm(`${b.full || b.t} ${b.a}`).includes(norm(q))).slice(0, 5).map(b => ({ label: b.full || b.t, sub: `${b.a || ""} · in your library`, value: b.full || b.t }));
+      if (!NET()) return local;
+      const j = await NET().json("https://openlibrary.org/search.json?" + new URLSearchParams({ q, limit: 8, fields: "title,subtitle,author_name,first_publish_year,cover_i,isbn,number_of_pages_median" })).catch(() => null);
+      const web = ((j && j.docs) || []).map(d => {
+        const isbn = (d.isbn || []).find(x => /^97[89]\d{10}$/.test(x)) || (d.isbn || [])[0] || "";
+        return { label: d.title + (d.subtitle ? `: ${d.subtitle}` : ""), sub: `${(d.author_name || []).slice(0, 2).join(", ")}${d.first_publish_year ? " · " + d.first_publish_year : ""}`,
+          img: d.cover_i ? `https://covers.openlibrary.org/b/id/${d.cover_i}-S.jpg` : "",
+          fill: { full: d.title + (d.subtitle ? `: ${d.subtitle}` : ""), a: (d.author_name || [])[0] || "", year: d.first_publish_year ? String(d.first_publish_year) : "", pages: d.number_of_pages_median ? String(d.number_of_pages_median) : "", isbn } };
+      });
+      return uniq([...local, ...web], s => norm(s.label + s.sub.split(" · ")[0]));
+    }
+  };
+  /* the performer list is useful before typing anything, once the piece is known */
+  const SHOW_ON_FOCUS = new Set(["al-perf"]);
+
+  const box = document.createElement("div");
+  box.className = "suggest"; box.setAttribute("role", "listbox"); box.hidden = true;
+  document.body.appendChild(box);
+  let active = null, items = [], sel = -1, ticket = 0;
+  const close = () => { box.hidden = true; items = []; sel = -1; active = null; };
+  const place = () => { if (!active) return; const r = active.getBoundingClientRect(); box.style.left = r.left + "px"; box.style.top = (r.bottom + 4) + "px"; box.style.width = Math.min(Math.max(r.width, 460), innerWidth - r.left - 16) + "px"; };
+  const paint = (loading) => {
+    if (!active) return;
+    if (!items.length && !loading) { box.hidden = true; return; }
+    box.innerHTML = items.map((s, k) => `<div class="sg-item" role="option" data-n="${k}" aria-selected="${k === sel}">
+      ${s.img ? `<img src="${esc(s.img)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : '<span class="sg-noimg"></span>'}
+      <span class="sg-text"><b>${esc(s.label)}</b><small>${esc(s.sub || "")}</small></span></div>`).join("") + (loading ? '<div class="sg-loading">Searching…</div>' : "");
+    box.hidden = false; place();
+  };
+  const search = debounce(async (inp, id) => {
+    const q = inp.value.trim(), my = ++ticket;
+    if (q.length < 2 && !SHOW_ON_FOCUS.has(id)) { close(); return; }
+    items = []; paint(true);
+    let res = [];
+    try { res = await SOURCES[id](q); } catch (e) { res = []; }
+    if (my !== ticket || active !== inp) return;
+    items = res.slice(0, 12); sel = -1; paint(false);
+  }, 280);
+  function pick(s) {
+    const inp = active; if (!inp || !s) return;
+    const form = inp.closest(".logform");
+    close();
+    if (s.value != null) {   /* one of yours: let the existing handlers switch to it */
+      inp.value = s.value; inp.dispatchEvent(new Event("input", { bubbles: true })); return;
+    }
+    Object.entries(s.fill || {}).forEach(([k, v]) => {
+      const el = $(`[data-k=${k}]`, form); if (!el || v == null) return;
+      if (el.type === "checkbox") el.checked = !!v;
+      else if (v !== "" || el === inp) el.value = v;
+    });
+    const next = $("[data-k=r], [data-k=review]", form); if (next && inp.dataset.k !== "perf") next.focus();
+    toast("Filled in from " + (s.sub || "").split(" · ").slice(-1)[0].replace(/^\d{4}$/, "the catalogue"));
+  }
+  const idOf = el => el && el.matches && el.matches("input[data-k]") && !el.readOnly && SOURCES[el.id] ? el.id : null;
+  document.addEventListener("input", e => { const id = idOf(e.target); if (!id || !e.isTrusted) return; active = e.target; search(e.target, id); });
+  document.addEventListener("focusin", e => { const id = idOf(e.target); if (id && SHOW_ON_FOCUS.has(id)) { active = e.target; search(e.target, id); } });
+  document.addEventListener("keydown", e => {
+    if (box.hidden || !active || e.target !== active) return;
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); sel = (sel + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length; paint(false); }
+    else if (e.key === "Enter" && sel >= 0) { e.preventDefault(); pick(items[sel]); }
+    else if (e.key === "Escape") close();
+  });
+  box.addEventListener("mousedown", e => { const it = e.target.closest(".sg-item"); if (it) { e.preventDefault(); pick(items[+it.dataset.n]); } });
+  document.addEventListener("focusout", e => { if (e.target === active) setTimeout(() => { if (document.activeElement !== active) close(); }, 150); });
+  addEventListener("scroll", place, true); addEventListener("resize", place);
 
   Object.assign(SECTIONS, LOG_SECTIONS);
   const ORDER = ["theme", "profile", "now", "writings", "studio", "reading", "watching", "music", "about", "socials", "settings"];
