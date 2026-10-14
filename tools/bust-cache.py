@@ -13,7 +13,8 @@ def stamp(m):
     path = os.path.join(ROOT, m.group(2))
     if not os.path.exists(path):
         return m.group(0)
-    h = hashlib.md5(open(path, 'rb').read()).hexdigest()[:8]
+    # line endings ignored, so Windows (CRLF) and Mac (LF) copies of a file get the same stamp
+    h = hashlib.md5(open(path, 'rb').read().replace(b'\r\n', b'\n')).hexdigest()[:8]
     return f'{m.group(1)}{m.group(2)}?v={h}{m.group(3)}'
 
 changed = []
