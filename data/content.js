@@ -557,6 +557,12 @@ window.SITE = {
     "goatcounter": "samcao"
   },
   "music": {
-    "top": []
+    "top": [
+      "Ludwig van Beethoven",
+      "Johann Sebastian Bach",
+      "Wolfgang Amadeus Mozart",
+      "Gustav Mahler",
+      "Maurice Ravel"
+    ]
   }
 };
