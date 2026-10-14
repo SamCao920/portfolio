@@ -1033,3 +1033,9 @@ dialog.lightbox figcaption { font-size: 13px; color: var(--muted); text-align: c
 .stile-copy { display: block; width: calc(100% - 28px); margin: -8px 14px 12px 66px; padding: 0; border: 0; background: none; text-align: left; font: 12px/1.4 var(--mono, ui-monospace, monospace); color: var(--muted); cursor: copy; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(100% - 80px); }
 .stile-copy:hover { color: var(--text-strong); }
 .stile-copy.ok { color: #3ecf7a; }
+/* ---------- links inside running text: the same faint dotted underline as the quote's links ---------- */
+:is(p, dd, figcaption, blockquote, details, .prose, .claim, .review, .list-desc, .side-note, .note-fine, .ccard-tag) a:not(.btn):not(.read-link):not(.poster):not(.ccard-site) {
+  color: inherit; text-decoration: underline dotted color-mix(in srgb, var(--accent) 80%, transparent);
+  text-decoration-thickness: 1.5px; text-underline-offset: 3px; transition: color .15s, text-decoration-color .15s; }
+:is(p, dd, figcaption, blockquote, details, .prose, .claim, .review, .list-desc, .side-note, .note-fine, .ccard-tag) a:not(.btn):not(.read-link):not(.poster):not(.ccard-site):hover {
+  color: var(--accent); text-decoration-style: solid; }
