@@ -799,22 +799,21 @@
       ${vaultStamp()}`;
   }
 
-  /* the About photo: drifts gently on its own, tilts toward the pointer, with a moving sheen like the covers */
-  function tiltPortrait() {
-    const box = $("#portrait3d"); if (!box) return;
-    const inner = $(".p3d", box);
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) { box.classList.add("calm"); return; }
-    box.addEventListener("pointermove", e => {
-      const r = box.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-      box.classList.add("live");
-      inner.style.setProperty("--ry", ((x - .5) * 24).toFixed(1) + "deg");
-      inner.style.setProperty("--rx", (-(y - .5) * 18).toFixed(1) + "deg");
-      inner.style.setProperty("--gx", (x * 100).toFixed(0) + "%"); inner.style.setProperty("--gy", (y * 100).toFixed(0) + "%");
-    });
-    box.addEventListener("pointerleave", () => { box.classList.remove("live"); ["--rx", "--ry", "--gx", "--gy"].forEach(k => inner.style.removeProperty(k)); });
+  /* the About photo: a halftone print in the accent colour; the pointer reveals the colour photo underneath,
+     like a flashlight. Tap toggles full colour on touch screens. */
+  function revealPortrait() {
+    const box = $("#portrait-reveal"); if (!box) return;
+    let raf = 0, tx = 50, ty = 40, x = 50, y = 40;
+    const step = () => { x += (tx - x) * .18; y += (ty - y) * .18; box.style.setProperty("--mx", x.toFixed(1) + "%"); box.style.setProperty("--my", y.toFixed(1) + "%");
+      raf = Math.abs(tx - x) + Math.abs(ty - y) > .1 ? requestAnimationFrame(step) : 0; };
+    const aim = e => { const r = box.getBoundingClientRect(); tx = (e.clientX - r.left) / r.width * 100; ty = (e.clientY - r.top) / r.height * 100; if (!raf) raf = requestAnimationFrame(step); };
+    box.addEventListener("pointerenter", e => { if (e.pointerType === "mouse") { box.classList.add("on"); aim(e); } });
+    box.addEventListener("pointermove", e => { if (e.pointerType === "mouse") aim(e); });
+    box.addEventListener("pointerleave", e => { if (e.pointerType === "mouse") box.classList.remove("on"); });
+    box.addEventListener("click", e => { if (e.pointerType !== "mouse") box.classList.toggle("full"); });
   }
   function aboutPage() {
-    setTimeout(tiltPortrait);
+    setTimeout(revealPortrait);
     return `
       <div class="cols">
         <div>
@@ -824,7 +823,9 @@
             <ul class="timeline">${S.record.map(([y, t]) => `<li><span class="yr">${esc(y)}</span><span>${esc(t)}</span></li>`).join("")}</ul></section>
         </div>
         <aside>
-          ${(S.profile.aboutPhoto || S.profile.avatar) ? `<div class="portrait3d" id="portrait3d"><div class="p3d"><div class="about-portrait"><img src="${esc(S.profile.aboutPhoto || S.profile.avatar)}" alt="${esc(S.profile.name)}"></div><i class="p3d-glare" aria-hidden="true"></i></div></div>` : ""}
+          ${(S.profile.aboutPhoto || S.profile.avatar) ? `<div class="portrait-reveal" id="portrait-reveal" style="--photo:url('${esc(new URL(encodeURI(S.profile.aboutPhoto || S.profile.avatar), location.href).href)}')">
+              <div class="about-portrait"><img src="${esc(S.profile.aboutPhoto || S.profile.avatar)}" alt="${esc(S.profile.name)}"><i class="pr-tint" aria-hidden="true"></i><i class="pr-dots" aria-hidden="true"></i><i class="pr-color" aria-hidden="true"></i></div>
+              <p class="pr-hint">Move over the photo</p></div>` : ""}
           <section class="side-block">${sectionHead("Details")}
             <dl class="facts">${S.facts.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl></section>
           <section class="side-block">${sectionHead("Interests")}
@@ -836,6 +837,18 @@
   /* ---------- socials: a flippable contact card, my local time, a quick note composer, link tiles ---------- */
   const SOCIAL_NOTE = { email: "Best way to reach me", linkedin: "Education and experience", curius: "Articles I’m reading", substack: "Essays and longer writing",
     x: "Shorter thoughts", spotify: "Playlists", musescore: "Sheet music", github: "Code", instagram: "Photos", goodreads: "Books" };
+  /* what I'm reading, last listened to and last watched, straight from my logs */
+  function currently() {
+    const rows = [];
+    const book = booksReading()[0];
+    if (book) rows.push(["Reading", book.t, book.a]);
+    const heard = albumDiary[0];
+    if (heard) rows.push(["Listened to", heard.it.t, [heard.it.a, heard.perf].filter(Boolean).join(" · ")]);
+    const seen = filmDiary[0];
+    if (seen) rows.push(["Watched", seen.it.t, String(seen.it.y || "")]);
+    if (!rows.length) return `<p class="ccard-tag">${esc(S.profile.tagline || "")}</p>`;
+    return `<dl class="ccard-now">${rows.slice(0, 3).map(([k, t, sub]) => `<div><dt>${k}</dt><dd><b>${esc(t)}</b>${sub ? ` <span>${esc(sub)}</span>` : ""}</dd></div>`).join("")}</dl>`;
+  }
   function socialsPage() {
     const p = S.profile, links = S.socials.filter(s => s.url);
     const mail = links.find(s => s.copy || /^mailto:/.test(s.url));
@@ -914,7 +927,7 @@
             <div class="ccard-face front">
               <div class="ccard-top"><span class="ccard-av">${avatar}</span><span class="ccard-site">fangyuancao.me</span></div>
               <div class="ccard-name"><b>${esc(full)}</b><span class="cjk">${esc(p.cjk || "")}</span></div>
-              <p class="ccard-tag">${esc(p.tagline || "")}</p>
+              ${currently()}
               <div class="ccard-foot"><span>${esc(p.location || "")}</span><span class="ccard-hint">Flip ↻</span></div>
               <i class="ccard-glare" aria-hidden="true"></i>
             </div>
