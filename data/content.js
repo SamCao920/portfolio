@@ -22,7 +22,7 @@ window.SITE = {
     "aboutPhoto": "assets/plates/68.png"
   },
   "about": [
-    "Hi, I’m Sam. My given name is Fangyuan (曹方源), but you can call me Sam. I’m double majoring in Moral and Political Economy and Applied Mathematics and Statistics at the Johns Hopkins University, and I write and research at the intersection of economics, philosophy, and history.",
+    "Hi, I’m Sam. My given name is Fangyuan (曹方源), but you can call me Sam. I’m currently a freshman planning on double majoring in Moral and Political Economy and Applied Mathematics and Statistics at the Johns Hopkins University, and I write and research at the intersection of economics, philosophy, and history.",
     "I grew up in China and finished high school in California. My essays and research are on the <a href=\"writings.html\">Writing</a> page, what I’m reading and watching is on <a href=\"books.html\">Books</a> and <a href=\"films.html\">Films</a>, and <a href=\"vault.html\">the Vault</a> is a live map of my Obsidian vault.",
     "Outside of writing I play violin, draw & paint, and read books. This site keeps track of all of it."
   ],
