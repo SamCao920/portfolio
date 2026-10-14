@@ -31,10 +31,6 @@ window.SITE = {
       "Baltimore, Maryland"
     ],
     [
-      "School",
-      "Johns Hopkins, Class of 2030"
-    ],
-    [
       "Studying",
       "Moral and Political Economy; Applied Mathematics and Statistics"
     ],

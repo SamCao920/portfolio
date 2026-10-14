@@ -799,7 +799,22 @@
       ${vaultStamp()}`;
   }
 
+  /* the About photo: drifts gently on its own, tilts toward the pointer, with a moving sheen like the covers */
+  function tiltPortrait() {
+    const box = $("#portrait3d"); if (!box) return;
+    const inner = $(".p3d", box);
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) { box.classList.add("calm"); return; }
+    box.addEventListener("pointermove", e => {
+      const r = box.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+      box.classList.add("live");
+      inner.style.setProperty("--ry", ((x - .5) * 24).toFixed(1) + "deg");
+      inner.style.setProperty("--rx", (-(y - .5) * 18).toFixed(1) + "deg");
+      inner.style.setProperty("--gx", (x * 100).toFixed(0) + "%"); inner.style.setProperty("--gy", (y * 100).toFixed(0) + "%");
+    });
+    box.addEventListener("pointerleave", () => { box.classList.remove("live"); ["--rx", "--ry", "--gx", "--gy"].forEach(k => inner.style.removeProperty(k)); });
+  }
   function aboutPage() {
+    setTimeout(tiltPortrait);
     return `
       <div class="cols">
         <div>
@@ -809,7 +824,7 @@
             <ul class="timeline">${S.record.map(([y, t]) => `<li><span class="yr">${esc(y)}</span><span>${esc(t)}</span></li>`).join("")}</ul></section>
         </div>
         <aside>
-          ${(S.profile.aboutPhoto || S.profile.avatar) ? `<div class="about-portrait"><img src="${esc(S.profile.aboutPhoto || S.profile.avatar)}" alt="${esc(S.profile.name)}"></div>` : ""}
+          ${(S.profile.aboutPhoto || S.profile.avatar) ? `<div class="portrait3d" id="portrait3d"><div class="p3d"><div class="about-portrait"><img src="${esc(S.profile.aboutPhoto || S.profile.avatar)}" alt="${esc(S.profile.name)}"></div><i class="p3d-glare" aria-hidden="true"></i></div></div>` : ""}
           <section class="side-block">${sectionHead("Details")}
             <dl class="facts">${S.facts.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl></section>
           <section class="side-block">${sectionHead("Interests")}
@@ -837,7 +852,7 @@
           <span class="stile-go" aria-hidden="true">↗</span></a>
         ${/^@?[\w.\-]+$/.test(s.handle || "") ? `<button type="button" class="stile-copy" data-copy-handle="${i}" title="Copy ${esc(s.handle)}">${esc(s.handle)}</button>` : ""}</li>`;
     }).join("");
-    const topics = ["Research", "Writing", "Music", "Just saying hi"];
+    const topics = ["Writing", "Music", "Art", "Just saying hi"];
     setTimeout(() => {
       /* card: tilt toward the pointer, flip on click or Enter */
       const card = $("#ccard"), inner = $(".ccard-inner", card);

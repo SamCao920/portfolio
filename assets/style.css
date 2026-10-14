@@ -1039,3 +1039,23 @@ dialog.lightbox figcaption { font-size: 13px; color: var(--muted); text-align: c
   text-decoration-thickness: 1.5px; text-underline-offset: 3px; transition: color .15s, text-decoration-color .15s; }
 :is(p, dd, figcaption, blockquote, details, .prose, .claim, .review, .list-desc, .side-note, .note-fine, .ccard-tag) a:not(.btn):not(.read-link):not(.poster):not(.ccard-site):hover {
   color: var(--accent); text-decoration-style: solid; }
+/* ---------- About photo in 3D: idle drift, pointer tilt, moving sheen ---------- */
+.portrait3d { margin-top: 40px; perspective: 1000px; max-width: 100%; }
+@media (max-width: 780px) { .portrait3d { max-width: 220px; } }
+.portrait3d .about-portrait { margin-top: 0; max-width: none; }
+.p3d { position: relative; transform-style: preserve-3d; --rx: 0deg; --ry: 0deg; --gx: 30%; --gy: 20%;
+  transform: rotateX(var(--rx)) rotateY(var(--ry)); transition: transform .6s cubic-bezier(.2,.8,.2,1);
+  border-radius: 4px; box-shadow: 0 18px 40px rgba(0,0,0,.35); animation: p3d-drift 9s ease-in-out infinite; }
+.portrait3d.live .p3d { animation: none; transition: transform .12s linear; }
+.portrait3d.calm .p3d { animation: none; }
+@keyframes p3d-drift {
+  0%, 100% { transform: rotateX(3deg) rotateY(-9deg); --gx: 25%; --gy: 20%; }
+  50% { transform: rotateX(-2deg) rotateY(9deg); --gx: 75%; --gy: 35%; }
+}
+.p3d-glare { position: absolute; inset: 0; border-radius: 4px; pointer-events: none; mix-blend-mode: soft-light;
+  background: radial-gradient(circle at var(--gx) var(--gy), rgba(255,255,255,.55), rgba(255,255,255,0) 55%),
+              linear-gradient(115deg, transparent 35%, rgba(255,255,255,.18) 48%, transparent 60%);
+  background-size: 100% 100%, 250% 100%; animation: p3d-sheen 9s ease-in-out infinite; }
+.portrait3d.live .p3d-glare { animation: none; background-position: 0 0, var(--gx) 0; }
+.portrait3d.calm .p3d-glare { animation: none; }
+@keyframes p3d-sheen { 0%, 100% { background-position: 0 0, 100% 0; } 50% { background-position: 0 0, 0% 0; } }
