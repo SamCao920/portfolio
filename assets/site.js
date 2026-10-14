@@ -849,24 +849,118 @@
       </div>`;
   }
 
+  /* ---------- socials: a flippable contact card, my local time, a quick note composer, link tiles ---------- */
+  const SOCIAL_NOTE = { email: "Best way to reach me", linkedin: "Education and experience", curius: "Articles I’m reading", substack: "Essays and longer writing",
+    x: "Shorter thoughts", spotify: "Playlists", musescore: "Sheet music", github: "Code", instagram: "Photos", goodreads: "Books" };
   function socialsPage() {
-    const rows = S.socials.filter(s => s.url).map(s => {
-      const i = S.socials.indexOf(s);
-      const action = s.copy ? `<button class="btn" type="button" data-copy="${i}">Copy</button>`
-        : `<a class="btn go" href="${esc(s.url)}" target="_blank" rel="noopener">Visit</a>`;
-      const name = s.copy ? esc(s.handle) : `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.handle)}</a>`;
-      return `<li class="social"><span class="social-icon">${esc(s.name[0])}</span>
-        <div class="social-body"><b>${esc(s.name)}</b><span>${name}</span></div>${action}</li>`;
+    const p = S.profile, links = S.socials.filter(s => s.url);
+    const mail = links.find(s => s.copy || /^mailto:/.test(s.url));
+    const email = mail ? (mail.copy || mail.url.replace(/^mailto:/, "")) : "";
+    const full = /\s/.test(p.name) ? p.name : `${p.name} ${String(p.legalName || "").split(" ").slice(-1)[0]}`.trim();
+    const zone = p.timezone || "America/New_York";
+    const city = String(p.location || "").split(",")[0];
+    const avatar = p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : `<span>${esc(p.initials || full[0])}</span>`;
+    const tiles = links.filter(s => s !== mail).map(s => {
+      const i = S.socials.indexOf(s), key = s.name.toLowerCase();
+      return `<li class="stile"><a href="${esc(s.url)}" target="_blank" rel="noopener">
+          <span class="stile-mark" aria-hidden="true">${esc(Array.from(s.name)[0])}</span>
+          <span class="stile-text"><b>${esc(s.name)}</b><span>${esc(s.note || SOCIAL_NOTE[key] || s.handle)}</span></span>
+          <span class="stile-go" aria-hidden="true">↗</span></a>
+        ${/^@?[\w.\-]+$/.test(s.handle || "") ? `<button type="button" class="stile-copy" data-copy-handle="${i}" title="Copy ${esc(s.handle)}">${esc(s.handle)}</button>` : ""}</li>`;
     }).join("");
-    setTimeout(() => $$("[data-copy]").forEach(btn => btn.addEventListener("click", () => {
-      const text = S.socials[btn.dataset.copy].copy;
-      const done = () => { btn.textContent = "Copied"; btn.classList.add("ok"); toast("Email copied to clipboard"); setTimeout(() => { btn.textContent = "Copy"; btn.classList.remove("ok"); }, 1600); };
-      if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => { btn.textContent = text; });
-      else btn.textContent = text;
-    })));
+    const topics = ["Research", "Writing", "Music", "Just saying hi"];
+    setTimeout(() => {
+      /* card: tilt toward the pointer, flip on click or Enter */
+      const card = $("#ccard"), inner = $(".ccard-inner", card);
+      const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      /* the back holds buttons, so it stays still; only the front tilts */
+      const still = () => { inner.style.setProperty("--ry", "0deg"); inner.style.setProperty("--rx", "0deg"); };
+      card.addEventListener("pointermove", e => { if (calm || card.classList.contains("flipped")) return; const r = card.getBoundingClientRect();
+        inner.style.setProperty("--ry", (((e.clientX - r.left) / r.width - .5) * 22).toFixed(1) + "deg");
+        inner.style.setProperty("--rx", (-((e.clientY - r.top) / r.height - .5) * 16).toFixed(1) + "deg");
+        inner.style.setProperty("--gx", ((e.clientX - r.left) / r.width * 100).toFixed(0) + "%"); inner.style.setProperty("--gy", ((e.clientY - r.top) / r.height * 100).toFixed(0) + "%"); });
+      card.addEventListener("pointerleave", () => { inner.style.setProperty("--ry", "0deg"); inner.style.setProperty("--rx", "0deg"); });
+      const flip = () => { still(); card.classList.toggle("flipped"); card.setAttribute("aria-pressed", card.classList.contains("flipped")); };
+      card.addEventListener("click", e => { if (!e.target.closest("a, button:not(#ccard)")) flip(); });
+      card.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target === card) { e.preventDefault(); flip(); } });
+      /* save contact: a vCard any phone or address book can import */
+      const vc = $("#vcard"); if (vc) vc.addEventListener("click", e => {
+        e.stopPropagation();
+        const esc2 = v => String(v || "").replace(/([,;\\])/g, "\\$1").replace(/\n/g, "\\n");
+        const [given, ...rest] = String(p.legalName || full).split(" ");
+        const lines = ["BEGIN:VCARD", "VERSION:3.0", `N:${esc2(rest.join(" "))};${esc2(given)};;;`, `FN:${esc2(full)}`, p.name ? `NICKNAME:${esc2(p.name.split(" ")[0])}` : "",
+          email ? `EMAIL;TYPE=INTERNET:${email}` : "", "URL:https://fangyuancao.me", ...links.filter(s => s !== mail).map(s => `X-SOCIALPROFILE;TYPE=${esc2(s.name.toLowerCase())}:${s.url}`),
+          p.tagline ? `NOTE:${esc2(p.tagline)}` : "", "END:VCARD"].filter(Boolean);
+        const url = URL.createObjectURL(new Blob([lines.join("\r\n") + "\r\n"], { type: "text/vcard" }));
+        const dl = document.createElement("a"); dl.href = url; dl.download = full.replace(/\s+/g, "-") + ".vcf"; document.body.appendChild(dl); dl.click(); dl.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 2000); toast("Contact card downloaded");
+      });
+      /* copy buttons */
+      const copy = (text, btn, msg) => {
+        const done = () => { if (btn) { const o = btn.textContent; btn.textContent = "Copied"; btn.classList.add("ok"); setTimeout(() => { btn.textContent = o; btn.classList.remove("ok"); }, 1400); } toast(msg); };
+        if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => toast(text)); else toast(text);
+      };
+      $$("[data-copy-email]").forEach(b => b.addEventListener("click", e => { e.stopPropagation(); copy(email, b, "Email copied"); }));
+      $$("[data-copy-handle]").forEach(b => b.addEventListener("click", () => { const s = S.socials[b.dataset.copyHandle]; copy(s.handle, b, `${s.name} handle copied`); }));
+      /* local time, updated each minute */
+      const tick = () => {
+        const now = new Date(), fmt = new Intl.DateTimeFormat("en-US", { timeZone: zone, hour: "numeric", minute: "2-digit" });
+        const h = +new Intl.DateTimeFormat("en-US", { timeZone: zone, hour: "numeric", hourCycle: "h23" }).format(now);
+        const awake = h >= 7 && h < 24;
+        const el = $("#localtime"); if (!el) return;
+        el.innerHTML = `<i class="lt-dot${awake ? " on" : ""}"></i><b>${fmt.format(now)}</b> in ${esc(city)} · ${awake ? "probably awake" : "probably asleep, I’ll reply in the morning"}`;
+      };
+      tick(); setInterval(tick, 30000);
+      /* quick note: picks a topic, opens the visitor's own email app */
+      let topic = topics[0];
+      $$("[data-topic]").forEach(b => b.addEventListener("click", () => { topic = b.dataset.topic; $$("[data-topic]").forEach(x => x.setAttribute("aria-pressed", x === b)); }));
+      const f = $("#note-form"); if (f) f.addEventListener("submit", e => {
+        e.preventDefault();
+        const msg = $("#note-msg").value.trim(), from = $("#note-name").value.trim();
+        if (!msg) { $("#note-msg").focus(); toast("Write a line or two first"); return; }
+        const subject = `${topic === "Just saying hi" ? "Hello" : topic}${from ? " from " + from : ""} (via fangyuancao.me)`;
+        location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(msg + (from ? `\n\n${from}` : ""))}`;
+      });
+    });
     return `<h1 class="page-title">Socials</h1>
       <p class="page-sub">I’m always happy to connect, whether about research, writing, or anything in between. Email is best.</p>
-      <ul class="social-list" style="margin-top:22px">${rows}</ul>`;
+      <div class="contact">
+        <div class="ccard" id="ccard" role="button" tabindex="0" aria-pressed="false" aria-label="Contact card. Press to flip.">
+          <div class="ccard-inner">
+            <div class="ccard-face front">
+              <div class="ccard-top"><span class="ccard-av">${avatar}</span><span class="ccard-site">fangyuancao.me</span></div>
+              <div class="ccard-name"><b>${esc(full)}</b><span class="cjk">${esc(p.cjk || "")}</span></div>
+              <p class="ccard-tag">${esc(p.tagline || "")}</p>
+              <div class="ccard-foot"><span>${esc(p.location || "")}</span><span class="ccard-hint">Flip ↻</span></div>
+              <i class="ccard-glare" aria-hidden="true"></i>
+            </div>
+            <div class="ccard-face back">
+              <span class="ccard-label">Email</span>
+              <b class="ccard-mail">${esc(email)}</b>
+              <div class="ccard-actions">
+                <a class="btn go" href="mailto:${esc(email)}">Write</a>
+                <button class="btn" type="button" data-copy-email>Copy</button>
+                <button class="btn" type="button" id="vcard">Save contact</button>
+              </div>
+              <span class="ccard-hint">Flip back ↻</span>
+              <i class="ccard-glare" aria-hidden="true"></i>
+            </div>
+          </div>
+        </div>
+        <div class="contact-side">
+          <p class="localtime" id="localtime"></p>
+          <form class="note" id="note-form">
+            <h2>Write to me</h2>
+            <div class="note-topics" role="group" aria-label="Topic">${topics.map((t, k) => `<button type="button" class="chip" data-topic="${t}" aria-pressed="${k === 0}">${t}</button>`).join("")}</div>
+            <label class="sr" for="note-msg">Message</label>
+            <textarea id="note-msg" rows="4" placeholder="A line or two is plenty."></textarea>
+            <div class="note-row"><label class="sr" for="note-name">Your name</label><input id="note-name" type="text" placeholder="Your name (optional)" autocomplete="name">
+              <button class="btn go" type="submit">Open in my email app ↗</button></div>
+            <p class="note-fine">Opens your own email app with this filled in. Nothing is sent from this page.</p>
+          </form>
+        </div>
+      </div>
+      <section class="section">${sectionHead("Elsewhere")}<ul class="stiles">${tiles}</ul></section>`;
   }
 
   /* Wrap a cover or artwork in a box with real depth: front, back and four edges.

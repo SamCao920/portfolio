@@ -979,3 +979,57 @@ dialog.lightbox { width: min(1100px, 94vw); max-width: none; padding: 18px 18px 
 dialog.lightbox figure { margin: 0; display: grid; justify-items: center; gap: 10px; }
 dialog.lightbox img { max-width: 100%; max-height: 74vh; border-radius: 4px; display: block; }
 dialog.lightbox figcaption { font-size: 13px; color: var(--muted); text-align: center; max-width: 60ch; }
+/* ---------- socials ---------- */
+.contact { display: grid; grid-template-columns: minmax(0, 440px) minmax(0, 1fr); gap: 40px; align-items: start; margin: 26px 0 10px; }
+@media (max-width: 820px) { .contact { grid-template-columns: minmax(0, 1fr); gap: 28px; } }
+.ccard { perspective: 1200px; cursor: pointer; outline: none; aspect-ratio: 1.7; max-width: 440px; width: 100%; }
+.ccard-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; --rx: 0deg; --ry: 0deg; --gx: 30%; --gy: 20%;
+  transform: rotateX(var(--rx)) rotateY(var(--ry)); transition: transform .5s cubic-bezier(.2,.8,.2,1); }
+.ccard.flipped .ccard-inner { transform: rotateX(var(--rx)) rotateY(calc(180deg + var(--ry))); }
+.ccard:focus-visible .ccard-inner { box-shadow: 0 0 0 3px var(--accent); border-radius: 16px; }
+.ccard-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 16px; overflow: hidden; padding: 22px 24px;
+  display: flex; flex-direction: column; background: linear-gradient(150deg, color-mix(in srgb, var(--accent) 16%, var(--bg-raised)), var(--bg-raised) 55%, var(--surface));
+  box-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 0 0 1px var(--line-strong), 0 22px 50px rgba(0,0,0,.35); }
+.ccard-face.back { transform: rotateY(180deg); justify-content: center; gap: 10px; }
+.ccard-glare { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at var(--gx) var(--gy), rgba(255,255,255,.12), transparent 55%); }
+.ccard-top { display: flex; align-items: center; justify-content: space-between; }
+.ccard-av { width: 54px; height: 54px; border-radius: 50%; overflow: hidden; display: grid; place-items: center; background: var(--surface); box-shadow: 0 0 0 2px var(--accent); }
+.ccard-av img { width: 100%; height: 100%; object-fit: cover; }
+.ccard-site { font: 600 12px/1 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.ccard-name { margin-top: auto; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.ccard-name b { font: var(--dw, 700) clamp(24px, 4vw, 32px)/1.05 var(--display); color: var(--heading); }
+.ccard-name .cjk { font-size: 20px; color: var(--text-strong); }
+.ccard-tag { margin: 8px 0 0; font-size: 13px; line-height: 1.45; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ccard-foot { display: flex; justify-content: space-between; margin-top: 12px; font-size: 12px; color: var(--muted); }
+.ccard-hint { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.ccard-face.back .ccard-hint { position: absolute; right: 24px; bottom: 18px; }
+.ccard-label { font: 600 11px/1 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.ccard-mail { font: var(--dw, 700) clamp(18px, 3vw, 24px)/1.2 var(--display); color: var(--heading); overflow-wrap: anywhere; }
+.ccard-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.localtime { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; font-size: 14px; color: var(--muted); }
+.localtime b { color: var(--text-strong); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lt-dot { align-self: center; width: 8px; height: 8px; border-radius: 50%; background: var(--line-strong); flex: none; }
+.lt-dot.on { background: #3ecf7a; box-shadow: 0 0 0 4px rgba(62,207,122,.15); }
+.note h2 { margin: 0 0 10px; font: 400 12px/1 var(--body); letter-spacing: .075em; text-transform: uppercase; color: var(--muted); }
+.note-topics { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.note-topics .chip { padding: 7px 12px; border-radius: 14px; background: var(--bg-raised); box-shadow: inset 0 0 0 1px var(--line); }
+.note-topics .chip[aria-pressed="true"] { color: var(--bg); background: var(--heading); box-shadow: none; }
+.note textarea, .note input { width: 100%; min-width: 0; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--bg-raised); color: var(--text-strong); font: 15px/1.5 var(--body); padding: 10px 12px; resize: vertical; }
+.note textarea:focus, .note input:focus { outline: none; border-color: var(--accent); }
+.note-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.note-row input { flex: 1 1 180px; }
+.note-fine { margin: 8px 0 0; font-size: 12px; color: var(--muted); }
+.stiles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.stile { position: relative; border-radius: 12px; background: var(--bg-raised); box-shadow: inset 0 0 0 1px var(--line); transition: transform .2s var(--ease), box-shadow .2s; }
+.stile:hover { transform: translateY(-3px); box-shadow: inset 0 0 0 1px var(--line-strong), 0 12px 26px rgba(0,0,0,.25); }
+.stile > a { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 14px; color: inherit; text-decoration: none; }
+.stile-mark { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--surface); color: var(--heading); font: var(--dw, 700) 17px/1 var(--display); transition: background .2s, color .2s; }
+.stile:hover .stile-mark { background: var(--accent); color: var(--on-accent); }
+.stile-text { min-width: 0; display: grid; }
+.stile-text b { color: var(--heading); }
+.stile-text span { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stile-go { color: var(--muted); transition: transform .2s var(--ease), color .2s; }
+.stile:hover .stile-go { color: var(--accent); transform: translate(2px, -2px); }
+.stile-copy { display: block; width: calc(100% - 28px); margin: -8px 14px 12px 66px; padding: 0; border: 0; background: none; text-align: left; font: 12px/1.4 var(--mono, ui-monospace, monospace); color: var(--muted); cursor: copy; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(100% - 80px); }
+.stile-copy:hover { color: var(--text-strong); }
+.stile-copy.ok { color: #3ecf7a; }
