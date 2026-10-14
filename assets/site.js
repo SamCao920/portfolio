@@ -354,36 +354,6 @@
         ${link}${galleryStrip(w)}</div></li>`;
   }
 
-  /* ---------- activity heatmap: books finished, films logged, art logged ---------- */
-  function heatmap() {
-    const counts = new Map();
-    const add = (d, k) => { if (!d || !String(d).startsWith(String(thisYear))) return; const e = counts.get(d) || { b: 0, f: 0, a: 0 }; e[k]++; counts.set(d, e); };
-    BOOKS.forEach(b => b.shelf === "read" && add(b.read, "b"));
-    filmDiary.forEach(d => add(d.date, "f"));
-    ART.forEach(a => add(a.seen || a.logged, "a"));
-    const first = new Date(thisYear, 0, 1), last = new Date(thisYear, 11, 31);
-    const d = new Date(first); d.setDate(d.getDate() - d.getDay());
-    const cells = [], months = []; let col = 0, total = 0;
-    while (d <= last) {
-      for (let r = 0; r < 7; r++, d.setDate(d.getDate() + 1)) {
-        const iso = isoOf(d), inYear = d.getFullYear() === thisYear, future = iso > TODAY;
-        if (inYear && d.getDate() === 1) months.push([d.getMonth(), col]);
-        const e = counts.get(iso), n = e ? e.b + e.f + e.a : 0; total += n;
-        const lvl = !inYear ? "x" : future ? "f" : n === 0 ? 0 : n === 1 ? 1 : n === 2 ? 2 : n < 5 ? 3 : 4;
-        const tip = !inYear ? "" : `${MONTHS[d.getMonth()]} ${d.getDate()}: ` + (n ? [e.b && plural(e.b, "book"), e.f && plural(e.f, "film"), e.a && plural(e.a, "artwork")].filter(Boolean).join(", ") : "nothing logged");
-        cells.push(`<i class="hm-c l${lvl}"${tip ? ` data-tip="${tip}"` : ""}></i>`);
-      }
-      col++;
-    }
-    const sum = k => [...counts.values()].reduce((s, e) => s + e[k], 0);
-    return `<section class="section activity">${sectionHead(`${thisYear} in books, films and art`)}
-      <div class="hm-scroll"><div class="hm" style="--cols:${col}">
-        <div class="hm-months">${months.map(([m, c]) => `<span style="--c:${c}">${MONTHS[m]}</span>`).join("")}</div>
-        <div class="hm-grid">${cells.join("")}</div></div></div>
-      <div class="hm-foot"><span>${plural(sum("b"), "book")} · ${plural(sum("f"), "film")} · ${plural(sum("a"), "artwork")} logged this year</span>
-        <span class="hm-legend">Less <i class="hm-c l0"></i><i class="hm-c l1"></i><i class="hm-c l2"></i><i class="hm-c l3"></i><i class="hm-c l4"></i> More</span></div></section>`;
-  }
-
   function tasteNav() {
     const g = groupOf(page);
     return `<nav class="subnav" aria-label="${g.label}"><span class="subnav-label">${g.label}</span><div class="seg">${g.items.map(([href, label, key]) =>
@@ -415,7 +385,6 @@
 </div>
         ${quoteBlock()}
       </section>
-      ${heatmap()}
       <div class="cols">
         <div>
           <section class="section">${sectionHead("Favorite books", "books.html#favorites", "All favorites")}
