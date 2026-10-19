@@ -1,0 +1,15 @@
+# fangyuancao.me
+
+Static site on GitHub Pages (repo SamCao920/portfolio, branch master). Pages render from data/*.js via assets/site.js; admin.html edits the data files.
+
+## Publishing (Claude)
+- Attach the repo with push access (add_repo, access "push"), then work in a clone of origin/master.
+- After changes: `python3 tools/bust-cache.py`, commit, `git push origin HEAD:master`. Pages redeploys in about a minute.
+- Fetch and rebase on origin/master right before pushing; the Windows admin watcher also pushes to master.
+- Never force-push.
+
+## Rules
+- No em dashes, curly quotes, no emojis in site copy.
+- Strip EXIF/GPS from photos before committing.
+- Keep raw Goodreads, Letterboxd and Spotify exports out of the repo. No Goodreads or Letterboxd links.
+- Read data files before writing; change them in place.
