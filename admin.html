@@ -116,6 +116,26 @@
   .logform .f.check { margin-top: 26px; }
   .f input[type=text], .f input[type=date], .f input[type=url], .f select { height: 40px; }
   .logform input[readonly] { opacity: .7; }
+  .lf-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; margin-bottom: 14px; }
+  .lf-head h2 { margin: 0; }
+  .segtabs { display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 3px; border-radius: 8px; background: var(--bg-glow); box-shadow: inset 0 0 0 1px var(--line); }
+  .segtabs button { border: 0; background: none; color: var(--muted); font: 600 13px var(--body); padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+  .segtabs button:hover { color: var(--text-strong); }
+  .segtabs button[aria-pressed="true"] { background: var(--surface); color: var(--heading); box-shadow: 0 1px 2px rgba(0,0,0,.25); }
+  #bk-tabs { margin-bottom: 10px; }
+  .lf-note { margin: -4px 0 12px; padding: 8px 12px; border-radius: 6px; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--text-strong); font-size: 13.5px; }
+  .stars { display: flex; align-items: center; gap: 2px; min-height: 38px; }
+  .st { position: relative; width: 26px; height: 28px; font-size: 25px; line-height: 28px; color: var(--line-strong); }
+  .st::before { content: "★"; }
+  .st::after { content: "★"; position: absolute; left: 0; top: 0; width: calc(var(--f, 0) * 100%); overflow: hidden; color: var(--accent); pointer-events: none; }
+  .st button { position: absolute; top: 0; height: 100%; width: 50%; padding: 0; border: 0; background: none; cursor: pointer; z-index: 1; }
+  .st button:first-child { left: 0; } .st button:last-child { right: 0; }
+  .st button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .st-val { margin-left: 8px; font-size: 12px; color: var(--muted); }
+  .logform .checks { display: flex; gap: 18px; flex-wrap: wrap; }
+  details.more { margin: 2px 0 12px; }
+  details.more > summary { cursor: pointer; color: var(--muted); font-size: 13px; padding: 4px 0 10px; }
+  details.more > summary:hover { color: var(--text-strong); }
   .logbtns { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 14px; }
   .danger-btn:hover { background: var(--accent); color: var(--on-accent); }
   .lfilter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
@@ -159,6 +179,6 @@
 <script src="data/music.js?v=8e55ff1d"></script>
 <script src="data/listening.js?v=464be4e7"></script>
 <script src="assets/covers.js?v=99fec6eb"></script>
-<script src="assets/admin.js?v=a2d5e613"></script>
+<script src="assets/admin.js?v=3bd8d153"></script>
 </body>
 </html>

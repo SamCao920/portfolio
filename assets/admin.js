@@ -480,27 +480,52 @@ window.SITE = ${JSON.stringify(data, null, 2)};
   /* ----- Reading ----- */
   const bookVals = b => ({ full: b.full || b.t, a: b.a || "", shelf: b.shelf || "read", read: b.read || "", added: b.added || "", r: b.r == null ? "" : String(b.r),
     fav: !!b.fav, pages: b.pages ? String(b.pages) : "", year: b.year ? String(b.year) : "", isbn: b.isbn || "", review: b.review || "" });
-  function bookFormHtml() {
-    const f = bookForm, v = f.v, editing = f.mode === "edit", p = { prefix: "bk-" };
-    return `<div class="logform" id="bk-form">
-      <h2>${editing ? "Edit book" : "Log a book"}</h2>
-      <div class="grid2">${field(v, "full", "Title", { ...p, placeholder: "Start typing a title; pick a result to fill in the rest" }).replace("<input ", '<input autocomplete="off" ')}${field(v, "a", "Author", p)}</div>
-      <div class="grid3">${field(v, "shelf", "Status", { ...p, type: "select", options: SHELVES })}${field(v, "read", "Date finished", { ...p, type: "date", hint: "For Read and Did not finish." })}${field(v, "r", "Rating", { ...p, type: "select", options: BOOK_R })}</div>
-      <div class="grid3">${field(v, "pages", "Pages", p)}${field(v, "year", "Year published", p)}${field(v, "isbn", "ISBN", { ...p, hint: "Used to find the cover." })}</div>
-      ${field(v, "review", "Review", { ...p, type: "textarea", rows: 3 })}
-      <div class="grid3">${field(v, "added", "Date added", { ...p, type: "date", hint: "Empty means today." })}<div>${field(v, "fav", "Favorite", { type: "check" })}</div></div>
-      <div class="logbtns">${editing ? `<button class="btn go" type="button" data-act="bk-save">Update book</button><button class="btn" type="button" data-act="bk-cancel">Cancel</button><button class="btn danger-btn" type="button" data-act="bk-del">Delete</button>`
-        : `<button class="btn go" type="button" data-act="bk-save">Add to library</button>`}</div>
-      <datalist id="bk-titles">${books.items.map(b => `<option value="${esc(b.full || b.t)}">${esc(b.a || "")}</option>`).join("")}</datalist></div>`;
+  /* clickable stars: a hidden data-k input holds the number; half stars where the scale allows them */
+  function starsHtml(k, v, half) {
+    const n = +v || 0;
+    return `<div class="stars" data-stars data-half="${half ? 1 : ""}"><input type="hidden" data-k="${k}" value="${n || ""}">
+      ${[1, 2, 3, 4, 5].map(s => `<span class="st" style="--f:${n >= s ? 1 : n >= s - .5 ? .5 : 0}"><button type="button" data-sv="${half ? s - .5 : s}" aria-label="${half ? s - .5 : s} stars"></button><button type="button" data-sv="${s}" aria-label="${s} stars"></button></span>`).join("")}
+      <small class="st-val">${n ? n + " / 5" : "No rating"}</small></div>`;
   }
+  const segHtml = (attr, opts, cur) => `<div class="segtabs" role="group">${opts.map(([k, l]) => `<button type="button" ${attr}="${k}" aria-pressed="${k === cur}">${l}</button>`).join("")}</div>`;
+  const FINISHED = s => s === "read" || s === "dnf";
+  const freshBook = (shelf = "read") => ({ mode: "add", v: { shelf, read: FINISHED(shelf) ? today() : "" } });
+  function bookFormHtml() {
+    const f = bookForm, v = f.v, editing = f.mode === "edit", p = { prefix: "bk-" }, shelf = v.shelf || "read";
+    const was = editing ? books.items[f.i] : null;
+    const verb = { read: "Add to Read", reading: "Add to Reading", "to-read": "Add to Want to read", dnf: "Add to Did not finish" }[shelf];
+    return `<div class="logform" id="bk-form">
+      <div class="lf-head"><h2>${editing ? "Edit book" : "Add a book"}</h2>${segHtml("data-bkset", SHELVES, shelf)}</div>
+      ${was && f.found ? `<p class="lf-note">Already in your library as <b>${esc((SHELVES.find(x => x[0] === was.shelf) || ["", was.shelf])[1])}</b>. Saving updates that entry.</p>` : ""}
+      <input type="hidden" data-k="shelf" value="${esc(shelf)}"><input type="hidden" data-k="cover" value="${esc(v.cover || "")}">
+      <div class="grid2">${field(v, "full", "Title", { ...p, placeholder: "Start typing, then pick a book" }).replace("<input ", '<input autocomplete="off" ')}${field(v, "a", "Author", { ...p, placeholder: "Filled in when you pick a book" })}</div>
+      ${FINISHED(shelf) ? `<div class="grid3">${field(v, "read", shelf === "dnf" ? "Date stopped" : "Date finished", { ...p, type: "date" })}<div class="f"><span>Rating</span>${starsHtml("r", v.r, false)}</div><div>${field(v, "fav", "Favorite ♥", { type: "check" })}</div></div>
+      ${field(v, "review", "Review", { ...p, type: "textarea", rows: 3, placeholder: "Optional" })}` : ""}
+      <details class="more"${editing ? " open" : ""}><summary>More details</summary>
+        <div class="grid3">${field(v, "pages", "Pages", p)}${field(v, "year", "Year published", p)}${field(v, "isbn", "ISBN", p)}</div>
+        <div class="grid3">${field(v, "added", "Date added", { ...p, type: "date", hint: "Empty means today." })}</div></details>
+      <div class="logbtns">${editing ? `<button class="btn go" type="button" data-act="bk-save">Save changes</button><button class="btn" type="button" data-act="bk-cancel">Cancel</button><button class="btn danger-btn" type="button" data-act="bk-del">Delete</button>`
+        : `<button class="btn go" type="button" data-act="bk-save">${verb}</button>`}</div></div>`;
+  }
+  let libShelf = "all";
   function bookRows() {
-    const q = norm(($("#bk-q") || {}).value), sh = ($("#bk-shelf") || {}).value || "all";
+    const q = norm(($("#bk-q") || {}).value), sh = libShelf;
     const L = books.items.map((b, i) => [b, i]).filter(([b]) => (sh === "all" || b.shelf === sh) && (!q || norm(`${b.full || b.t} ${b.a}`).includes(q)))
       .sort(([a], [b]) => String(b.read || b.added || "").localeCompare(String(a.read || a.added || "")));
     const lab = s => (SHELVES.find(x => x[0] === s) || ["", s])[1];
-    return (L.slice(0, 100).map(([b, i]) => `<li><button type="button" class="lrow" data-act="bk-edit" data-i="${i}"><b>${esc(b.full || b.t)}</b><span>${esc(b.a || "")}</span>
+    return (L.slice(0, 150).map(([b, i]) => `<li><button type="button" class="lrow" data-act="bk-edit" data-i="${i}"><b>${esc(b.full || b.t)}</b><span>${esc(b.a || "")}</span>
       <span class="pill">${esc(lab(b.shelf))}</span><span class="lr-stars">${starTxt(b.r)}${b.fav ? " ♥" : ""}</span><span class="lr-date">${esc(b.read || b.added || "")}</span></button></li>`).join("")
-      || '<li class="lempty">Nothing matches.</li>') + (L.length > 100 ? `<li class="lempty">Showing 100 of ${L.length}. Search to narrow.</li>` : "");
+      || '<li class="lempty">Nothing matches.</li>') + (L.length > 150 ? `<li class="lempty">Showing 150 of ${L.length}. Search to narrow.</li>` : "");
+  }
+  const libTabs = () => segHtml("data-bklib", [["all", `All ${books.items.length}`], ...SHELVES.map(([k, l]) => [k, `${l} ${books.items.filter(b => b.shelf === k).length}`])], libShelf);
+  /* the title matches a book already in the library: edit that one, keeping the status you picked */
+  function bookMatch(title, author) {
+    if (bookForm.mode !== "add") return false;
+    const i = books.items.findIndex(b => norm(b.full || b.t) === norm(title) && (!author || !b.a || norm(b.a) === norm(author)));
+    if (i < 0) return false;
+    const shelf = bookForm.v.shelf || "read", cur = bookVals(books.items[i]);
+    bookForm = { mode: "edit", i, found: true, v: { ...cur, shelf, read: FINISHED(shelf) ? (cur.read || today()) : "" } };
+    return true;
   }
   function commitBook(v) {
     if (!v.full) { toast("Give the book a title."); return; }
@@ -511,42 +536,56 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       else { b = { t: "", full: "", a: "", isbn: null, r: null, read: null, added: today(), shelf: "read", fav: false, review: null, pages: null, year: null }; books.items.unshift(b); msg = "Added " + v.full; }
     }
     if (norm(b.full || b.t) !== norm(v.full)) b.t = v.full.split(/:\s/)[0].trim();
-    b.full = v.full; b.a = v.a || "";
+    b.full = v.full; b.a = v.a || b.a || "";
     b.shelf = v.shelf || "read";
-    b.read = ["read", "dnf"].includes(b.shelf) ? (v.read || null) : null;
+    const done = FINISHED(b.shelf);
+    b.read = done ? (v.read || b.read || today()) : null;
     b.added = v.added || b.added || today();
-    b.r = v.r ? +v.r : null; b.fav = !!v.fav; b.review = v.review || null;
-    b.pages = +v.pages || null; b.year = v.year || null; b.isbn = (v.isbn || "").replace(/[^\dXx]/g, "") || null;
-    bookForm = { mode: "add", v: { shelf: "read", read: today() } };
-    markLog("books"); render(); toast(msg);
-    if (msg.startsWith("Added")) autoCover("books", b, "book");
+    if (done) { b.r = v.r ? +v.r : null; b.fav = !!v.fav; b.review = v.review || null; }
+    b.pages = +v.pages || b.pages || null; b.year = v.year || b.year || null; b.isbn = (v.isbn || "").replace(/[^\dXx]/g, "") || b.isbn || null;
+    if (v.cover && !b.cover) b.cover = v.cover;
+    const lab = (SHELVES.find(x => x[0] === b.shelf) || ["", b.shelf])[1];
+    bookForm = freshBook(b.shelf === "to-read" ? "to-read" : "read");
+    markLog("books"); render(); toast(`${msg} · ${lab}`);
+    if (!b.cover) autoCover("books", b, "book");
   }
 
   /* ----- Watching ----- */
   const filmLabel = f => `${f.t}${f.y ? ` (${f.y})` : ""}`;
   const findFilm = (t, y) => films.items.findIndex(f => norm(f.t) === norm(t) && (!y || !f.y || f.y === +y));
   const isHidden = (t, y) => (data.hiddenFilms || []).some(h => norm(h) === norm(`${t} (${y})`));
+  const freshFilm = (mode = "log") => ({ mode, v: mode === "log" ? { date: today() } : {} });
   function filmFormHtml() {
     const f = filmForm, v = f.v, p = { prefix: "fm-" };
-    if (f.mode === "film") return `<div class="logform" id="fm-form"><h2>Edit film</h2>
-      <div class="grid3">${field(v, "t", "Title", p)}${field(v, "y", "Year", p)}${field(v, "r", "Rating", { ...p, type: "select", options: FILM_R })}</div>
-      <div class="grid3">${field(v, "added", "Date added", { ...p, type: "date" })}<div>${field(v, "liked", "Liked ♥", { type: "check" })}</div></div>
+    const title = (ro, ph) => field(v, "t", "Title", { ...p, placeholder: ph || "" }).replace("<input ", `<input autocomplete="off" ${ro ? "readonly " : ""}`);
+    if (f.mode === "film") return `<div class="logform" id="fm-form"><div class="lf-head"><h2>Edit film</h2></div>
+      <div class="grid2">${field(v, "t", "Title", p)}${field(v, "y", "Year", p)}</div>
+      <div class="grid3"><div class="f"><span>Rating</span>${starsHtml("r", v.r, true)}</div>${field(v, "added", "Date added", { ...p, type: "date" })}<div>${field(v, "liked", "Liked ♥", { type: "check" })}</div></div>
       <p class="ed-help">${plural(films.diary.filter(d => d.f === f.i).length, "diary entry", "diary entries")}. Deleting the film also removes them and takes it off your lists and favorites.</p>
-      <div class="logbtns"><button class="btn go" type="button" data-act="fm-save">Update film</button><button class="btn" type="button" data-act="fm-cancel">Cancel</button><button class="btn danger-btn" type="button" data-act="fm-del">Delete film</button></div></div>`;
-    const diary = f.mode === "diary";
-    return `<div class="logform" id="fm-form"><h2>${diary ? "Edit diary entry" : "Log a film"}</h2>
-      <div class="grid3">${field(v, "t", "Title", { ...p, placeholder: "Start typing a title; pick a result to fill in the rest" }).replace("<input ", `<input autocomplete="off" ${diary ? "readonly " : ""}`)}${field(v, "y", "Year", { ...p, placeholder: "1957" }).replace("<input ", diary ? "<input readonly " : "<input ")}${field(v, "date", "Date watched", { ...p, type: "date" })}</div>
-      <div class="grid3">${field(v, "r", "Rating", { ...p, type: "select", options: FILM_R })}<div>${field(v, "liked", "Liked ♥", { type: "check" })}</div><div>${field(v, "rewatch", "Rewatch", { type: "check" })}</div></div>
+      <div class="logbtns"><button class="btn go" type="button" data-act="fm-save">Save changes</button><button class="btn" type="button" data-act="fm-cancel">Cancel</button><button class="btn danger-btn" type="button" data-act="fm-del">Delete film</button></div></div>`;
+    const diary = f.mode === "diary", want = f.mode === "want";
+    const seen = !diary && v.t ? films.items.find(x => norm(x.t) === norm(v.t) && (!v.y || !x.y || String(x.y) === String(v.y))) : null;
+    return `<div class="logform" id="fm-form">
+      <div class="lf-head"><h2>${diary ? "Edit diary entry" : want ? "Add to watchlist" : "Log a film"}</h2>${diary ? "" : segHtml("data-fmset", [["log", "Watched"], ["want", "Want to watch"]], f.mode)}</div>
+      ${seen && !want ? `<p class="lf-note">You’ve logged ${esc(seen.t)} before, so this counts as a rewatch.</p>` : ""}
       <input type="hidden" data-k="cover" value="${esc(v.cover || "")}">
-      ${field(v, "review", "Review", { ...p, type: "textarea", rows: 3 })}
-      <div class="logbtns">${diary ? `<button class="btn go" type="button" data-act="fm-save">Update entry</button><button class="btn" type="button" data-act="fm-cancel">Cancel</button><button class="btn danger-btn" type="button" data-act="fm-del">Delete entry</button>`
-        : `<button class="btn go" type="button" data-act="fm-save">Log it</button>`}</div>
-      <datalist id="fm-titles">${films.items.map(x => `<option value="${esc(filmLabel(x))}"></option>`).join("")}</datalist></div>`;
+      <div class="grid2">${title(diary, "Start typing, then pick a film")}${field(v, "y", "Year", { ...p, placeholder: "Filled in when you pick a film" }).replace("<input ", diary ? "<input readonly " : "<input ")}</div>
+      ${want ? "" : `<div class="grid3">${field(v, "date", "Date watched", { ...p, type: "date" })}<div class="f"><span>Rating</span>${starsHtml("r", v.r, true)}</div>
+        <div class="checks">${field(v, "liked", "Liked ♥", { type: "check" })}${field({ ...v, rewatch: v.rewatch ?? !!seen }, "rewatch", "Rewatch", { type: "check" })}</div></div>
+      ${field(v, "review", "Review", { ...p, type: "textarea", rows: 3, placeholder: "Optional" })}`}
+      <div class="logbtns">${diary ? `<button class="btn go" type="button" data-act="fm-save">Save changes</button><button class="btn" type="button" data-act="fm-cancel">Cancel</button><button class="btn danger-btn" type="button" data-act="fm-del">Delete entry</button>`
+        : `<button class="btn go" type="button" data-act="fm-save">${want ? "Add to watchlist" : "Log it"}</button>`}</div></div>`;
   }
   function commitFilm(v) {
     const f = filmForm;
     if (!v.t) { toast("Give the film a title."); return; }
     const y = v.y ? +v.y || null : null;
+    if (f.mode === "want") {
+      if (films.watchlist.some(w => norm(w.t) === norm(v.t) && (!w.y || !y || w.y === y))) { toast(`${v.t} is already on your watchlist.`); return; }
+      films.watchlist.unshift({ t: v.t, y, added: today(), cover: v.cover || null });
+      if (!v.cover) autoCover("films", films.watchlist[0], "watch");
+      filmForm = freshFilm("want"); markLog("films"); render(); toast("Added to watchlist"); return;
+    }
     if (f.mode === "film") {
       const it = films.items[f.i];
       Object.assign(it, { t: v.t, y, r: v.r ? +v.r : null, liked: !!v.liked, added: v.added || it.added });
@@ -567,10 +606,10 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       films.diary.unshift({ f: fi, date: v.date || today(), r: v.r ? +v.r : null, rewatch: !!v.rewatch, review: v.review || null });
       films.watchlist = films.watchlist.filter(w => !(norm(w.t) === norm(it.t) && (!w.y || !it.y || w.y === it.y)));
       toast(isHidden(it.t, it.y) ? `Logged, but ${it.t} is on your hidden-films list, so the site won’t show it.` : "Logged " + it.t);
-      autoCover("films", it, "film");
+      if (!it.cover) autoCover("films", it, "film");
     }
     films.diary.sort((a, b) => String(b.date).localeCompare(String(a.date)));
-    filmForm = { mode: "log", v: { date: today() } };
+    filmForm = freshFilm("log");
     markLog("films"); render();
   }
   function deleteFilm(fi) {
@@ -696,26 +735,22 @@ window.SITE = ${JSON.stringify(data, null, 2)};
   const LOG_SECTIONS = {
     reading: {
       label: "Reading",
-      help: "Log books here; this is now where the Books page gets its data. Pick an existing title from the suggestions to update it (for example, move it from Want to read to Read). Save writes data/books.js.",
+      help: "Pick a status, start typing a title and choose a book from the list; author, pages, year and cover fill in. A book you already have opens for editing, so choosing Read and picking a Want to read book moves it. Save writes data/books.js.",
       render: () => {
         const reading = books.items.map((b, i) => [b, i]).filter(([b]) => b.shelf === "reading");
         return `<div data-nodirty>${bookFormHtml()}
         ${reading.length ? `<div class="section-head" style="margin-top:26px"><h2>Currently reading</h2></div><ul class="chips">${reading.map(([b, i]) =>
           `<li><span>${esc(b.full || b.t)}</span><button class="btn" type="button" data-act="bk-finish" data-i="${i}">Finished</button></li>`).join("")}</ul>` : ""}
-        <div class="section-head" style="margin-top:26px"><h2>Want to read</h2></div>
-        <div class="lfilter" id="tr-form"><input type="text" data-tr="t" placeholder="Title" aria-label="Title" value="${esc(toReadForm.t || "")}"><input type="text" data-tr="a" placeholder="Author" aria-label="Author" value="${esc(toReadForm.a || "")}">
-          <button class="btn" type="button" data-act="tr-add">+ Add</button></div>
-        <p class="ed-help">${plural(books.items.filter(b => b.shelf === "to-read").length, "book")} on the list. Use Finished or the form above when you read one.</p>
         <div class="section-head" style="margin-top:26px"><h2>Library</h2>${coversBtn("books")}</div>
-        <div class="lfilter"><input type="search" id="bk-q" placeholder="Search ${books.items.length} books" aria-label="Search books">
-          <select id="bk-shelf" aria-label="Status"><option value="all">All</option>${SHELVES.map(([k, l]) => `<option value="${k}">${l} (${books.items.filter(b => b.shelf === k).length})</option>`).join("")}</select></div>
+        <div id="bk-tabs">${libTabs()}</div>
+        <div class="lfilter"><input type="search" id="bk-q" placeholder="Search by title or author" aria-label="Search books"></div>
         <ul class="llist" id="bk-list">${bookRows()}</ul></div>`;
       },
-      collect: el => { const fm = $("#bk-form", el); if (fm) { const v = {}; readInto(fm, v); bookForm.v = v; } $$("[data-tr]", el).forEach(i => { toReadForm[i.dataset.tr] = i.value; }); }
+      collect: el => { const fm = $("#bk-form", el); if (fm) { const v = {}; readInto(fm, v); bookForm.v = v; } }
     },
     watching: {
       label: "Watching",
-      help: "Log films here; this is now where the Films page gets its data. Logging adds a diary entry, adds the film if it’s new, updates its rating and takes it off your watchlist. Ranked lists are kept as they are. Save writes data/films.js.",
+      help: "Choose Watched or Want to watch, start typing a title and pick the film; year and poster fill in. Logging adds a diary entry, marks a rewatch if you’ve seen it before and takes it off your watchlist. Save writes data/films.js.",
       render: () => {
         const opts = films.items.map((f, i) => [f, i]).sort(([a], [b]) => a.t.localeCompare(b.t));
         return `<div data-nodirty>${filmFormHtml()}
@@ -723,8 +758,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
         <div class="grid2 favs">${[0, 1, 2, 3].map(k => `<label class="f"><span>Favorite ${k + 1}</span><select data-fav="${k}"><option value="">None</option>${opts.map(([f, i]) =>
           `<option value="${i}" ${films.favorites[k] === i ? "selected" : ""}>${esc(filmLabel(f))}</option>`).join("")}</select></label>`).join("")}</div>
         <div class="section-head" style="margin-top:26px"><h2>Watchlist</h2></div>
-        <div class="lfilter" id="wl-form"><input type="text" data-wl="t" placeholder="Title" aria-label="Watchlist title" value="${esc(watchForm.t || "")}"><input type="text" data-wl="y" placeholder="Year" aria-label="Year" class="short" value="${esc(watchForm.y || "")}">
-          <button class="btn" type="button" data-act="wl-add">+ Add</button></div>
+        <p class="ed-help">${plural(films.watchlist.length, "film")}. Add one with Want to watch above.</p>
         <ul class="llist">${films.watchlist.map((w, i) => `<li class="lrow static"><b>${esc(w.t)}</b><span>${esc(w.y || "")}</span><span class="lr-date">${esc(w.added || "")}</span>
           <span class="lr-acts"><button class="btn" type="button" data-act="wl-watched" data-i="${i}">Watched</button><button class="icon-btn danger" type="button" data-act="wl-del" data-i="${i}" aria-label="Remove">×</button></span></li>`).join("") || '<li class="lempty">Empty.</li>'}</ul>
         ${listsHtml("films")}
@@ -735,7 +769,6 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       },
       collect: el => {
         const fm = $("#fm-form", el); if (fm) { const v = {}; readInto(fm, v); filmForm.v = v; }
-        $$("[data-wl]", el).forEach(i => { watchForm[i.dataset.wl] = i.value; });
         collectLists(el, "films");
       }
     },
@@ -787,19 +820,50 @@ window.SITE = ${JSON.stringify(data, null, 2)};
         if (listening.items.includes(hit)) set("liked", hit.liked);
       }
     }
-    if (t.matches("#bk-form [data-k=full]") && bookForm.mode === "add") {
-      const i = books.items.findIndex(b => (b.full || b.t) === t.value);
-      if (i >= 0) { bookForm = { mode: "edit", i, v: bookVals(books.items[i]) }; $("#bk-form").outerHTML = bookFormHtml(); toast("Editing your existing entry"); }
+    if (t.matches("#bk-form [data-k=full]") && !e.isTrusted) { SECTIONS.reading.collect($("#main")); if (bookMatch(t.value)) redrawForm("bk"); return; }
+    if (t.matches("#fm-form [data-k=t]") && !e.isTrusted && (filmForm.mode === "log" || filmForm.mode === "want")) {
+      const it = films.items.find(f => filmLabel(f) === t.value);
+      if (it) { SECTIONS.watching.collect($("#main")); filmForm.v = { ...filmForm.v, t: it.t, y: it.y ? String(it.y) : "", liked: !!it.liked, cover: it.cover || "" }; delete filmForm.v.rewatch; redrawForm("fm"); }
+    }
+  });
+  /* redraw just the form, keeping what was typed, and put the cursor back in the title */
+  let closeSuggest = () => {}, redrawing = false;
+  function redrawForm(pre) {
+    const id = pre + "-form", focus = document.activeElement && document.activeElement.closest("#" + id) ? document.activeElement.dataset.k : null;
+    closeSuggest();
+    const html = pre === "bk" ? bookFormHtml() : filmFormHtml();
+    /* replacing the form blurs the field you were in, which fires its change event: ignore that one */
+    redrawing = true; try { $("#" + id).outerHTML = html; } finally { redrawing = false; }
+    const back = focus && $(`#${id} [data-k=${focus}]`); if (back && back.type !== "hidden") back.focus();
+  }
+  document.addEventListener("click", e => {
+    const t = e.target;
+    const sv = t.closest("[data-stars] [data-sv]");
+    if (sv) {
+      const box = sv.closest("[data-stars]"), inp = $("input[data-k]", box), n = +sv.dataset.sv;
+      const v = +inp.value === n ? 0 : n;   /* clicking the current rating clears it */
+      inp.value = v || "";
+      $$(".st", box).forEach((st, k) => st.style.setProperty("--f", v >= k + 1 ? 1 : v >= k + .5 ? .5 : 0));
+      $(".st-val", box).textContent = v ? v + " / 5" : "No rating";
       return;
     }
-    if (t.matches("#fm-form [data-k=t]") && filmForm.mode === "log") {
-      const it = films.items.find(f => filmLabel(f) === t.value);
-      if (it) { t.value = it.t; $("#fm-form [data-k=y]").value = it.y || ""; $("#fm-form [data-k=liked]").checked = !!it.liked; $("#fm-form [data-k=rewatch]").checked = true; }
-    }
+    const bs = t.closest("[data-bkset]");
+    if (bs) { SECTIONS.reading.collect($("#main")); const v = bookForm.v; v.shelf = bs.dataset.bkset; if (FINISHED(v.shelf) && !v.read) v.read = today(); redrawForm("bk"); return; }
+    const fs = t.closest("[data-fmset]");
+    if (fs) { SECTIONS.watching.collect($("#main")); filmForm = { mode: fs.dataset.fmset, v: { date: today(), ...filmForm.v } }; redrawForm("fm"); return; }
+    const lt = t.closest("[data-bklib]");
+    if (lt) { libShelf = lt.dataset.bklib; $("#bk-tabs").innerHTML = libTabs(); $("#bk-list").innerHTML = bookRows(); }
   });
   document.addEventListener("change", e => {
     const t = e.target;
-    if (t.id === "bk-shelf") { $("#bk-list").innerHTML = bookRows(); return; }
+    if (redrawing && t.closest("#bk-form, #fm-form")) return;
+    if (t.matches("#bk-form [data-k=full]")) { SECTIONS.reading.collect($("#main")); if (bookMatch(t.value, bookForm.v.a)) redrawForm("bk"); return; }
+    if (t.matches("#fm-form [data-k=t], #fm-form [data-k=y]") && (filmForm.mode === "log" || filmForm.mode === "want")) {
+      SECTIONS.watching.collect($("#main")); const v = filmForm.v;
+      const hits = films.items.filter(f => norm(f.t) === norm(v.t) && (!v.y || !f.y || String(f.y) === String(v.y)));
+      if (hits.length === 1) { v.y = hits[0].y ? String(hits[0].y) : v.y; if (filmForm.mode === "log") v.liked = !!hits[0].liked; }
+      delete v.rewatch; redrawForm("fm"); return;
+    }
     if (t.id === "fm-show") { $("#fm-list").innerHTML = filmRows(); return; }
     if (t.id === "al-show") { $("#al-list").innerHTML = albumRows(); return; }
     if (t.matches("#al-form [data-k=form]") && t.value === "work") { const c = $("#al-form [data-k=classical]"); if (c) c.checked = true; }
@@ -818,19 +882,19 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     const armed = () => { if (a.dataset.armed) return true; a.dataset.armed = "1"; const o = a.textContent; a.textContent = "Sure?"; setTimeout(() => { if (a.isConnected) { delete a.dataset.armed; a.textContent = o; } }, 2500); return false; };
     const top = () => { render(); $(".logform").scrollIntoView({ behavior: "smooth", block: "start" }); };
     if (act === "bk-save") { SECTIONS.reading.collect(el); commitBook(bookForm.v); }
-    else if (act === "bk-cancel") { bookForm = { mode: "add", v: { shelf: "read", read: today() } }; render(); }
+    else if (act === "bk-cancel") { bookForm = freshBook(); render(); }
     else if (act === "bk-edit") { bookForm = { mode: "edit", i, v: bookVals(books.items[i]) }; top(); }
-    else if (act === "bk-finish") { bookForm = { mode: "edit", i, v: { ...bookVals(books.items[i]), shelf: "read", read: today() } }; top(); $("#bk-r").focus(); toast("Rate it, then Update book"); }
-    else if (act === "bk-del") { if (!armed()) return; const b = books.items.splice(bookForm.i, 1)[0]; bookForm = { mode: "add", v: { shelf: "read", read: today() } }; markLog("books"); render(); toast("Deleted " + (b.full || b.t)); }
+    else if (act === "bk-finish") { bookForm = { mode: "edit", i, v: { ...bookVals(books.items[i]), shelf: "read", read: today() } }; top(); toast("Rate it, then Save changes"); }
+    else if (act === "bk-del") { if (!armed()) return; const b = books.items.splice(bookForm.i, 1)[0]; bookForm = freshBook(); markLog("books"); render(); toast("Deleted " + (b.full || b.t)); }
     else if (act === "fm-save") { SECTIONS.watching.collect(el); commitFilm(filmForm.v); }
-    else if (act === "fm-cancel") { filmForm = { mode: "log", v: { date: today() } }; render(); }
+    else if (act === "fm-cancel") { filmForm = freshFilm(); render(); }
     else if (act === "fm-edit") { const f = films.items[i]; filmForm = { mode: "film", i, v: { t: f.t, y: f.y ? String(f.y) : "", r: f.r == null ? "" : String(f.r), liked: !!f.liked, added: f.added || "" } }; top(); }
     else if (act === "fm-diary") { const d = films.diary[i], f = films.items[d.f] || {}; filmForm = { mode: "diary", i, v: { t: f.t, y: f.y ? String(f.y) : "", date: d.date, r: d.r == null ? "" : String(d.r), liked: !!f.liked, rewatch: !!d.rewatch, review: d.review || "" } }; top(); }
     else if (act === "fm-del") {
       if (!armed()) return;
       if (filmForm.mode === "film") { const t = films.items[filmForm.i].t; deleteFilm(filmForm.i); toast("Deleted " + t); }
       else { films.diary.splice(filmForm.i, 1); toast("Deleted entry"); }
-      filmForm = { mode: "log", v: { date: today() } }; markLog("films"); render();
+      filmForm = freshFilm(); markLog("films"); render();
     }
     else if (act === "wl-add") {
       SECTIONS.watching.collect(el);
@@ -884,7 +948,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       if (act === "ls-new") { const c = $$(`[data-lists=${kind}] [data-list]`).at(-1); c.scrollIntoView({ block: "center" }); $("[data-ls=name]", c).select(); }
     }
     else if (act.startsWith("covers-")) { fillCovers(act.slice(7)); }
-    else if (act === "wl-watched") { const w = films.watchlist[i]; filmForm = { mode: "log", v: { t: w.t, y: w.y ? String(w.y) : "", date: today() } }; top(); $("#fm-r").focus(); }
+    else if (act === "wl-watched") { const w = films.watchlist[i]; filmForm = { mode: "log", v: { t: w.t, y: w.y ? String(w.y) : "", cover: w.cover || "", date: today() } }; top(); toast("Rate it, then Log it"); }
   });
 
 
@@ -900,6 +964,8 @@ window.SITE = ${JSON.stringify(data, null, 2)};
   const art = (url, size = "100x100") => url ? url.replace(/\/\d+x\d+bb(-\d+)?\.(jpg|png)$/, `/${size}bb.$2`) : "";
   const workTitle = t => String(t || "").replace(/\s*:\s*(I|II|III|IV|V|VI|VII|VIII|IX|X|\d+)\.\s.*$/, "").replace(/\s*-\s*Remaster(ed)?.*$/i, "").trim();
   const near = (a, b) => norm(a).includes(norm(b)) || norm(b).includes(norm(a));
+  /* a source that hasn't answered in 3.5 s is skipped, so one slow site doesn't hold up the rest */
+  const quick = (pr, ms = 3500) => Promise.race([Promise.resolve(pr).catch(() => []), new Promise(r => setTimeout(() => r([]), ms))]).then(x => x || []);
   const uniq = (list, key) => { const seen = new Set(); return list.filter(x => { const k = key(x); if (seen.has(k)) return false; seen.add(k); return true; }); };
   async function openOpus(q) {
     const j = await NET().json(`https://api.openopus.org/omnisearch/${encodeURIComponent(q)}/0.json`);
@@ -995,29 +1061,58 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       /* recordings of this piece first; performers you've logged before after them */
       return uniq([...recs, ...mine], s => norm(s.label));
     },
-    /* Films */
-    "fm-t": async q => {
-      const local = films.items.filter(f => norm(filmLabel(f)).includes(norm(q))).slice(0, 5).map(f => ({ label: f.t, sub: `${f.y || ""} · in your log`, value: filmLabel(f) }));
+    /* Films: Apple's catalogue (posters) plus Wikidata (nearly every film, with director) */
+    "fm-t": async (q, emit) => {
+      const local = [...films.items.filter(f => norm(filmLabel(f)).includes(norm(q))).slice(0, 4).map(f => ({ label: f.t, sub: `${f.y || ""} · in your log`, img: f.cover, value: filmLabel(f) })),
+        ...films.watchlist.filter(w => norm(w.t).includes(norm(q))).slice(0, 2).map(w => ({ label: w.t, sub: `${w.y || ""} · on your watchlist`, img: w.cover, fill: { t: w.t, y: w.y ? String(w.y) : "", cover: w.cover || "" } }))];
       if (!NET()) return local;
-      const it = await itunes(q, "media=movie&entity=movie").catch(() => []);
-      const web = it.slice(0, 8).map(x => ({ label: x.trackName, sub: `${yearOf(x.releaseDate)}${x.artistName ? " · dir. " + x.artistName : ""}`, img: art(x.artworkUrl100),
-        fill: { t: x.trackName, y: yearOf(x.releaseDate), cover: art(x.artworkUrl100, "400x600") } }));
-      return uniq([...local, ...web], s => norm(s.label + s.sub.slice(0, 4)));
+      emit(local);
+      let it = [], wd = [];
+      const key = s => norm(s.label) + "|" + (s.sub.match(/^\d{4}/) || [""])[0];
+      const all = () => uniq([...local, ...appleOf(it), ...wikiOf(wd)], key);
+      await Promise.all([
+        quick(itunes(q, "media=movie&entity=movie")).then(r => { it = r; emit(all()); }),
+        quick(NET().json("https://www.wikidata.org/w/api.php?" + new URLSearchParams({ action: "wbsearchentities", search: q, language: "en", uselang: "en", type: "item", limit: 15, format: "json", origin: "*" })).then(j => (j && j.search) || [])).then(r => { wd = r; emit(all()); })]);
+      return all();
     },
-    /* Books */
-    "bk-full": async q => {
-      const local = books.items.filter(b => norm(`${b.full || b.t} ${b.a}`).includes(norm(q))).slice(0, 5).map(b => ({ label: b.full || b.t, sub: `${b.a || ""} · in your library`, value: b.full || b.t }));
+    /* Books: your library, then Google Books and Open Library, shown as each answers (Open Library is often slow) */
+    "bk-full": async (q, emit) => {
+      const local = books.items.filter(b => norm(`${b.full || b.t} ${b.a}`).includes(norm(q))).slice(0, 5)
+        .map(b => ({ label: b.full || b.t, sub: `${b.a || ""} · in your library`, img: b.cover, value: b.full || b.t }));
       if (!NET()) return local;
-      const j = await NET().json("https://openlibrary.org/search.json?" + new URLSearchParams({ q, limit: 8, fields: "title,subtitle,author_name,first_publish_year,cover_i,isbn,number_of_pages_median" })).catch(() => null);
-      const web = ((j && j.docs) || []).map(d => {
+      emit(local);
+      let g = [], o = [];
+      /* Open Library gives the first-published year, so it goes first when both have the book */
+      const all = () => {
+        const ol = olOf(o), gb = googleOf(g), web = [];
+        for (let k = 0; k < Math.max(ol.length, gb.length); k++) { if (ol[k]) web.push(ol[k]); if (gb[k]) web.push(gb[k]); }
+        return uniq([...local, ...web], s => norm(s.label.split(":")[0] + "|" + s.sub.split(/[·,]/)[0]));
+      };
+      await Promise.all([
+        quick(NET().json("https://www.googleapis.com/books/v1/volumes?" + new URLSearchParams({ q, maxResults: 10, printType: "books" })).then(j => (j && j.items) || [])).then(r => { g = r; emit(all()); }),
+        quick(NET().json("https://openlibrary.org/search.json?" + new URLSearchParams({ q, limit: 8, fields: "title,subtitle,author_name,first_publish_year,cover_i,isbn,number_of_pages_median" })).then(j => (j && j.docs) || []), 6000).then(r => { o = r; emit(all()); })]);
+      return all();
+    }
+  };
+  const appleOf = it => it.slice(0, 6).map(x => ({ label: x.trackName, sub: `${yearOf(x.releaseDate)}${x.artistName ? " · dir. " + x.artistName : ""}`, img: art(x.artworkUrl100),
+        fill: { t: x.trackName, y: yearOf(x.releaseDate), cover: art(x.artworkUrl100, "400x600") } }));
+  const wikiOf = wd => wd.filter(x => /\bfilm\b/i.test(x.description || "") && !/\bseries\b/i.test(x.description || "")).slice(0, 8).map(x => {
+        const d = x.description || "", y = yearOf(d), by = (d.match(/\bby (.+)$/i) || [])[1];
+        return { label: x.label, sub: `${y}${by ? " · dir. " + by : ""} · ${d.replace(/^\d{4}\s+/, "").replace(/\s+(directed\s+)?by .+$/i, "") || "film"}`, fill: { t: x.label, y, cover: "" } };
+      });
+  const googleOf = g => g.map(x => x.volumeInfo || {}).filter(v => v.title).map(v => {
+        const isbn = ((v.industryIdentifiers || []).find(x => x.type === "ISBN_13") || (v.industryIdentifiers || [])[0] || {}).identifier || "";
+        const full = v.title + (v.subtitle ? `: ${v.subtitle}` : ""), thumb = v.imageLinks && (v.imageLinks.smallThumbnail || v.imageLinks.thumbnail);
+        return { label: full, sub: `${(v.authors || []).slice(0, 2).join(", ")}${yearOf(v.publishedDate) ? " · " + yearOf(v.publishedDate) : ""}`, img: thumb ? thumb.replace(/^http:/, "https:") : "",
+          fill: { full, a: (v.authors || [])[0] || "", year: yearOf(v.publishedDate), pages: v.pageCount ? String(v.pageCount) : "", isbn: isbn.replace(/[^\dXx]/g, ""), cover: thumb ? thumb.replace(/^http:/, "https:").replace("&edge=curl", "") : "" } };
+      });
+  const olOf = o => o.map(d => {
         const isbn = (d.isbn || []).find(x => /^97[89]\d{10}$/.test(x)) || (d.isbn || [])[0] || "";
         return { label: d.title + (d.subtitle ? `: ${d.subtitle}` : ""), sub: `${(d.author_name || []).slice(0, 2).join(", ")}${d.first_publish_year ? " · " + d.first_publish_year : ""}`,
           img: d.cover_i ? `https://covers.openlibrary.org/b/id/${d.cover_i}-S.jpg` : "",
-          fill: { full: d.title + (d.subtitle ? `: ${d.subtitle}` : ""), a: (d.author_name || [])[0] || "", year: d.first_publish_year ? String(d.first_publish_year) : "", pages: d.number_of_pages_median ? String(d.number_of_pages_median) : "", isbn } };
+          fill: { full: d.title + (d.subtitle ? `: ${d.subtitle}` : ""), a: (d.author_name || [])[0] || "", year: d.first_publish_year ? String(d.first_publish_year) : "", pages: d.number_of_pages_median ? String(d.number_of_pages_median) : "", isbn,
+            cover: d.cover_i ? `https://covers.openlibrary.org/b/id/${d.cover_i}-M.jpg` : "" } };
       });
-      return uniq([...local, ...web], s => norm(s.label + s.sub.split(" · ")[0]));
-    }
-  };
   /* the performer list is useful before typing anything, once the piece is known */
   const SHOW_ON_FOCUS = new Set(["al-perf"]);
 
@@ -1026,6 +1121,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
   document.body.appendChild(box);
   let active = null, items = [], sel = -1, ticket = 0;
   const close = () => { box.hidden = true; items = []; sel = -1; active = null; };
+  closeSuggest = close;
   const place = () => { if (!active) return; const r = active.getBoundingClientRect(); box.style.left = r.left + "px"; box.style.top = (r.bottom + 4) + "px"; box.style.width = Math.min(Math.max(r.width, 460), innerWidth - r.left - 16) + "px"; };
   const paint = (loading) => {
     if (!active) return;
@@ -1040,7 +1136,8 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     if (q.length < 2 && !SHOW_ON_FOCUS.has(id)) { close(); return; }
     items = []; paint(true);
     let res = [];
-    try { res = await SOURCES[id](q); } catch (e) { res = []; }
+    const emit = part => { if (my === ticket && active === inp && part.length) { items = part.slice(0, 12); paint(true); } };
+    try { res = await SOURCES[id](q, emit); } catch (e) { res = []; }
     if (my !== ticket || active !== inp) return;
     items = res.slice(0, 12); sel = -1; paint(false);
   }, 280);
@@ -1056,8 +1153,11 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       if (el.type === "checkbox") el.checked = !!v;
       else if (v !== "" || el === inp) el.value = v;
     });
-    const next = $("[data-k=r], [data-k=review]", form); if (next && inp.dataset.k !== "perf") next.focus();
+    const next = $("textarea[data-k=review], select[data-k=r]", form); if (next && inp.dataset.k !== "perf") next.focus();
     if (form && form.id === "al-form") fillComposedYear(form);
+    /* picked a book or film you already have: switch to that entry */
+    if (form && form.id === "bk-form") { SECTIONS.reading.collect($("#main")); if (bookMatch(bookForm.v.full, bookForm.v.a)) redrawForm("bk"); }
+    if (form && form.id === "fm-form" && filmForm.mode === "log") { SECTIONS.watching.collect($("#main")); delete filmForm.v.rewatch; redrawForm("fm"); }
     toast("Filled in from " + (s.sub || "").split(" · ").slice(-1)[0].replace(/^\d{4}$/, "the catalogue"));
   }
   const idOf = el => el && el.matches && el.matches("input[data-k]") && !el.readOnly && SOURCES[el.id] ? el.id : null;
