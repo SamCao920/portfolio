@@ -1,6 +1,8 @@
 /* Books: what I have read, am reading and want to read.
    Edit it with admin.html. It must stay valid JavaScript. */
-window.BOOKS = {"updated":"2026-10-13","items":[
+window.BOOKS = {"updated":"2026-10-19","items":[
+  {"t":"Lord Jim","full":"Lord Jim","a":"Joseph Conrad","isbn":null,"r":null,"read":null,"added":"2026-10-19","shelf":"to-read","fav":false,"review":null,"pages":null,"year":null,"cover":"https://covers.openlibrary.org/b/id/8236295-M.jpg"},
+  {"t":"A Heartbreaking Work of Staggering Genius","full":"A Heartbreaking Work of Staggering Genius","a":"Dave Eggers","isbn":null,"r":null,"read":null,"added":"2026-10-19","shelf":"to-read","fav":false,"review":null,"pages":null,"year":null,"cover":"https://covers.openlibrary.org/b/id/8300013-M.jpg"},
   {"t":"Freedom’s Forge","full":"Freedom’s Forge","a":"Arthur Herman","isbn":null,"r":null,"read":null,"added":"2026-10-13","shelf":"to-read","fav":false,"review":null,"pages":null,"year":null},
   {"t":"How Solar Energy Became Cheap","full":"How Solar Energy Became Cheap","a":"Gregory Nemet","isbn":null,"r":null,"read":null,"added":"2026-10-13","shelf":"to-read","fav":false,"review":null,"pages":null,"year":null},
   {"t":"Cloud Atlas","full":"Cloud Atlas","a":"David Mitchell","isbn":null,"r":null,"read":null,"added":"2026-10-13","shelf":"to-read","fav":false,"review":null,"pages":null,"year":null},

@@ -1,6 +1,6 @@
 /* Music: albums I've listened to, a dated diary, ranked lists and a to-listen list.
    Edit it with admin.html. It must stay valid JavaScript. */
-window.LISTENING = {"updated":"2026-10-14","bio":"The music I love, classical and otherwise.","favorites":[7,10,11,12],"lists":[],"items":[
+window.LISTENING = {"updated":"2026-10-19","bio":"The music I love, classical and otherwise.","favorites":[7,10,11,12],"lists":[],"items":[
   {"t":"Fantasy No. 1 with Fugue","a":"Wolfgang Amadeus Mozart","y":1782,"form":"work","side":"classical","r":4,"liked":false,"added":"2026-10-13","sp":null,"cover":null},
   {"t":"Piano Quintet in C minor","a":"Ralph Vaughan Williams","y":1905,"form":"work","side":"classical","r":3,"liked":false,"added":"2026-10-13","sp":null,"cover":null},
   {"t":"String Quartet in G minor","a":"Claude Debussy","y":1893,"form":"work","side":"classical","r":4.5,"liked":true,"added":"2026-10-13","sp":"track/0iPxJsFS4cLUGb4gwHuOqq","cover":null},
@@ -14,8 +14,10 @@ window.LISTENING = {"updated":"2026-10-14","bio":"The music I love, classical an
   {"t":"Bach: Solo Violin Sonatas","a":"Johann Sebastian Bach","y":1720,"form":"album","side":"classical","r":5,"liked":true,"added":"2026-10-14","sp":"track/5Z1kjTgKJVWvEizpZc3G1S","cover":"https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02ae55bae258aa1bfeae79c61d"},
   {"t":"String Quartet no. 15 in A minor, op. 132","a":"Ludwig van Beethoven","y":1825,"form":"work","side":"classical","r":5,"liked":true,"added":"2026-10-14","sp":null,"cover":"https://is1-ssl.mzstatic.com/image/thumb/Music/v4/b4/bd/ac/b4bdac85-df90-4c22-ebbc-8ed69d84596a/5099950965557.jpg/600x600bb.jpg"},
   {"t":"Mass in B minor, BWV.232","a":"Johann Sebastian Bach","y":1749,"form":"work","side":"classical","r":5,"liked":true,"added":"2026-10-14","sp":null,"cover":"https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/96/8f/0c/968f0ca0-52cb-1a55-9288-d9249990162d/00028941551429.rgb.jpg/600x600bb.jpg"},
-  {"t":"String Quartet no. 7 in F major, op. 59 no. 1, \"Razumovsky\"","a":"Ludwig van Beethoven","y":1806,"form":"work","side":"classical","r":4.5,"liked":false,"added":"2026-10-14","sp":null,"cover":"https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/c0/f8/32/c0f8321b-a813-88f0-c6ea-dc42f46a3e3b/5905348663571.jpg/600x600bb.jpg"}
+  {"t":"String Quartet no. 7 in F major, op. 59 no. 1, \"Razumovsky\"","a":"Ludwig van Beethoven","y":1806,"form":"work","side":"classical","r":4.5,"liked":false,"added":"2026-10-14","sp":null,"cover":"https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/c0/f8/32/c0f8321b-a813-88f0-c6ea-dc42f46a3e3b/5905348663571.jpg/600x600bb.jpg"},
+  {"t":"The Unanswered Question","a":"Charles Ives","y":1935,"form":"work","side":"classical","r":4,"liked":false,"added":"2026-10-18","sp":null,"cover":"https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/dc/a4/83/dca483b2-b92c-50f0-951d-878cd35016d6/886447287927.jpg/600x600bb.jpg"}
 ],"diary":[
+  {"m":14,"date":"2026-10-18","perf":"Leonard Bernstein, New York Philharmonic & William Vacchiano","r":4,"again":false,"review":null},
   {"m":13,"date":"2026-10-14","perf":"Emerson String Quartet","r":4.5,"again":false,"review":"One of Beethoven's best, consistently excellent across all movements."},
   {"m":12,"date":"2026-10-14","perf":"English Baroque Soloists, Monteverdi Choir & John Eliot Gardiner","r":5,"again":false,"review":"A profound triumph of the human spirit over the forces of evil."},
   {"m":11,"date":"2026-10-14","perf":"Emerson String Quartet","r":5,"again":false,"review":"Controversially, of a more superb quality than his symphonies (with the possible exception of the Ninth). The third movement especially, a meditation interrupted by brief periods of enlightenment, is a highlight. All else is also Beethoven at his best."},
