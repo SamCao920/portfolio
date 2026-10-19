@@ -66,7 +66,10 @@
   async function connect() {
     if (!window.showDirectoryPicker) { toast("This browser can't write files. Use Chrome or Edge, or Download content.js."); return; }
     try { await useFolder(await window.showDirectoryPicker({ id: "site", mode: "readwrite" })); }
-    catch (e) { if (e.name !== "AbortError") toast(e.message); }
+    catch (e) {
+      if (e.name === "SecurityError") { $("#connect").textContent = "Connect folder"; toast("Click Connect folder again to pick the portfolio folder."); }
+      else if (e.name !== "AbortError") toast(e.message);
+    }
   }
   async function reconnect() {
     const h = await loadHandle();
@@ -75,8 +78,15 @@
     if (p === "granted") return useFolder(h);
     setStatus(false, "Click to reconnect " + h.name);
     $("#connect").textContent = "Reconnect";
+    /* if the saved folder can't be reopened (permission blocked, folder moved or renamed), fall back to picking it again */
     onConnect = async () => {
-      if ((await h.requestPermission({ mode: "readwrite" })) === "granted") { onConnect = connect; await useFolder(h); }
+      let ok = false;
+      try { ok = (await h.requestPermission({ mode: "readwrite" })) === "granted" && await useFolder(h); }
+      catch (e) { /* stale handle */ }
+      if (ok) { onConnect = () => connect(); return; }
+      onConnect = () => connect();
+      toast("Couldn't reopen " + h.name + ". Pick the portfolio folder again.");
+      await connect();
     };
   }
 
