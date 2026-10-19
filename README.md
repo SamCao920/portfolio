@@ -30,3 +30,14 @@ Use `/SC HOURLY` instead of `/SC DAILY /ST 03:00` for hourly. It runs only while
 
 ## Preview locally
 Run `python3 -m http.server` in this folder and open http://localhost:8000.
+
+## Mac setup (main machine)
+
+In Terminal, once:
+
+    git clone https://github.com/SamCao920/portfolio.git ~/portfolio && bash ~/portfolio/tools/mac/install.sh
+
+Then open `~/portfolio/admin.html`, click Change folder and pick `~/portfolio`. Saves publish about
+10 seconds later; the vault pages rebuild every morning at 7:50. Problems are written to
+`tools/mac/publish.log` and `tools/mac/update.log`. If the morning job says macOS won't let it read the
+vault, add `/bin/bash` under System Settings > Privacy & Security > Full Disk Access.
