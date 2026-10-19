@@ -169,10 +169,20 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     });
   }
   /* attaching a file: queue it for Save and put its path in the box */
-  document.addEventListener("change", e => {
+  /* photos are shrunk and stripped of EXIF before they are saved (PNG becomes WebP to keep transparency);
+     studio images also get a small copy in assets/studio/thumbs/ for the grid */
+  document.addEventListener("change", async e => {
     const inp = e.target.closest("input[type=file][data-file]");
     if (!inp || !inp.files[0]) return;
-    const f = inp.files[0], name = f.name.replace(/[^\w.\- ()]+/g, "_");
+    let f = inp.files[0], name = f.name.replace(/[^\w.\- ()]+/g, "_");
+    if (/^image\/(jpeg|png|webp|heic|heif)$/i.test(f.type)) {
+      const png = f.type === "image/png", base = name.replace(/\.\w+$/, "");
+      try {
+        f = await cleanPhoto(f, 2000, png ? "image/webp" : "image/jpeg");
+        name = base + (png ? ".webp" : ".jpg");
+        if (inp.dataset.dir === "assets/studio") pendingFiles.push({ path: `assets/studio/thumbs/${base}.webp`, file: await cleanPhoto(inp.files[0], 900, "image/webp", 0.82) });
+      } catch (err) { /* the browser can't decode it (e.g. HEIC outside Safari): save the original */ }
+    }
     const path = `${inp.dataset.dir}/${name}`;
     pendingFiles.push({ path, file: f });
     const box = inp.closest(".filerow").querySelector("input[type=text]");
@@ -1084,12 +1094,14 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       <label class="btn" tabindex="0">Add photos<input type="file" hidden multiple accept="image/*" data-gallery="${i}"></label>`;
   }
   /* re-encode a photo: at most 2000 px on the long side, JPEG; drops EXIF (GPS, camera) along the way */
-  async function cleanPhoto(file) {
+  async function cleanPhoto(file, max = 2000, type = "image/jpeg", q = 0.88) {
     const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
-    const k = Math.min(1, 2000 / Math.max(bmp.width, bmp.height));
+    const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
     const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
     c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
-    return await new Promise(res => c.toBlob(res, "image/jpeg", 0.88));
+    const blob = await new Promise(res => c.toBlob(res, type, q));
+    if (!blob) throw new Error("encode failed");
+    return blob;
   }
   document.addEventListener("change", async e => {
     const inp = e.target.closest("input[type=file][data-gallery]"); if (!inp || !inp.files.length) return;

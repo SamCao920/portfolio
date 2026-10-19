@@ -758,8 +758,11 @@
     return `<p class="vault-stamp"><i></i>Last synced with my notes <time datetime="${when.toISOString()}" data-tip="${esc(full)}">${ago}</time></p>`;
   }
 
+  /* studio grids show a small copy from assets/studio/thumbs/ (made by admin on upload or tools/optimize-images.py); full size if it is missing */
+  const thumbOf = src => /^assets\/studio\/[^/]+\.(jpe?g|png|webp)$/i.test(src || "") ? src.replace(/^assets\/studio\/([^/]+)\.\w+$/, "assets/studio/thumbs/$1.webp") : src;
+  const thumbImg = (src, alt) => `<img alt="${esc(alt)}" loading="lazy" decoding="async" src="${esc(thumbOf(src))}" data-full="${esc(src)}" onerror="this.onerror=null;this.src=this.dataset.full">`;
   function studioTile(w) {
-    return `<li class="art-item"><button class="art-tile" type="button" data-kind="studio" data-i="${w.i}" aria-label="${esc(w.t)}, ${esc(w.year)}"><img alt="" loading="lazy" src="${esc(w.img)}"></button>
+    return `<li class="art-item"><button class="art-tile" type="button" data-kind="studio" data-i="${w.i}" aria-label="${esc(w.t)}, ${esc(w.year)}">${thumbImg(w.img, "")}</button>
       <div class="art-cap"><b>${esc(w.t)}</b><span>${esc(w.year)} · ${esc(w.kind === "studio" ? w.medium.split(" on ")[0] : "")}</span></div></li>`;
   }
   function studioPage() {
@@ -776,7 +779,7 @@
         const list = STUDIO.filter(w => k === "All" || S.studio.items[w.i].kind === k);
         $("#s-count").textContent = plural(list.length, "work");
         $("#s-grid").innerHTML = list.map(w => `<figure class="studio-item"><button class="studio-img" type="button" data-kind="studio" data-i="${w.i}" aria-label="${esc(w.t)}">
-            <img alt="${esc(w.t)}" loading="lazy" src="${esc(w.img)}"></button>
+            ${thumbImg(w.img, w.t)}</button>
           <figcaption><b>${esc(w.t)}</b><span>${esc(w.year)} · ${esc(w.medium)}</span></figcaption></figure>`).join("");
       };
       $$(".chip[data-medium]").forEach(b => b.addEventListener("click", () => {

@@ -638,17 +638,22 @@
             var banner = wrap.querySelector('.graph-focus');
             if (!banner) { banner = document.createElement('div'); banner.className = 'graph-focus'; banner.hidden = true; wrap.appendChild(banner); }
 
-            var notesData = null, notesLoading = null;
-            function loadNotes() {
-                if (notesData) return Promise.resolve(notesData);
-                if (!notesLoading) notesLoading = new Promise(function (res) {
+            /* note text lives in data/vault-notes/NN.js, 32 files split by a hash of the title (same hash as tools/export-vault-notes.py) */
+            var SHARDS = 32, shardLoads = {};
+            function shardOf(t) {
+                var h = 2166136261;
+                for (var ch of String(t)) h = Math.imul(h ^ ch.codePointAt(0), 16777619) >>> 0;
+                return h % SHARDS;
+            }
+            function loadNotes(t) {
+                var n = shardOf(t);
+                if (!shardLoads[n]) shardLoads[n] = new Promise(function (res) {
                     var sc = document.createElement('script');
-                    sc.src = 'data/vault-notes.js?v=' + encodeURIComponent(raw.built || '');
-                    sc.onload = function () { notesData = window.VAULT_NOTES || {}; res(notesData); };
-                    sc.onerror = function () { notesData = {}; res(notesData); };
+                    sc.src = 'data/vault-notes/' + (n < 10 ? '0' : '') + n + '.js?v=' + encodeURIComponent(raw.built || '');
+                    sc.onload = sc.onerror = function () { res(window.VAULT_NOTES || {}); };
                     document.head.appendChild(sc);
                 });
-                return notesLoading;
+                return shardLoads[n];
             }
             var noteHref = function (t) { return 'vault.html?note=' + encodeURIComponent(t); };
             function fillPanel(i) {
@@ -664,7 +669,7 @@
                     return '<li><a class="wl" data-note="' + esc(TITLE[j]) + '" href="' + noteHref(TITLE[j]) + '"><i style="background:' + folderColor(FOLD[j]) + '"></i>' + esc(TITLE[j]) + '</a></li>';
                 }).join('') + '</ul>' : '';
                 panel.querySelector('.np-scroll').scrollTop = 0;
-                loadNotes().then(function (d) {
+                loadNotes(TITLE[i]).then(function (d) {
                     if (focus !== i) return;
                     var h = d[TITLE[i]];
                     body.innerHTML = h || '<p class="np-loading">This note has no text yet.</p>';

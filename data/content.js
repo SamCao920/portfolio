@@ -19,7 +19,7 @@ window.SITE = {
       "Writing on Chinese influence in the International Seabed Authority for the Foreign Affairs Review",
       "Hopkins Symphony Orchestra & Hopkins Chamber Music Seminar"
     ],
-    "aboutPhoto": "assets/plates/68.png"
+    "aboutPhoto": "assets/plates/68.jpg"
   },
   "about": [
     "Hi, I’m Sam. My given name is Fangyuan (曹方源), but you can call me Sam. I’m currently a freshman planning on double majoring in Moral and Political Economy and Applied Mathematics and Statistics at the Johns Hopkins University, and my interests lie most prominently at the intersection of economics, philosophy, and history.",
@@ -235,7 +235,7 @@ window.SITE = {
       "claim": "A private gathering of around fifty students from across the country on how science, technology, and institutions raise living standards, hosted by Abundance Corps with the Roots of Progress Institute and Emergent Ventures.",
       "featured": false,
       "body": "Chosen to present a lightning talk on how the Abundance movement might be able deal with the fertility crisis.",
-      "cover": "assets/plates/Pasted 2026-10-13 at 4.03.48 PM.png",
+      "cover": "assets/plates/Pasted 2026-10-13 at 4.03.48 PM.webp",
       "gallery": [
         {
           "src": "assets/appearances/making-progress/20261012_003015_8EA4B3.jpg"

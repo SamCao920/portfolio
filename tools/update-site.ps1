@@ -6,7 +6,7 @@
 $site  = Split-Path -Parent $PSScriptRoot
 $vault = Join-Path $env:USERPROFILE "Commonplace"
 Set-Location $site
-$generated = "vault.html", "data/vault-index.js", "data/art.js", "data/notes.js", "data/quotes.js", "data/vault-notes.js", "assets/gallery"
+$generated = "vault.html", "data/vault-index.js", "data/art.js", "data/notes.js", "data/quotes.js", "data/vault-notes", "assets/gallery"
 
 function Stop-Rebase { if ((Test-Path .git\rebase-merge) -or (Test-Path .git\rebase-apply)) { git rebase --abort 2>&1 | Out-Null } }
 function Build {
