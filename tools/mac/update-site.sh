@@ -16,9 +16,16 @@ for _ in $(seq 1 60); do mkdir "$LOCK" 2>/dev/null && break; sleep 5; done
 trap 'rmdir "$LOCK" 2>/dev/null' EXIT
 GENERATED="vault.html data/vault-index.js data/art.js data/notes.js data/quotes.js data/vault-notes assets/gallery"
 stop_rebase() { [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ] && git rebase --abort >/dev/null 2>&1; }
+# the scripts need numpy and Pillow: keep them in a private Python environment in .venv
+PY="$SITE/.venv/bin/python3"
+if ! "$PY" -c "import numpy, PIL" 2>/dev/null; then
+  log "setting up Python packages (numpy, Pillow) in .venv, one time"
+  python3 -m venv "$SITE/.venv" && "$PY" -m pip install -q --upgrade pip && "$PY" -m pip install -q numpy pillow \
+    || { log "couldn't install numpy and Pillow; nothing published"; exit 1; }
+fi
 build() {
-  python3 tools/build-graph.py "$VAULT" vault.html && python3 tools/import-art.py "$VAULT" && python3 tools/import-book-notes.py "$VAULT" \
-    && python3 tools/import-quotes.py "$VAULT" && python3 tools/export-vault-notes.py "$VAULT" && python3 tools/bust-cache.py
+  "$PY" tools/build-graph.py "$VAULT" vault.html && "$PY" tools/import-art.py "$VAULT" && "$PY" tools/import-book-notes.py "$VAULT" \
+    && "$PY" tools/import-quotes.py "$VAULT" && "$PY" tools/export-vault-notes.py "$VAULT" && "$PY" tools/bust-cache.py
 }
 for try in 1 2; do
   stop_rebase

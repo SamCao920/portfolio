@@ -3,3 +3,4 @@ _to_delete/
 tools/watch-admin.log
 tools/mac/*.log
 tools/mac/vault-path
+.venv/
