@@ -15,8 +15,16 @@ cd "$SITE"; git pull -q --rebase || true
 git config user.name >/dev/null || git config user.name "Sam Cao"
 git config user.email >/dev/null || git config user.email "samcao920@gmail.com"
 # GitHub sign-in: use gh if it's there, otherwise whatever git already has in the keychain
-command -v gh >/dev/null && { gh auth status >/dev/null 2>&1 || gh auth login -h github.com -p https -w; gh auth setup-git; }
-if ! git push --dry-run -q origin HEAD >/dev/null 2>&1; then
+# GitHub no longer takes passwords, so sign in with gh (installed with Homebrew if it's missing)
+if ! GIT_TERMINAL_PROMPT=0 git push --dry-run -q origin HEAD >/dev/null 2>&1; then
+  if ! command -v gh >/dev/null; then
+    if command -v brew >/dev/null; then echo "Installing GitHub's sign-in tool (gh)..."; brew install gh
+    else echo "Install Homebrew first (https://brew.sh), then run this script again."; exit 1; fi
+  fi
+  gh auth status >/dev/null 2>&1 || gh auth login -h github.com -p https -w
+  gh auth setup-git
+fi
+if ! GIT_TERMINAL_PROMPT=0 git push --dry-run -q origin HEAD >/dev/null 2>&1; then
   echo; echo "git can't push to GitHub yet. Run:  brew install gh && gh auth login   then run this script again."; exit 1
 fi
 echo "GitHub sign-in works."
