@@ -1,13 +1,16 @@
 #!/bin/bash
 # One-time setup on the Mac. Run in Terminal:
-#   bash ~/portfolio/tools/mac/install.sh            (or, before cloning: see README)
-# It clones the site to ~/portfolio (outside OneDrive, so git isn't synced between computers),
+#   bash ~/Desktop/Portfolio/tools/mac/install.sh     (or, before cloning: see README)
+# Run it again after moving the folder: it points the background jobs at the new place.
+# It clones the site if needed (keep it out of OneDrive and iCloud, so git isn't synced between computers),
 # checks you can push to GitHub, finds your Obsidian vault and installs two background jobs:
 #   - publish admin saves 10 seconds after you save, and pull every 10 minutes
 #   - rebuild the vault pages every morning at 7:50
 set -e
 export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.homebrew/bin:$PATH"
-SITE="$HOME/portfolio"
+# the site folder: the copy this script is in, or ~/Desktop/Portfolio for a fresh clone
+HERE="$(cd "$(dirname "$0")/../.." 2>/dev/null && pwd)"
+if [ -d "$HERE/.git" ]; then SITE="$HERE"; else SITE="$HOME/Desktop/Portfolio"; fi
 REPO="https://github.com/SamCao920/portfolio.git"
 command -v git >/dev/null || { echo "Installing Apple's command line tools (git, python3); run this again when it finishes."; xcode-select --install; exit 1; }
 if [ ! -d "$SITE/.git" ]; then echo "Cloning the site to $SITE ..."; git clone -q "$REPO" "$SITE"; fi
@@ -69,7 +72,12 @@ for j in publish-admin update-site; do
   launchctl bootout "gui/$(id -u)/me.fangyuancao.$j" 2>/dev/null || true
   launchctl bootstrap "gui/$(id -u)" "$AG/me.fangyuancao.$j.plist"
 done
-echo "Background jobs installed. Running the vault update once now to check it works..."
+echo "Background jobs installed for $SITE."
+case "$SITE" in "$HOME/Desktop"*|"$HOME/Documents"*|"$HOME/Downloads"*)
+  echo "Note: macOS blocks background jobs from $SITE unless /bin/bash has Full Disk Access"
+  echo "(System Settings > Privacy & Security > Full Disk Access, +, Cmd+Shift+G, /bin/bash).";;
+esac
+echo "Running the vault update once now to check it works..."
 bash tools/mac/update-site.sh || echo "The vault update failed; see the message above."
 echo
 echo "Done. Open $SITE/admin.html, click Change folder and pick $SITE. Saves now publish on their own."

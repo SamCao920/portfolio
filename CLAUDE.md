@@ -3,7 +3,7 @@
 Static site on GitHub Pages (repo SamCao920/portfolio, branch master). Pages render from data/*.js via assets/site.js; admin.html edits the data files.
 
 ## Machines
-- The Mac mini is the main machine: repo at ~/portfolio, set up by tools/mac/install.sh. launchd publishes admin saves (tools/mac/publish-admin.sh) and rebuilds the vault pages each morning (tools/mac/update-site.sh). Logs: tools/mac/*.log.
+- The Mac mini is the main machine: repo at ~/Desktop/Portfolio, set up by tools/mac/install.sh. launchd publishes admin saves (tools/mac/publish-admin.sh) and rebuilds the vault pages each morning (tools/mac/update-site.sh). Logs: tools/mac/*.log.
 - The Windows PC (OneDrive copy, tools/*.ps1) is mostly off. Don't edit the OneDrive copy on the Mac; it is a sync of the PC's folder.
 
 ## Publishing (Claude)
