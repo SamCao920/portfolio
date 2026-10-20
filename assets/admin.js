@@ -1,6 +1,6 @@
-/* admin.js: a small local editor for data/content.js, data/books.js, data/films.js and data/listening.js.
-   Open admin.html in Chrome or Edge, click "Connect site folder", pick the portfolio folder,
-   edit, then Save. Files you attach (PDFs, covers, photos) are copied into assets/.
+/* admin.js: a small editor for data/content.js, data/books.js, data/films.js and data/listening.js.
+   Two ways to save: "Connect GitHub" (any computer, any browser: Save commits straight to the repo)
+   or "Connect site folder" (Chrome or Edge, writes the local copy; the Mac's background job publishes it). Files you attach (PDFs, covers, photos) are copied into assets/.
    Other browsers can still edit and use "Download content.js". */
 (function () {
   const $ = (s, el = document) => el.querySelector(s);
@@ -46,9 +46,10 @@
 
   async function useFolder(h) {
     try { await h.getDirectoryHandle("data"); } catch (e) { toast("That folder has no data/ folder. Pick the portfolio folder."); return false; }
-    dir = h; await saveHandle(h);
-    setStatus(true, "Connected to " + h.name);
-    $("#connect").textContent = "Change folder";
+    dir = h; if (!h.isGitHub) await saveHandle(h);
+    setStatus(true, h.isGitHub ? `Connected to GitHub (${GH_REPO})` : "Connected to " + h.name);
+    $("#connect").textContent = h.isGitHub ? "Use a folder" : "Change folder";
+    $("#connect-gh").textContent = h.isGitHub ? "Forget token" : "Connect GitHub";
     try {   /* re-read content.js from disk so the editor starts from the saved file */
       const f = await (await (await h.getDirectoryHandle("data")).getFileHandle("content.js")).getFile();
       const sandbox = {}; new Function("window", await f.text())(sandbox);
@@ -73,7 +74,7 @@
   }
   async function reconnect() {
     const h = await loadHandle();
-    if (!h) return;
+    if (!h) { if (ghToken()) await connectGitHub(false); return; }
     const p = await h.queryPermission({ mode: "readwrite" });
     if (p === "granted") return useFolder(h);
     setStatus(false, "Click to reconnect " + h.name);
@@ -88,6 +89,127 @@
       toast("Couldn't reopen " + h.name + ". Pick the portfolio folder again.");
       await connect();
     };
+  }
+
+  /* ---------- GitHub mode: edit from any computer, no folder or git needed ----------
+     Behaves like a folder handle (the subset save() uses), but reads files from the repo and,
+     on Save, commits every changed file in one commit straight to GitHub, with fresh cache stamps.
+     The token (fine-grained, this repo only, Contents read and write) stays in this browser. */
+  const GH_REPO = "SamCao920/portfolio", GH_BRANCH = "master", GH_KEY = "site-editor-gh-token";
+  const ghToken = () => { try { return localStorage.getItem(GH_KEY) || ""; } catch (e) { return ""; } };
+  async function ghApi(path, opts = {}) {
+    const r = await fetch("https://api.github.com/repos/" + GH_REPO + path, { ...opts, cache: "no-store",
+      headers: { Authorization: "Bearer " + ghToken(), Accept: "application/vnd.github+json", ...(opts.body ? { "Content-Type": "application/json" } : {}) } });
+    if (!r.ok) { const e = new Error(`GitHub said ${r.status}${r.status === 401 ? " (the token was rejected)" : r.status === 403 || r.status === 404 ? " (the token can't write to " + GH_REPO + ")" : ""}`); e.status = r.status; throw e; }
+    return r.status === 204 ? null : r.json();
+  }
+  const b64ToText = b => new TextDecoder().decode(Uint8Array.from(atob(b.replace(/\s/g, "")), c => c.charCodeAt(0)));
+  async function blobToB64(blob) {
+    const buf = new Uint8Array(await blob.arrayBuffer()); let s = "";
+    for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000));
+    return btoa(s);
+  }
+  /* md5, for the ?v= cache stamps (same as tools/bust-cache.py) */
+  function md5hex(bytes) {
+    const K = [], S = [7, 12, 17, 22, 5, 9, 14, 20, 4, 11, 16, 23, 6, 10, 15, 21];
+    for (let i = 0; i < 64; i++) K[i] = Math.floor(Math.abs(Math.sin(i + 1)) * 2 ** 32) >>> 0;
+    const n = bytes.length, words = new Uint32Array((((n + 8) >> 6) + 1) * 16);
+    for (let i = 0; i < n; i++) words[i >> 2] |= bytes[i] << ((i % 4) * 8);
+    words[n >> 2] |= 0x80 << ((n % 4) * 8);
+    words[words.length - 2] = (n * 8) >>> 0; words[words.length - 1] = Math.floor(n / 0x20000000);
+    let a0 = 0x67452301, b0 = 0xefcdab89, c0 = 0x98badcfe, d0 = 0x10325476;
+    for (let j = 0; j < words.length; j += 16) {
+      let a = a0, b = b0, c = c0, d = d0;
+      for (let i = 0; i < 64; i++) {
+        let f, g;
+        if (i < 16) { f = (b & c) | (~b & d); g = i; }
+        else if (i < 32) { f = (d & b) | (~d & c); g = (5 * i + 1) % 16; }
+        else if (i < 48) { f = b ^ c ^ d; g = (3 * i + 5) % 16; }
+        else { f = c ^ (b | ~d); g = (7 * i) % 16; }
+        const t = d; d = c; c = b;
+        const x = (a + f + K[i] + words[j + g]) >>> 0, s = S[(i >> 4) * 4 + (i % 4)];
+        b = (b + ((x << s) | (x >>> (32 - s)))) >>> 0; a = t;
+      }
+      a0 = (a0 + a) >>> 0; b0 = (b0 + b) >>> 0; c0 = (c0 + c) >>> 0; d0 = (d0 + d) >>> 0;
+    }
+    return [a0, b0, c0, d0].map(v => [0, 8, 16, 24].map(k => ((v >>> k) & 255).toString(16).padStart(2, "0")).join("")).join("");
+  }
+  window.__md5hex = md5hex;   /* for tests */
+  function githubHandle() {
+    let head = null;            // commit sha the editor is working from
+    const seen = {};            // path -> blob sha when first read (to notice edits made elsewhere)
+    const staged = new Map();   // path -> Blob written by Save, not yet committed
+    const refresh = async () => { head = (await ghApi(`/git/ref/heads/${GH_BRANCH}`)).object.sha; };
+    async function readRemote(path) {
+      if (!head) await refresh();
+      const j = await ghApi(`/contents/${path.split("/").map(encodeURIComponent).join("/")}?ref=${head}`);
+      return { text: b64ToText(j.content || ""), sha: j.sha };
+    }
+    const file = path => ({
+      async getFile() {
+        if (staged.has(path)) { const b = staged.get(path); return { text: () => b.text(), lastModified: 1 }; }
+        const r = await readRemote(path);
+        if (!(path in seen)) seen[path] = r.sha;
+        return { text: async () => r.text, lastModified: r.sha === seen[path] ? 1 : Date.now() };
+      },
+      async createWritable() { let blob = null; return { async write(b) { blob = b instanceof Blob ? b : new Blob([b]); }, async close() { staged.set(path, blob); } }; }
+    });
+    const dirAt = base => ({
+      kind: "directory", isGitHub: true, name: base ? base.split("/").pop() : "GitHub",
+      async getDirectoryHandle(n) { return dirAt(base ? base + "/" + n : n); },
+      async getFileHandle(n) { return file(base ? base + "/" + n : n); },
+      async queryPermission() { return "granted"; }, async requestPermission() { return "granted"; },
+      refresh,
+      /* one commit with everything Save wrote, plus updated ?v= stamps in the pages that load those files */
+      async flush() {
+        if (!staged.size) return;
+        for (let attempt = 0; attempt < 2; attempt++) {
+          await refresh();
+          const commit = await ghApi(`/git/commits/${head}`);
+          const entries = [], textOf = {};
+          for (const [path, blob] of staged) {
+            if (/\.(js|css)$/.test(path)) textOf[path] = await blob.text();
+            const b = await ghApi("/git/blobs", { method: "POST", body: JSON.stringify({ content: await blobToB64(blob), encoding: "base64" }) });
+            entries.push({ path, mode: "100644", type: "blob", sha: b.sha });
+          }
+          const stampOf = p => md5hex(new TextEncoder().encode(textOf[p].replace(/\r\n/g, "\n"))).slice(0, 8);
+          const tree = await ghApi(`/git/trees/${commit.tree.sha}`);
+          for (const pg of tree.tree.filter(x => x.type === "blob" && /\.html$/.test(x.path))) {
+            const html = (await readRemote(pg.path)).text;
+            const next = html.replace(/((?:src|href)=")((?:assets|data)\/[^"?#]+\.(?:js|css))(?:\?v=[0-9a-f]*)?(")/g, (m, a, p, z) => p in textOf ? `${a}${p}?v=${stampOf(p)}${z}` : m);
+            if (next !== html) { const b = await ghApi("/git/blobs", { method: "POST", body: JSON.stringify({ content: await blobToB64(new Blob([next])), encoding: "base64" }) }); entries.push({ path: pg.path, mode: "100644", type: "blob", sha: b.sha }); }
+          }
+          const t = await ghApi("/git/trees", { method: "POST", body: JSON.stringify({ base_tree: commit.tree.sha, tree: entries }) });
+          const d = new Date(), stamp = `${d.toLocaleDateString("en-CA")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+          const c = await ghApi("/git/commits", { method: "POST", body: JSON.stringify({ message: `Admin edit ${stamp}`, tree: t.sha, parents: [head] }) });
+          try { await ghApi(`/git/refs/heads/${GH_BRANCH}`, { method: "PATCH", body: JSON.stringify({ sha: c.sha, force: false }) }); }
+          catch (e) { if (e.status === 422 && attempt === 0) continue; throw e; }   /* someone pushed in between: redo on top */
+          head = c.sha;
+          for (const path of staged.keys()) { const r = await readRemote(path); seen[path] = r.sha; }
+          staged.clear();
+          return;
+        }
+      }
+    });
+    return dirAt("");
+  }
+  async function connectGitHub(ask) {
+    let tok = ghToken();
+    if (!tok || ask) {
+      tok = (prompt(`Paste a GitHub token for ${GH_REPO}.\n\nMake one at github.com/settings/personal-access-tokens/new: Fine-grained, Repository access “Only select repositories” > portfolio, Permissions > Contents: Read and write. It is saved in this browser only.`) || "").trim();
+      if (!tok) return false;
+      try { localStorage.setItem(GH_KEY, tok); } catch (e) { toast("This browser won't keep the token; you'll need to paste it again next time."); }
+    }
+    try {
+      const repo = await ghApi("");
+      if (repo.permissions && repo.permissions.push === false) throw new Error("that token can only read " + GH_REPO);
+      const h = githubHandle(); h.name = "GitHub";
+      if (await useFolder(h)) { $("#connect-gh").textContent = "Forget token"; toast("Connected to GitHub. Save publishes straight to the site."); return true; }
+    } catch (e) {
+      toast("Couldn't connect to GitHub: " + e.message);
+      if (e.status === 401) try { localStorage.removeItem(GH_KEY); } catch (_) {}
+    }
+    return false;
   }
 
   /* ---------- serialise ---------- */
@@ -112,18 +234,19 @@ window.SITE = ${JSON.stringify(data, null, 2)};
   }
   async function save() {
     collect();
-    if (!dir) { toast("Connect the site folder first, or use Download content.js."); return; }
+    if (!dir) { toast("Connect GitHub (works on any computer) or the site folder first."); return; }
     try {
+      if (dir.refresh) await dir.refresh();   /* GitHub: look at the latest commit */
       const disk = await readDisk();
       if (loadedStamp && disk.stamp > loadedStamp && !staleArmed) {
         staleArmed = true;
-        toast("content.js changed since you opened the editor. Click Save again to keep your edits anyway, or reload to start from the new file.");
+        toast(`content.js changed ${dir.isGitHub ? "on GitHub" : "on disk"} since you opened the editor. Reload to start from the new file, or click Save again to keep your edits anyway.`);
         return;
       }
       for (const n of LOGS) {
         const st = logState[n]; if (!st.dirty) continue;
         const d = await readLog(n).catch(() => null);
-        if (d && st.stamp && d.stamp > st.stamp && !st.armed) { st.armed = true; toast(`${n}.js changed on disk since you opened the editor. Click Save again to overwrite it, or reload.`); return; }
+        if (d && st.stamp && d.stamp > st.stamp && !st.armed) { st.armed = true; toast(`${n}.js changed ${dir.isGitHub ? "on GitHub (edited on another computer)" : "on disk"} since you opened the editor. Reload to get that version, or click Save again to overwrite it.`); return; }
       }
       staleArmed = false;
       /* keep every section this editor doesn't manage exactly as it is on disk */
@@ -136,10 +259,11 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       if (logState.books.dirty) await writeFile("data/books.js", new Blob([booksJs()], { type: "text/javascript" }));
       if (logState.films.dirty) await writeFile("data/films.js", new Blob([filmsJs()], { type: "text/javascript" }));
       if (logState.listening.dirty) await writeFile("data/listening.js", new Blob([listeningJs()], { type: "text/javascript" }));
+      if (dir.flush) { toast("Publishing…"); await dir.flush(); }
       for (const n of LOGS) { const st = logState[n]; if (st.dirty) { st.dirty = st.armed = false; st.stamp = (await readLog(n)).stamp; } }
       loadedStamp = (await readDisk()).stamp;
       dirty = false; $("#dirty").hidden = true; $("#save").disabled = true;
-      toast("Saved. Reload the site to see it.");
+      toast(dir.isGitHub ? "Published. The site shows it in about a minute." : "Saved. Reload the site to see it.");
     } catch (e) { toast("Save failed: " + e.message); }
   }
 
@@ -197,7 +321,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     pendingFiles.push({ path, file: f });
     const box = inp.closest(".filerow").querySelector("input[type=text]");
     box.value = path; box.dispatchEvent(new Event("input", { bubbles: true }));
-    toast(dir ? `${name} will be copied to ${inp.dataset.dir}/ on Save` : `Connect the folder before saving so ${name} gets copied`);
+    toast(dir ? `${name} will be added to ${inp.dataset.dir}/ on Save` : `Connect GitHub or the folder before saving so ${name} gets added`);
   });
   document.addEventListener("change", e => {
     const sel = e.target.closest("select[data-font]");
@@ -1289,6 +1413,15 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     const sec = t.closest("[data-sec]");
     if (sec) { collect(); section = sec.dataset.sec; render(); scrollTo({ top: 0 }); return; }
     if (t.closest("#connect")) { onConnect(); return; }
+    if (t.closest("#connect-gh")) {
+      if (dir && dir.isGitHub) {
+        if (!confirm("Forget the GitHub token in this browser? You'll need to paste it again to publish from here.")) return;
+        try { localStorage.removeItem(GH_KEY); } catch (e) {}
+        dir = null; setStatus(false, "Not connected"); $("#connect").textContent = "Connect site folder"; $("#connect-gh").textContent = "Connect GitHub"; onConnect = () => connect();
+        toast("Token forgotten."); return;
+      }
+      connectGitHub(!ghToken()); return;
+    }
     if (t.closest("#save")) { save(); return; }
     if (t.closest("#download")) { download(); return; }
 

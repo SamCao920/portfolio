@@ -21,6 +21,7 @@ if [ -z "$(git status --porcelain)" ] && ! git status -sb | grep -q ahead; then
 fi
 # wait for Save to finish writing (admin writes several files)
 prev=""; for _ in $(seq 1 20); do now=$(stamp); [ "$now" = "$prev" ] && break; prev=$now; sleep 10; done
+python3 tools/bust-cache.py >/dev/null 2>&1   # fresh ?v= stamps so visitors get the new data
 git add -A >/dev/null 2>&1
 git diff --cached --quiet || git commit -q -m "Admin edit $(date '+%Y-%m-%d %H:%M')"
 if ! { git fetch -q origin master && git rebase -q origin/master; } >/dev/null 2>&1; then
