@@ -253,7 +253,7 @@ window.SITE = {
           "src": "assets/appearances/making-progress/20261012_003154_8370B3.jpg"
         },
         {
-          "src": "assets/appearances/making-progress/20261012_003254_86060C.jpg"
+          "src": "assets/appearances/making-progress/Oct11AbundanceMakingProgress - 009.jpg"
         }
       ]
     },
