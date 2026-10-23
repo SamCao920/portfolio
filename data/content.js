@@ -267,7 +267,18 @@ window.SITE = {
       "place": "Madrid",
       "claim": "The annual conference of the Fundación Jesús Huerta de Soto, where the three Youth Liberty Prize winners present their essays. I will be presenting <em>Programmable Money and the Abolition of Visible Failure</em>.",
       "featured": false,
-      "cover": "assets/plates/call_for_papers2026-1.jpg"
+      "cover": "assets/plates/call_for_papers2026-1.jpg",
+      "gallery": [
+        {
+          "src": "assets/appearances/10th-madrid-annual-conference-on-austria/2f51968b-2cd2-48e0-9f62-cc212f6a20cf.jpg"
+        },
+        {
+          "src": "assets/appearances/10th-madrid-annual-conference-on-austria/16a0c7ce-d854-4950-9eeb-f184b9f1a7c0.jpg"
+        },
+        {
+          "src": "assets/appearances/10th-madrid-annual-conference-on-austria/365ee5ac-cc37-4f06-af52-0cfb7ae77721.jpg"
+        }
+      ]
     }
   ],
   "homeBooks": [
