@@ -77,6 +77,7 @@ for fn in sorted(os.listdir(ART_DIR)):
     if not fn.endswith('.md'):
         continue
     d, body = front_matter(open(os.path.join(ART_DIR, fn), encoding='utf-8').read())
+    d = {k.lower(): v for k, v in d.items()}   # Year, year and YEAR all work
     tags = [t.split('/', 1)[1] for t in (d.get('tags') or []) if isinstance(t, str) and t.startswith('art/')]
     medium = [t for t in tags if t.lower() in MEDIA]
     movement = [t.replace('-', ' ') for t in tags if t.lower() not in MEDIA]
@@ -94,7 +95,7 @@ for fn in sorted(os.listdir(ART_DIR)):
         'img': img, 'link': next((c for c in cites if c.startswith('http')), None),
         'logged': created[:10] or None,
         'museum': d.get('museum') or None, 'city': d.get('city') or None,
-        'seen': d.get('seen') or None, 'year': d.get('year') or None,
+        'seen': d.get('seen') or None, 'year': (lambda y: str(y[0] if isinstance(y, list) and y else y).strip() if y else None)(d.get('year')),
         'note': notes(body),
     })
 

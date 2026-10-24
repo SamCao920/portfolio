@@ -1,6 +1,6 @@
 #!/bin/bash
 # Rebuilds the Vault graph, Art page, book notes and home-page quotes from the Obsidian vault,
-# then commits and pushes only if something changed. launchd runs it every morning; run it by
+# then commits and pushes only if something changed. launchd runs it every hour; run it by
 # hand any time. The vault's location is in tools/mac/vault-path (written by install.sh).
 export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 SITE="$(cd "$(dirname "$0")/../.." && pwd)"

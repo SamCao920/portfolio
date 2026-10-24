@@ -5,7 +5,7 @@
 # It clones the site if needed (keep it out of OneDrive and iCloud, so git isn't synced between computers),
 # checks you can push to GitHub, finds your Obsidian vault and installs two background jobs:
 #   - publish admin saves 10 seconds after you save, and pull every 10 minutes
-#   - rebuild the vault pages every morning at 7:50
+#   - rebuild the vault pages every hour (it only publishes when a note changed)
 set -e
 export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.homebrew/bin:$PATH"
 # the site folder: the copy this script is in, or ~/Desktop/Portfolio for a fresh clone
@@ -57,6 +57,7 @@ cat > "$AG/me.fangyuancao.publish-admin.plist" <<P
   <key>StartInterval</key><integer>600</integer>
   <key>RunAtLoad</key><true/>
   <key>ThrottleInterval</key><integer>10</integer>
+  <key>StandardErrorPath</key><string>$HOME/Library/Logs/portfolio-publish.log</string>
 </dict></plist>
 P
 cat > "$AG/me.fangyuancao.update-site.plist" <<P
@@ -65,7 +66,10 @@ cat > "$AG/me.fangyuancao.update-site.plist" <<P
 <plist version="1.0"><dict>
   <key>Label</key><string>me.fangyuancao.update-site</string>
   <key>ProgramArguments</key><array><string>/bin/bash</string><string>$SITE/tools/mac/update-site.sh</string></array>
-  <key>StartCalendarInterval</key><dict><key>Hour</key><integer>7</integer><key>Minute</key><integer>50</integer></dict>
+  <key>StartInterval</key><integer>3600</integer>
+  <key>RunAtLoad</key><true/>
+  <key>StandardOutPath</key><string>$HOME/Library/Logs/portfolio-update.log</string>
+  <key>StandardErrorPath</key><string>$HOME/Library/Logs/portfolio-update.log</string>
 </dict></plist>
 P
 for j in publish-admin update-site; do

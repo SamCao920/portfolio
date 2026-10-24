@@ -296,7 +296,7 @@
   /* ---------- art ---------- */
   function artTile(a) {
     return `<li class="art-item"><button class="art-tile" type="button" data-kind="art" data-i="${a.i}" title="${esc(a.t)}, ${esc(a.artist)}" aria-label="${esc(a.t)} by ${esc(a.artist)}">${coverFace(a.t, a.artist)}${a.img ? `<img alt="" loading="lazy" src="${esc(a.img)}" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}</button>
-      <div class="art-cap"><b>${esc(a.t)}</b><span>${esc(a.artist)}</span></div></li>`;
+      <div class="art-cap"><b>${esc(a.t)}</b><span>${esc(a.artist)}${a.year ? ", " + esc(a.year) : ""}</span></div></li>`;
   }
   const countBy = (arr, f) => { const m = new Map(); arr.forEach(x => [].concat(f(x)).filter(Boolean).forEach(k => m.set(k, (m.get(k) || 0) + 1))); return [...m].sort((a, b) => b[1] - a[1] || String(a[0]).localeCompare(String(b[0]))); };
 
@@ -636,7 +636,7 @@
     const fav = (S.artists || []).filter(a => a && a.name);
     if (!fav.length) return "";
     const key = s => String(s || "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-    return `<section class="section fav-artists">${sectionHead("Favorite artists")}<ol class="artist-rank">${fav.map((a, n) => {
+    return `<section class="side-block fav-artists">${sectionHead("Favorite artists")}<ol class="artist-rank">${fav.map((a, n) => {
       const works = ART.filter(w => key(w.artist) === key(a.name));
       return `<li><i class="ar-n">${n + 1}</i><div class="ar-text"><b>${works.length ? `<button type="button" class="linkish" data-artist="${esc(works[0].artist)}">${esc(a.name)}</button>` : esc(a.name)}</b>
         ${a.note ? `<p>${esc(a.note)}</p>` : ""}${works.length ? `<small>${plural(works.length, "work")} logged</small>` : ""}</div>
@@ -651,23 +651,23 @@
     const html = `
       <div class="page-head"><div><h1 class="page-title">Art</h1><p class="page-sub">Works I’ve seen in museums and want to remember, kept in my notes. Click any work to see it larger.</p></div>
         ${statsRow([[ART.length, "Works"], [artists.length, "Artists"], [movements.length, "Movements"], [noted.length, "Notes"]])}</div>
-      ${favArtists()}
       <div class="cols">
         <div>
           <section class="section"><div class="filterbar slim"><div class="group">
             <label class="select" for="a-medium">Medium <select id="a-medium"><option value="all">All</option>${media.map(([m, n]) => `<option value="${esc(m)}">${esc(m)} (${n})</option>`).join("")}</select></label>
             <label class="select" for="a-move">Movement <select id="a-move"><option value="all">All</option>${movements.map(([m, n]) => `<option value="${esc(m)}">${esc(m)} (${n})</option>`).join("")}</select></label>
             <label class="select" for="a-artist">Artist <select id="a-artist"><option value="all">All</option>${artists.map(([m, n]) => `<option value="${esc(m)}">${esc(m)} (${n})</option>`).join("")}</select></label>
-            <label class="select" for="a-sort">Sort <select id="a-sort"><option value="logged">Recently logged</option><option value="artist">Artist</option><option value="title">Title</option></select></label>
+            <label class="select" for="a-sort">Sort <select id="a-sort"><option value="logged">Recently logged</option><option value="artist">Artist</option><option value="title">Title</option>${ART.some(a => a.year) ? '<option value="old">Year, oldest first</option><option value="new">Year, newest first</option>' : ""}</select></label>
           </div><span class="count" id="a-count"></span></div>
           <ul class="art-grid" id="a-grid"></ul><div class="more-wrap" id="a-more"></div></section>
           ${noted.length ? `<section class="section">${sectionHead("Notes")}<ul class="entries">${noted.map(a => `<li class="entry art-note">
             <div class="entry-poster"><button class="art-tile" type="button" data-kind="art" data-i="${a.i}" aria-label="${esc(a.t)}">${coverFace(a.t, a.artist)}${a.img ? `<img alt="" loading="lazy" src="${esc(a.img)}" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}</button></div>
             <div class="entry-text"><h3><button type="button" class="linkish" data-kind="art" data-i="${a.i}">${esc(a.t)}</button></h3>
-              <div class="entry-meta"><span>${esc(a.artist)}</span>${a.medium ? `<span class="pill">${esc(a.medium)}</span>` : ""}</div>
+              <div class="entry-meta"><span>${esc(a.artist)}${a.year ? ", " + esc(a.year) : ""}</span>${a.medium ? `<span class="pill">${esc(a.medium)}</span>` : ""}</div>
               ${a.note.split("\n").map(p => `<p>${esc(p)}</p>`).join("")}</div></li>`).join("")}</ul></section>` : ""}
         </div>
         <aside>
+          ${favArtists()}
           <section class="side-block">${sectionHead("Most seen artists")}<ul class="tally">${artists.slice(0, 10).map(([a, n]) => `<li><button type="button" class="linkish" data-artist="${esc(a)}">${esc(a)}</button><span class="tally-bar" style="width:${n / artists[0][1] * 100}%"></span><b>${n}</b></li>`).join("")}</ul></section>
           <section class="side-block">${sectionHead("Movements")}<div class="tags">${movements.map(([m, n]) => `<button type="button" class="tag" data-move="${esc(m)}">${esc(m)} <i>${n}</i></button>`).join("")}</div></section>
         </aside>
@@ -680,6 +680,10 @@
         let list = ART.filter(a => (md === "all" || a.medium === md) && (mv === "all" || a.movements.includes(mv)) && (ar === "all" || a.artist === ar));
         if (so === "artist") list = [...list].sort((a, b) => a.artist.localeCompare(b.artist) || a.t.localeCompare(b.t));
         if (so === "title") list = [...list].sort((a, b) => a.t.localeCompare(b.t));
+        if (so === "old" || so === "new") {   /* works without a year go last; "c. 1665" and "1508–1512" sort by their first year */
+          const yr = a => { const m = String(a.year || "").match(/\d{3,4}/); return m ? +m[0] * (/\bBCE?\b/i.test(a.year) ? -1 : 1) : null; };
+          list = [...list].sort((a, b) => (yr(a) == null) - (yr(b) == null) || (so === "old" ? yr(a) - yr(b) : yr(b) - yr(a)));
+        }
         $("#a-count").textContent = plural(list.length, "work");
         $("#a-grid").innerHTML = list.slice(0, shown).map(artTile).join("") || '<li class="empty">Nothing matches.</li>';
         $("#a-more").innerHTML = list.length > shown ? `<button class="btn" type="button">Show ${Math.min(24, list.length - shown)} more</button>` : "";
