@@ -16,6 +16,7 @@ window.SITE = {
     "location": "Baltimore, Maryland",
     "updated": "October 2026",
     "now": [
+      "Listening to all of Beethoven's String Quartets",
       "Hopkins Symphony Orchestra & Hopkins Chamber Music Seminar"
     ],
     "aboutPhoto": "assets/plates/68.jpg"
