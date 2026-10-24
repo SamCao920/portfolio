@@ -10,6 +10,53 @@
   const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   const parse = d => { const [y, m, day] = String(d || "").split("-").map(Number); return { y, m: (m || 1) - 1, d: day || null }; };
   const fmtDate = d => { const p = parse(d); return p.d ? `${MONTHS[p.m]} ${p.d}, ${p.y}` : `${MONTHS[p.m]} ${p.y}`; };
+  /* ---------- markdown for anything I write (descriptions, reviews, notes, bios) ----------
+     **bold**, *italic* or _italic_, `code`, [text](url), bare links, "- " lists, "1. " lists,
+     "> " quotes, "## " headings, a blank line between paragraphs. A video link on a line of its
+     own (YouTube, Vimeo, or an .mp4/.webm/.mov file) becomes a player. html: true keeps HTML
+     already in the text (older entries use <em>). */
+  function videoOf(u) {
+    const s = String(u || "").trim();
+    let m = s.match(/^https?:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([\w-]{11})/);
+    if (m) return { kind: "youtube", id: m[1], thumb: `https://i.ytimg.com/vi/${m[1]}/hqdefault.jpg`, embed: `https://www.youtube-nocookie.com/embed/${m[1]}?rel=0` };
+    m = s.match(/^https?:\/\/(?:www\.|player\.)?vimeo\.com\/(?:video\/)?(\d+)/);
+    if (m) return { kind: "vimeo", id: m[1], thumb: "", embed: `https://player.vimeo.com/video/${m[1]}` };
+    if (/^(?:https?:\/\/\S+|assets\/\S+|[\w./ ()-]+)\.(mp4|webm|mov|m4v)(?:[?#]\S*)?$/i.test(s)) return { kind: "file", src: s, thumb: "" };
+    return null;
+  }
+  const videoPlayer = (v, title) => v.kind === "file"
+    ? `<video class="vid" src="${esc(v.src)}" controls playsinline preload="metadata"></video>`
+    : `<div class="vid"><iframe src="${esc(v.embed)}" title="${esc(title || "Video")}" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`;
+  function mdInline(text, html) {
+    const keep = [];
+    const hold = h => `\u0000${keep.push(h) - 1}\u0000`;
+    let s = String(text);
+    if (html) s = s.replace(/<[^>]+>/g, hold); else s = esc(s);
+    s = s.replace(/`([^`\n]+)`/g, (m, c) => hold(`<code>${c}</code>`));
+    const url = u => html ? u.replace(/&(?!amp;)/g, "&amp;").replace(/"/g, "&quot;") : u;
+    const ext = u => /^https?:/.test(u) ? ' target="_blank" rel="noopener"' : "";
+    s = s.replace(/\[([^\]\n]+)\]\(((?:https?:\/\/|mailto:|assets\/|[\w-]+\.html)[^\s)]*)\)/g, (m, t, u) => hold(`<a href="${url(u)}"${ext(u)}>`) + t + hold("</a>"));
+    s = s.replace(/(^|[\s(])(https?:\/\/[^\s<]+[^\s<.,;:!?)'"])/g, (m, pre, u) => pre + hold(`<a href="${url(u)}" target="_blank" rel="noopener">${u.replace(/^https?:\/\/(www\.)?/, "")}</a>`));
+    s = s.replace(/\*\*(\S(?:[^*]*\S)?)\*\*/g, "<strong>$1</strong>").replace(/__(\S(?:[^_]*\S)?)__/g, "<strong>$1</strong>");
+    s = s.replace(/(^|[^\w*])\*(\S(?:[^*\n]*\S)?)\*(?!\w)/g, "$1<em>$2</em>").replace(/(^|[^\w])_(\S(?:[^_\n]*\S)?)_(?!\w)/g, "$1<em>$2</em>");
+    return s.replace(/\u0000(\d+)\u0000/g, (m, k) => keep[+k]).replace(/\u0000(\d+)\u0000/g, (m, k) => keep[+k]);
+  }
+  function md(text, opts = {}) {
+    if (text == null || text === "") return "";
+    const html = !!opts.html, inl = t => mdInline(t, html);
+    return String(text).replace(/\r\n/g, "\n").split(/\n\s*\n/).map(b => b.replace(/^\n+|\s+$/g, "")).filter(Boolean).map(b => {
+      const lines = b.split("\n");
+      const v = lines.length === 1 && videoOf(b.trim().replace(/^<|>$/g, ""));
+      if (v) return videoPlayer(v);
+      let m = b.match(/^(#{1,4})\s+(.+)$/);
+      if (m && lines.length === 1) { const n = Math.min(6, m[1].length + 2); return `<h${n} class="md-h">${inl(m[2])}</h${n}>`; }
+      if (lines.every(l => /^\s*[-*•]\s+/.test(l))) return `<ul class="md-list">${lines.map(l => `<li>${inl(l.replace(/^\s*[-*•]\s+/, ""))}</li>`).join("")}</ul>`;
+      if (lines.every(l => /^\s*\d+[.)]\s+/.test(l))) return `<ol class="md-list">${lines.map(l => `<li>${inl(l.replace(/^\s*\d+[.)]\s+/, ""))}</li>`).join("")}</ol>`;
+      if (lines.every(l => /^\s*(>|&gt;)/.test(l))) return `<blockquote>${inl(lines.map(l => l.replace(/^\s*(>|&gt;)\s?/, "")).join("\n")).replace(/\n/g, "<br>")}</blockquote>`;
+      return `<p${opts.cls ? ` class="${opts.cls}"` : ""}>${inl(b).replace(/\n/g, "<br>")}</p>`;
+    }).join("");
+  }
+  window.__md = md;   /* for tests */
   const slug = t => t.toLowerCase().normalize("NFKD").replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-");
   const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
   const store = {
@@ -313,8 +360,13 @@
   function galleryStrip(w) {
     const g = galleryOf(w);
     if (!g.length) return "";
-    return `<ul class="gallery" aria-label="Photos">${g.map((p, k) => `<li><button type="button" class="gal-thumb" data-gal="${esc(slug(w.title))}" data-k="${k}" aria-label="${esc(p.cap || "Photo " + (k + 1))}">
-      <img src="${esc(p.src)}" alt="" loading="lazy"></button></li>`).join("")}</ul>`;
+    /* a gallery item can be a photo or a video: a YouTube/Vimeo link or an .mp4/.webm/.mov file */
+    const face = p => { const v = videoOf(p.src);
+      if (!v) return `<img src="${esc(p.src)}" alt="" loading="lazy">`;
+      return (v.thumb ? `<img src="${esc(v.thumb)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : v.kind === "file" ? `<video src="${esc(v.src)}#t=0.5" preload="metadata" muted playsinline tabindex="-1"></video>` : "")
+        + '<span class="gal-play" aria-hidden="true"></span>'; };
+    return `<ul class="gallery" aria-label="Photos and videos">${g.map((p, k) => `<li><button type="button" class="gal-thumb${videoOf(p.src) ? " is-video" : ""}" data-gal="${esc(slug(w.title))}" data-k="${k}" aria-label="${esc(p.cap || (videoOf(p.src) ? "Video " : "Photo ") + (k + 1))}">
+      ${face(p)}</button></li>`).join("")}</ul>`;
   }
   /* full-size viewer with arrows; one dialog for the whole page */
   function lightbox() {
@@ -323,7 +375,7 @@
     const show = () => {
       const p = set[k];
       dlg.innerHTML = `<button class="dlg-close" type="button" aria-label="Close">×</button>
-        <figure><img src="${esc(p.src)}" alt="${esc(p.cap || "")}">${p.cap ? `<figcaption>${esc(p.cap)}</figcaption>` : ""}</figure>
+        <figure>${videoOf(p.src) ? videoPlayer(videoOf(p.src), p.cap) : `<img src="${esc(p.src)}" alt="${esc(p.cap || "")}">`}${p.cap ? `<figcaption>${mdInline(p.cap)}</figcaption>` : ""}</figure>
         ${set.length > 1 ? `<div class="dlg-nav"><button type="button" class="nav-btn" data-step="-1" aria-label="Previous">←</button><span>${k + 1} / ${set.length}</span><button type="button" class="nav-btn" data-step="1" aria-label="Next">→</button></div>` : ""}`;
       $(".dlg-close", dlg).onclick = () => dlg.close();
       $$("[data-step]", dlg).forEach(b => b.onclick = () => step(+b.dataset.step));
@@ -336,6 +388,7 @@
     });
     dlg.addEventListener("keydown", e => { if (e.key === "ArrowRight") step(1); if (e.key === "ArrowLeft") step(-1); });
     dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
+    dlg.addEventListener("close", () => { dlg.innerHTML = ""; });   /* stops a playing video */
   }
   function entry(w) {
     const ext = w.link && !w.link.endsWith(".html") ? ' target="_blank" rel="noopener"' : "";
@@ -348,9 +401,9 @@
           ${w.award ? `<span class="pill award">${esc(w.award)}</span>` : ""}
           ${isOngoing(w) ? '<span class="pill live"><i class="pulse"></i>Happening now</span>' : isUpcoming(w) && w.type === "appearance" ? '<span class="pill wip">Upcoming</span>' : ""}
           <span>${esc(w.venue)}</span></div>
-        ${w.result ? `<div class="entry-result">${esc(w.result)}</div>` : ""}
-        <p class="claim">${w.claim}</p>
-        ${w.body ? `<details><summary>More</summary><p>${w.body}</p></details>` : ""}
+        ${w.result ? `<div class="entry-result">${mdInline(w.result, true)}</div>` : ""}
+        <div class="claim">${md(w.claim, { html: true })}</div>
+        ${w.body ? `<details><summary>More</summary>${md(w.body, { html: true })}</details>` : ""}
         ${link}${galleryStrip(w)}</div></li>`;
   }
 
@@ -614,7 +667,7 @@
     const [tabHtml, start] = tabs("films", defs);
     setTimeout(start);
     return `
-      <div class="page-head"><div><h1 class="page-title">Films</h1><p class="page-sub">${esc(FD.bio || "")}</p></div>
+      <div class="page-head"><div><h1 class="page-title">Films</h1><p class="page-sub">${mdInline(FD.bio || "")}</p></div>
         ${statsRow([[FILMS.length, "Films"], [yearCount, "This year"], [FD.lists.length, "Lists"], [WATCH.length, "Watchlist"]])}</div>
       <div class="cols">
         <div>
@@ -639,7 +692,7 @@
     return `<section class="side-block fav-artists">${sectionHead("Favorite artists")}<ol class="artist-rank">${fav.map((a, n) => {
       const works = ART.filter(w => key(w.artist) === key(a.name));
       return `<li><i class="ar-n">${n + 1}</i><div class="ar-text"><b>${works.length ? `<button type="button" class="linkish" data-artist="${esc(works[0].artist)}">${esc(a.name)}</button>` : esc(a.name)}</b>
-        ${a.note ? `<p>${esc(a.note)}</p>` : ""}${works.length ? `<small>${plural(works.length, "work")} logged</small>` : ""}</div>
+        ${a.note ? `<p>${mdInline(a.note)}</p>` : ""}${works.length ? `<small>${plural(works.length, "work")} logged</small>` : ""}</div>
         ${works.length ? `<div class="ar-works">${works.slice(0, 4).map(w => `<button class="art-tile" type="button" data-kind="art" data-i="${w.i}" aria-label="${esc(w.t)}">${coverFace(w.t, w.artist)}${w.img ? `<img alt="" loading="lazy" src="${esc(w.img)}" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}</button>`).join("")}</div>` : ""}</li>`;
     }).join("")}</ol></section>`;
   }
@@ -664,7 +717,7 @@
             <div class="entry-poster"><button class="art-tile" type="button" data-kind="art" data-i="${a.i}" aria-label="${esc(a.t)}">${coverFace(a.t, a.artist)}${a.img ? `<img alt="" loading="lazy" src="${esc(a.img)}" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}</button></div>
             <div class="entry-text"><h3><button type="button" class="linkish" data-kind="art" data-i="${a.i}">${esc(a.t)}</button></h3>
               <div class="entry-meta"><span>${esc(a.artist)}${a.year ? ", " + esc(a.year) : ""}</span>${a.medium ? `<span class="pill">${esc(a.medium)}</span>` : ""}</div>
-              ${a.note.split("\n").map(p => `<p>${esc(p)}</p>`).join("")}</div></li>`).join("")}</ul></section>` : ""}
+              ${md(a.note)}</div></li>`).join("")}</ul></section>` : ""}
         </div>
         <aside>
           ${favArtists()}
@@ -744,7 +797,7 @@
     const [tabHtml, start] = tabs("music", defs);
     setTimeout(start);
     return `
-      <div class="page-head"><div><h1 class="page-title">Music</h1><p class="page-sub">${esc(LD.bio || "The music I love, classical and otherwise.")}</p></div>
+      <div class="page-head"><div><h1 class="page-title">Music</h1><p class="page-sub">${mdInline(LD.bio || "The music I love, classical and otherwise.")}</p></div>
         ${statsRow([[ALBUMS.length, "Pieces"], [yearCount, "This year"], [LD.lists.length, "Lists"], [QUEUE.length, "To listen"]])}</div>
       <div class="cols">
         <div>
@@ -838,7 +891,7 @@
       <div class="cols">
         <div>
           <h1 class="page-title">About</h1>
-          <div class="prose" style="margin-top:20px">${S.about.map(p => `<p>${p}</p>`).join("")}</div>
+          <div class="prose" style="margin-top:20px">${S.about.map(p => md(p, { html: true })).join("")}</div>
           <section class="section">${sectionHead("Selected record")}
             <ul class="timeline">${S.record.map(([y, t]) => `<li><span class="yr">${esc(y)}</span><span>${esc(t)}</span></li>`).join("")}</ul></section>
         </div>
@@ -1021,7 +1074,7 @@
           <div class="dlg-art">${it.img ? `<div class="dlg-art-img"><img alt="${esc(it.t)}" src="${esc(it.img)}" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"></div>` : ""}
           <div class="dlg-art-text"><h3>${esc(it.t)}</h3><p class="by">${esc(it.artist)}${it.year ? ", " + esc(it.year) : ""}</p>
             <p class="poster-caption">${esc(meta.join(" · "))}</p>
-            ${it.note ? it.note.split("\n").map(p => `<p class="review">${esc(p)}</p>`).join("") : ""}
+            ${it.note ? `<div class="review">${md(it.note)}</div>` : ""}
             ${it.link ? `<a class="read-link" href="${esc(it.link)}" target="_blank" rel="noopener">Source →</a>` : ""}</div></div>`;
         $(".dlg-close", dlg).onclick = () => dlg.close();
         dlg.classList.add("wide");
@@ -1036,21 +1089,21 @@
         sub = it.a + (it.year ? ` · ${it.year}` : "");
         const shelf = { read: it.read ? `Read ${fmtDate(it.read)}` : "Read", reading: `Reading since ${fmtDate(it.added)}`, "to-read": "Want to read", dnf: "Did not finish" }[it.shelf];
         meta.push(shelf); if (it.pages) meta.push(`${it.pages} pages`);
-        body = it.review ? esc(it.review) : "";
+        body = it.review ? md(it.review) : "";
       } else if (it.kind === "album" || it.kind === "queue") {
         sub = [it.a, it.y].filter(Boolean).join(" · ");
         const logs = it.kind === "album" ? albumDiary.filter(d => d.m === it.i) : [];
         meta.push(FORMS[formOf(it)] + (it.side === "classical" ? " · Classical" : ""));
         if (logs.length) meta.push("Listened " + logs.map(d => fmtDate(d.date) + [d.perf, d.again && "relisten"].filter(Boolean).map(x => ` (${x})`).join("")).join(", "));
         else if (it.kind === "queue") meta.push("On my listening list");
-        body = logs.filter(d => d.review).map(d => esc(d.review)).join("<br>");
+        body = logs.filter(d => d.review).map(d => md(d.review)).join("");
         if (it.sp) link = `<a class="read-link" href="https://open.spotify.com/${esc(it.sp)}" target="_blank" rel="noopener">Listen on Spotify <span class="arr">→</span></a>`;
       } else {
         sub = String(it.y || "");
         const logs = it.kind === "film" ? filmDiary.filter(d => d.f === it.i) : [];
         if (logs.length) meta.push("Watched " + logs.map(d => fmtDate(d.date) + (d.rewatch ? " (rewatch)" : "")).join(", "));
         else if (it.kind === "watch") meta.push("On my watchlist");
-        body = logs.filter(d => d.review).map(d => esc(d.review)).join("<br>");
+        body = logs.filter(d => d.review).map(d => md(d.review)).join("");
         if (it.notes && it.notes.length && it.notes[0].author) sub = [sub, it.notes[0].author].filter(Boolean).join(" · ");
       }
       {
@@ -1074,7 +1127,7 @@
         <div><h3>${esc(title)}</h3><p class="by">${esc(sub)}</p>
           <div class="poster-meta">${stars(it.r)}${heart(it.liked)}${it.fav ? '<span class="pill">Favorite</span>' : ""}</div>
           <p class="poster-caption">${esc(meta.join(" · "))}</p>
-          ${body ? `<p class="review">${body}</p>` : ""}${link}${notesHtml}</div></div>`;
+          ${body ? `<div class="review">${body}</div>` : ""}${link}${notesHtml}</div></div>`;
       dlg.classList.toggle("wide", !!notesHtml);
       linkVault(dlg);
       $(".dlg-close", dlg).onclick = () => dlg.close();

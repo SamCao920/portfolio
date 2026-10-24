@@ -1094,3 +1094,19 @@ dialog.lightbox figcaption { font-size: 13px; color: var(--muted); text-align: c
   .seg { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
   .seg a { flex: none; }
 }
+
+/* markdown bits and video players */
+.claim > p, .review > p, details > p, .prose > p { margin: 0 0 .8em; }
+.claim > :last-child, .review > :last-child, details > :last-child { margin-bottom: 0; }
+.md-list { margin: 0 0 .8em; padding-left: 1.3em; }
+.md-list li { margin: .2em 0; }
+.md-h { margin: 1em 0 .4em; font: var(--dw, 700) 17px/1.3 var(--display); color: var(--heading); }
+:is(.claim, .review, details, .prose) blockquote { margin: 0 0 .8em; padding-left: 14px; border-left: 2px solid var(--line-strong); color: var(--text); }
+:is(.claim, .review, details, .prose) code { font-size: .9em; background: var(--bg-raised); padding: 1px 5px; border-radius: 4px; }
+.vid { display: block; width: 100%; max-width: 720px; aspect-ratio: 16 / 9; margin: 0 0 .8em; border-radius: 6px; overflow: hidden; background: #000; border: 0; }
+.vid iframe { width: 100%; height: 100%; border: 0; display: block; }
+dialog.lightbox .vid { width: min(1000px, 90vw); max-width: none; max-height: 74vh; margin: 0; }
+.gal-thumb video { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+.gal-thumb.is-video { cursor: pointer; background: #111; }
+.gal-play { position: absolute; left: 50%; top: 50%; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; background: rgba(0,0,0,.55); box-shadow: 0 0 0 2px rgba(255,255,255,.85); }
+.gal-play::before { content: ""; position: absolute; left: 14px; top: 10px; border-style: solid; border-width: 8px 0 8px 12px; border-color: transparent transparent transparent #fff; }

@@ -309,11 +309,12 @@ window.SITE = ${JSON.stringify(data, null, 2)};
 
   /* ---------- field builders ---------- */
   const val = (o, k) => o[k] ?? "";
+  const MD_HINT = "Markdown works: **bold**, *italic*, [text](link), “- ” for a list. A YouTube, Vimeo or .mp4 link on its own line becomes a video.";
   function field(o, k, label, opts = {}) {
     const id = `${opts.prefix || ""}${k}`;
     if (opts.type === "check") return `<label class="f check"><input type="checkbox" data-k="${k}" ${o[k] ? "checked" : ""}><span>${label}</span></label>`;
     let input;
-    if (opts.type === "textarea") input = `<textarea id="${id}" data-k="${k}" rows="${opts.rows || 3}">${esc(val(o, k))}</textarea>`;
+    if (opts.type === "textarea") { input = `<textarea id="${id}" data-k="${k}" rows="${opts.rows || 3}"${opts.placeholder ? ` placeholder="${esc(opts.placeholder)}"` : ""}>${esc(val(o, k))}</textarea>`; if (!opts.hint) opts = { ...opts, hint: MD_HINT }; }
     else if (opts.type === "select") input = `<select id="${id}" data-k="${k}">${opts.options.map(([v, l]) => `<option value="${v}" ${val(o, k) === v ? "selected" : ""}>${l}</option>`).join("")}</select>`;
     else if (opts.type === "file") input = `<div class="filerow"><input type="text" id="${id}" data-k="${k}" value="${esc(val(o, k))}" placeholder="${opts.placeholder || "Path or URL"}"><label class="btn" tabindex="0">Choose file<input type="file" hidden data-file="${k}" data-dir="${opts.dir || "assets"}" accept="${opts.accept || ""}"></label></div>`;
     else input = `<input type="${opts.type || "text"}" id="${id}" data-k="${k}" value="${esc(val(o, k))}" placeholder="${esc(opts.placeholder || "")}">`;
@@ -1368,10 +1369,27 @@ window.SITE = ${JSON.stringify(data, null, 2)};
   const galleryText = w => (w.gallery || []).map(g => typeof g === "string" ? g : g.src + (g.cap ? " | " + g.cap : "")).join("\n");
   const parseGallery = txt => String(txt || "").split("\n").map(l => l.trim()).filter(Boolean).map(l => { const [src, ...cap] = l.split("|"); const o = { src: src.trim() }; if (cap.join("|").trim()) o.cap = cap.join("|").trim(); return o; });
   function galleryField(w, i) {
-    return `<label class="f" for="w${i}-gallery"><span>Photo gallery</span>
-      <textarea id="w${i}-gallery" data-k="galleryText" rows="${Math.min(8, Math.max(3, (w.gallery || []).length + 1))}" placeholder="assets/appearances/photo.jpg | Optional caption">${esc(galleryText(w))}</textarea>
-      <small>Shown under the entry on the Appearances page; click a photo to view it large. One per line; add “| caption” after the path for a caption. Reorder photos by moving lines.</small></label>
-      <label class="btn" tabindex="0">Add photos<input type="file" hidden multiple accept="image/*" data-gallery="${i}"></label>`;
+    return `<label class="f" for="w${i}-gallery"><span>Photos and videos</span>
+      <textarea id="w${i}-gallery" data-k="galleryText" rows="${Math.min(8, Math.max(3, (w.gallery || []).length + 1))}" placeholder="assets/appearances/photo.jpg | Optional caption&#10;https://www.youtube.com/watch?v=… | My talk">${esc(galleryText(w))}</textarea>
+      <small>Shown under the entry; click one to view it large. One per line: a photo, a video file, or a YouTube or Vimeo link. Add “| caption” after it for a caption. Reorder by moving lines.</small></label>
+      <label class="btn" tabindex="0">Add photos or videos<input type="file" hidden multiple accept="image/*,video/mp4,video/quicktime,video/webm" data-gallery="${i}"></label>`;
+  }
+  /* MP4/MOV files from phones store where they were filmed as an ISO 6709 string ("+39.2904-076.6122+010.000/"),
+     in the ©xyz atom and in Apple's com.apple.quicktime.location.ISO6709 key. Overwrite those digits with zeros, in place,
+     so the file stays valid but the location is gone. */
+  async function stripVideoLocation(file) {
+    const b = new Uint8Array(await file.arrayBuffer());
+    const isNum = c => (c >= 48 && c <= 57) || c === 46;
+    let hits = 0;
+    for (let i = 0; i < b.length - 12; i++) {
+      if ((b[i] === 43 || b[i] === 45) && isNum(b[i + 1]) && isNum(b[i + 2])) {
+        let j = i + 1, signs = 1;
+        while (j < b.length && j - i < 60 && (isNum(b[j]) || b[j] === 43 || b[j] === 45)) { if (b[j] === 43 || b[j] === 45) signs++; j++; }
+        if (signs >= 2 && b[j] === 47 && j - i >= 12) { for (let k = i; k < j; k++) if (b[k] >= 49 && b[k] <= 57) b[k] = 48; hits++; i = j; }
+      }
+    }
+    if (hits) toast(`Removed the filming location from ${file.name}.`);
+    return new Blob([b], { type: file.type });
   }
   /* re-encode a photo: at most 2000 px on the long side, JPEG; drops EXIF (GPS, camera) along the way */
   async function cleanPhoto(file, max = 2000, type = "image/jpeg", q = 0.88) {
@@ -1390,6 +1408,12 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     const folder = "assets/appearances/" + title.toLowerCase().normalize("NFKD").replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-").slice(0, 40);
     let added = 0;
     for (const f of inp.files) {
+      if (/^video\//.test(f.type)) {   /* videos go up as they are, minus the GPS location phones write into them */
+        if (f.size > 95e6) { toast(`${f.name} is over 95 MB, too big for GitHub. Upload it to YouTube and paste the link instead.`); continue; }
+        const name = f.name.replace(/[^\w.\- ()]+/g, "_"), path = `${folder}/${name}`;
+        pendingFiles.push({ path, file: await stripVideoLocation(f) });
+        box.value = (box.value.trim() ? box.value.trim() + "\n" : "") + path; added++; continue;
+      }
       try {
         const blob = await cleanPhoto(f);
         const name = f.name.replace(/\.[^.]+$/, "").replace(/[^\w.\- ()]+/g, "_") + ".jpg";
@@ -1401,7 +1425,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     inp.value = "";
     box.rows = Math.min(8, box.value.split("\n").length + 1);
     box.dispatchEvent(new Event("input", { bubbles: true }));
-    toast(`${added} photo${added === 1 ? "" : "s"} added (location data removed). ${dir ? "They’re copied in on Save." : "Connect the folder before saving."}`);
+    toast(`${added} file${added === 1 ? "" : "s"} added (location data removed). ${dir ? "They’re copied in on Save." : "Connect the folder before saving."}`);
   });
   /* switching an entry to Appearance shows its gallery box */
   document.addEventListener("change", e => {
