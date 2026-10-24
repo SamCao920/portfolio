@@ -279,7 +279,7 @@ window.SITE = {
           "src": "assets/appearances/10th-madrid-annual-conference-on-austria/365ee5ac-cc37-4f06-af52-0cfb7ae77721.jpg"
         }
       ],
-      "link": "https://streamable.com/ar6z25"
+      "link": "https://youtu.be/QcIhRec_yTU?si=Q6A9gzG_J1zlb2gI"
     }
   ],
   "homeBooks": [
