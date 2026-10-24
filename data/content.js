@@ -16,7 +16,6 @@ window.SITE = {
     "location": "Baltimore, Maryland",
     "updated": "October 2026",
     "now": [
-      "Writing on Chinese influence in the International Seabed Authority for the Foreign Affairs Review",
       "Hopkins Symphony Orchestra & Hopkins Chamber Music Seminar"
     ],
     "aboutPhoto": "assets/plates/68.jpg"
