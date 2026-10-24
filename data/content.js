@@ -573,5 +573,37 @@ window.SITE = {
       "Gustav Mahler",
       "Maurice Ravel"
     ]
-  }
+  },
+  "artists": [
+    {
+      "name": "Michelangelo"
+    },
+    {
+      "name": "Goya"
+    },
+    {
+      "name": "Rembrandt"
+    },
+    {
+      "name": "Raphael"
+    },
+    {
+      "name": "Vincent Van Gogh"
+    },
+    {
+      "name": "El Greco"
+    },
+    {
+      "name": "Paul Cezanne"
+    },
+    {
+      "name": "William Turner"
+    },
+    {
+      "name": "Pablo Picasso"
+    },
+    {
+      "name": "Claude Monet"
+    }
+  ]
 };
