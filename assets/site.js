@@ -631,6 +631,18 @@
       </div>`;
   }
 
+  /* my ranked favorite artists (admin > Art, content.js "artists"), each with the works by them I've logged */
+  function favArtists() {
+    const fav = (S.artists || []).filter(a => a && a.name);
+    if (!fav.length) return "";
+    const key = s => String(s || "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    return `<section class="section fav-artists">${sectionHead("Favorite artists")}<ol class="artist-rank">${fav.map((a, n) => {
+      const works = ART.filter(w => key(w.artist) === key(a.name));
+      return `<li><i class="ar-n">${n + 1}</i><div class="ar-text"><b>${works.length ? `<button type="button" class="linkish" data-artist="${esc(works[0].artist)}">${esc(a.name)}</button>` : esc(a.name)}</b>
+        ${a.note ? `<p>${esc(a.note)}</p>` : ""}${works.length ? `<small>${plural(works.length, "work")} logged</small>` : ""}</div>
+        ${works.length ? `<div class="ar-works">${works.slice(0, 4).map(w => `<button class="art-tile" type="button" data-kind="art" data-i="${w.i}" aria-label="${esc(w.t)}">${coverFace(w.t, w.artist)}${w.img ? `<img alt="" loading="lazy" src="${esc(w.img)}" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}</button>`).join("")}</div>` : ""}</li>`;
+    }).join("")}</ol></section>`;
+  }
   function artPage() {
     const artists = countBy(ART, a => a.artist === "Unknown" ? null : a.artist);
     const movements = countBy(ART, a => a.movements);
@@ -639,6 +651,7 @@
     const html = `
       <div class="page-head"><div><h1 class="page-title">Art</h1><p class="page-sub">Works I’ve seen in museums and want to remember, kept in my notes. Click any work to see it larger.</p></div>
         ${statsRow([[ART.length, "Works"], [artists.length, "Artists"], [movements.length, "Movements"], [noted.length, "Notes"]])}</div>
+      ${favArtists()}
       <div class="cols">
         <div>
           <section class="section"><div class="filterbar slim"><div class="group">

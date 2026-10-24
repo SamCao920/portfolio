@@ -13,7 +13,7 @@
   let dir = null, dirty = false, section = "theme";
   let loadedStamp = 0, staleArmed = false;
   /* top-level keys this editor edits; everything else in content.js (studio, hiddenFilms, …) is kept from disk on save */
-  const MANAGED = ["theme", "analytics", "studio", "profile", "about", "interests", "facts", "record", "writings", "socials", "homeBooks", "showDidNotFinish", "posterOverrides", "music"];
+  const MANAGED = ["theme", "analytics", "studio", "profile", "about", "interests", "facts", "record", "writings", "socials", "homeBooks", "showDidNotFinish", "posterOverrides", "music", "artists"];
   const readDisk = async () => {
     const f = await (await (await dir.getDirectoryHandle("data")).getFileHandle("content.js")).getFile();
     const box = {}; new Function("window", await f.text())(box);
@@ -29,7 +29,21 @@
     t.textContent = msg; t.classList.remove("show"); void t.offsetWidth; t.classList.add("show");
     clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 2200);
   }
-  function markDirty() { dirty = true; $("#dirty").hidden = false; $("#save").disabled = false; }
+  /* ---------- autosave: a few seconds after the last change (folder), or 20 s (GitHub, so a pause
+     while typing doesn't make a commit per sentence); also when you leave the tab ---------- */
+  let changeSeq = 0, saving = false, autoTimer = null, autoBlocked = false;
+  function saveState(text, kind) { const el = $("#dirty"); el.hidden = !text; el.textContent = text || ""; el.dataset.kind = kind || ""; }
+  function scheduleAutosave(ms) {
+    clearTimeout(autoTimer);
+    if (!dir || autoBlocked) return;
+    autoTimer = setTimeout(() => save({ auto: true }), ms ?? (dir.isGitHub ? 20000 : 3000));
+  }
+  function markDirty() {
+    dirty = true; changeSeq++; $("#save").disabled = false;
+    saveState(autoBlocked ? "Not saved: changed elsewhere. Click Save" : dir ? "Unsaved changes" : "Not saved: connect first", autoBlocked || !dir ? "warn" : "");
+    scheduleAutosave();
+  }
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && dirty && dir && !autoBlocked) save({ auto: true }); });
   window.addEventListener("beforeunload", e => { if (dirty) { e.preventDefault(); e.returnValue = ""; } });
 
   /* ---------- folder access (File System Access API) ---------- */
@@ -62,6 +76,7 @@
       catch (e) { toast(`Could not read data/${n}.js: ${e.message}`); }
     }
     if (fresh && LOG_SECTIONS[section]) render();
+    if (dirty) scheduleAutosave();
     return true;
   }
   async function connect() {
@@ -232,39 +247,50 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     const w = await (await d.getFileHandle(parts.at(-1), { create: true })).createWritable();
     await w.write(blob); await w.close();
   }
-  async function save() {
+  async function save(opts = {}) {
+    const auto = !!opts.auto;
+    clearTimeout(autoTimer);
+    if (saving) { if (!auto) toast("Already saving…"); else scheduleAutosave(2000); return; }
     collect();
-    if (!dir) { toast("Connect GitHub (works on any computer) or the site folder first."); return; }
+    if (!dir) { if (!auto) toast("Connect GitHub (works on any computer) or the site folder first."); return; }
+    if (!auto) autoBlocked = false;
+    const seq = changeSeq; saving = true; saveState(dir.isGitHub ? "Publishing…" : "Saving…");
+    /* a file changed elsewhere: autosave stops and waits for you; a second manual Save overwrites */
+    const stale = msg => { if (auto) { autoBlocked = true; saveState("Not saved: changed elsewhere. Click Save", "warn"); toast(msg + " Autosave is paused."); } else toast(msg); };
     try {
       if (dir.refresh) await dir.refresh();   /* GitHub: look at the latest commit */
       const disk = await readDisk();
-      if (loadedStamp && disk.stamp > loadedStamp && !staleArmed) {
-        staleArmed = true;
-        toast(`content.js changed ${dir.isGitHub ? "on GitHub" : "on disk"} since you opened the editor. Reload to start from the new file, or click Save again to keep your edits anyway.`);
+      if (loadedStamp && disk.stamp > loadedStamp && (auto || !staleArmed)) {
+        if (!auto) staleArmed = true;
+        stale(`content.js changed ${dir.isGitHub ? "on GitHub" : "on disk"} since you opened the editor. Reload to start from the new file, or click Save again to keep your edits anyway.`);
         return;
       }
       for (const n of LOGS) {
         const st = logState[n]; if (!st.dirty) continue;
         const d = await readLog(n).catch(() => null);
-        if (d && st.stamp && d.stamp > st.stamp && !st.armed) { st.armed = true; toast(`${n}.js changed ${dir.isGitHub ? "on GitHub (edited on another computer)" : "on disk"} since you opened the editor. Reload to get that version, or click Save again to overwrite it.`); return; }
+        if (d && st.stamp && d.stamp > st.stamp && (auto || !st.armed)) { if (!auto) st.armed = true; stale(`${n}.js changed ${dir.isGitHub ? "on GitHub (edited on another computer)" : "on disk"} since you opened the editor. Reload to get that version, or click Save again to overwrite it.`); return; }
       }
       staleArmed = false;
       /* keep every section this editor doesn't manage exactly as it is on disk */
       const merged = { ...disk.site };
       MANAGED.forEach(k => { if (k in data) merged[k] = data[k]; else delete merged[k]; });
       data = { ...merged };
+      const wrote = LOGS.filter(n => logState[n].dirty);
       for (const p of pendingFiles.splice(0)) await writeFile(p.path, p.file);
       await writeFile("data/content.js", new Blob([serialise()], { type: "text/javascript" }));
       await writeFile("data/theme.js", new Blob([themeJs(data.theme || {})], { type: "text/javascript" }));
       if (logState.books.dirty) await writeFile("data/books.js", new Blob([booksJs()], { type: "text/javascript" }));
       if (logState.films.dirty) await writeFile("data/films.js", new Blob([filmsJs()], { type: "text/javascript" }));
       if (logState.listening.dirty) await writeFile("data/listening.js", new Blob([listeningJs()], { type: "text/javascript" }));
-      if (dir.flush) { toast("Publishing…"); await dir.flush(); }
-      for (const n of LOGS) { const st = logState[n]; if (st.dirty) { st.dirty = st.armed = false; st.stamp = (await readLog(n)).stamp; } }
+      if (dir.flush) await dir.flush();
+      const clean = changeSeq === seq;   /* nothing changed while saving */
+      for (const n of wrote) { const st = logState[n]; st.armed = false; if (clean) st.dirty = false; st.stamp = (await readLog(n)).stamp; }
       loadedStamp = (await readDisk()).stamp;
-      dirty = false; $("#dirty").hidden = true; $("#save").disabled = true;
-      toast(dir.isGitHub ? "Published. The site shows it in about a minute." : "Saved. Reload the site to see it.");
-    } catch (e) { toast("Save failed: " + e.message); }
+      if (clean) { dirty = false; $("#save").disabled = true; saveState(dir.isGitHub ? "Published" : "Saved", "ok"); setTimeout(() => { if (!dirty) saveState(""); }, 4000); }
+      else { saveState("Unsaved changes"); scheduleAutosave(); }
+      if (!auto) toast(dir.isGitHub ? "Published. The site shows it in about a minute." : "Saved. Reload the site to see it.");
+    } catch (e) { saveState("Not saved: " + e.message, "warn"); toast("Save failed: " + e.message); if (auto) scheduleAutosave(60000); }
+    finally { saving = false; }
   }
 
   function download() {
@@ -464,6 +490,22 @@ window.SITE = ${JSON.stringify(data, null, 2)};
           const [name, handle, url, copy] = $$("input", r).map(i => i.value.trim());
           const o = { name, handle, url }; if (copy) o.copy = copy; return o;
         }).filter(s => s.name);
+      }
+    },
+    art: {
+      label: "Art",
+      help: "Your favorite artists, best first. The Art page shows them as a ranked list with the works by each one you’ve logged in your vault. The works themselves still come from your vault.",
+      render: () => {
+        const list = (data.artists || []).length ? data.artists : [{ name: "", note: "" }];
+        const known = [...new Set((window.ART && window.ART.items || []).map(a => a.artist).filter(a => a && a !== "Unknown"))].sort();
+        return `<div class="rows top5-rows wide" data-rows="artists">${list.map(artistRow).join("")}</div>
+          <button class="btn add" type="button" data-add="artists">+ Add artist</button>
+          <datalist id="dl-artists">${known.map(a => `<option value="${esc(a)}"></option>`).join("")}</datalist>`;
+      },
+      collect: el => {
+        if (!$("[data-rows=artists]", el)) return;
+        data.artists = $$("[data-rows=artists] .row", el).map(r => ({ name: $("[data-a=name]", r).value.trim(), note: $("[data-a=note]", r).value.trim() }))
+          .filter(a => a.name).map(a => a.note ? a : { name: a.name });
       }
     },
     settings: {
@@ -1299,7 +1341,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
   document.addEventListener("change", e => { if (e.target.matches && e.target.matches("#al-form [data-k=t], #al-form [data-k=a], #al-form [data-k=form]")) fillComposedYear($("#al-form")); });
 
   Object.assign(SECTIONS, LOG_SECTIONS);
-  const ORDER = ["theme", "profile", "now", "writings", "studio", "reading", "watching", "music", "about", "socials", "settings"];
+  const ORDER = ["theme", "profile", "now", "writings", "studio", "reading", "watching", "music", "art", "about", "socials", "settings"];
   /* moving or removing a list entry changes that log */
   document.addEventListener("click", e => { const b = e.target.closest("[data-lists] [data-rowmove], [data-lists] [data-rowdel]"); if (b) markLog(b.closest("[data-lists]").dataset.lists); }, true);
 
@@ -1318,6 +1360,10 @@ window.SITE = ${JSON.stringify(data, null, 2)};
         ${field(w, "note", "Statement", { type: "textarea", rows: 4, prefix: `s${i}-` })}
       </div></div>`;
   }
+  const artistRow = a => `<div class="row rank-row artist-row"><span class="rank-n" aria-hidden="true"></span>
+    <input data-a="name" value="${esc(a.name || "")}" list="dl-artists" placeholder="Artist" aria-label="Artist">
+    <input data-a="note" value="${esc(a.note || "")}" placeholder="Why, in a line (optional)" aria-label="Note">
+    <button class="icon-btn" type="button" data-rowmove="-1" aria-label="Move up">↑</button><button class="icon-btn" type="button" data-rowmove="1" aria-label="Move down">↓</button><button class="icon-btn danger" type="button" data-rowdel aria-label="Remove">×</button></div>`;
   /* photo gallery for an appearance: one photo per line, "path | caption" */
   const galleryText = w => (w.gallery || []).map(g => typeof g === "string" ? g : g.src + (g.cap ? " | " + g.cap : "")).join("\n");
   const parseGallery = txt => String(txt || "").split("\n").map(l => l.trim()).filter(Boolean).map(l => { const [src, ...cap] = l.split("|"); const o = { src: src.trim() }; if (cap.join("|").trim()) o.cap = cap.join("|").trim(); return o; });
@@ -1405,13 +1451,16 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     $("#main").innerHTML = `<h1>${s.label}</h1><p class="ed-help">${esc(s.help)}</p>
       ${!window.showDirectoryPicker ? '<div class="notice">This browser can’t save into folders. Edit here, then use Download content.js and replace data/content.js with it. Chrome or Edge can save directly.</div>' : ""}
       ${s.render()}
-      <div class="ed-tools"><p><b>Art, book notes and the vault graph</b> come from your Obsidian vault, not this editor. They refresh on their own each day, or in the portfolio folder run:</p>
-        <p><code>powershell -File tools/update-site.ps1</code> (art, notes and graph, then publishes)</p></div>`;
+      <div class="ed-tools"><p><b>Art, book notes and the vault graph</b> come from your Obsidian vault, not this editor. They refresh on their own every morning on the Mac mini, or run this in Terminal there:</p>
+        <p><code>bash ~/Desktop/Portfolio/tools/mac/update-site.sh</code> (art, notes and graph, then publishes)</p></div>`;
   }
   document.addEventListener("click", e => {
     const t = e.target;
     const sec = t.closest("[data-sec]");
     if (sec) { collect(); section = sec.dataset.sec; render(); scrollTo({ top: 0 }); return; }
+    if (t.closest("#more")) { const x = $("#extra"), open = !x.classList.contains("open"); x.classList.toggle("open", open); t.closest("#more").setAttribute("aria-expanded", open); return; }
+    if (!t.closest("#extra")) $("#extra").classList.remove("open");
+    else setTimeout(() => $("#extra").classList.remove("open"), 0);
     if (t.closest("#connect")) { onConnect(); return; }
     if (t.closest("#connect-gh")) {
       if (dir && dir.isGitHub) {
@@ -1476,6 +1525,10 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       const n = t.closest("[data-addrow]").dataset.addrow;
       $(`[data-rows=${n}]`).insertAdjacentHTML("beforeend", $(`#tpl-${n}`).innerHTML);
       $(`[data-rows=${n}] .row:last-child input`).focus(); markDirty(); return;
+    }
+    if (t.closest("[data-add=artists]")) {
+      $("[data-rows=artists]").insertAdjacentHTML("beforeend", artistRow({}));
+      $("[data-rows=artists] .row:last-child input").focus(); markDirty(); return;
     }
     if (t.closest("[data-add=socials]")) {
       $("[data-rows=socials]").insertAdjacentHTML("beforeend", socialRow({ name: "", handle: "", url: "" }));

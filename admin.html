@@ -10,7 +10,7 @@
 <link rel="icon" href="assets/website/my-notion-face-transparent.ico" type="image/x-icon">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="assets/style.css?v=7a5f28b8">
+<link rel="stylesheet" href="assets/style.css?v=f4a141d5">
 <style>
   /* Editor layout: sticky toolbar, section list on the left, form on the right. */
   body { min-height: 100vh; }
@@ -21,7 +21,12 @@
   .ed-status { font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
   .ed-status i { width: 8px; height: 8px; border-radius: 50%; background: var(--line-strong); }
   .ed-status.on i { background: #2fa36b; }
-  .ed-dirty { color: var(--accent); font-weight: 700; }
+  .ed-dirty { font-size: 12px; font-weight: 700; color: var(--muted); }
+  .ed-dirty[data-kind="warn"] { color: var(--accent); }
+  .ed-dirty[data-kind="ok"] { color: #2fa36b; }
+  .ed-extra { display: contents; }
+  .ed-more-btn { display: none; }
+  .artist-row { grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1.4fr) auto auto auto !important; }
   .btn[disabled] { opacity: .45; cursor: not-allowed; transform: none !important; }
   .ed { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 32px; max-width: 1100px; padding-block: 28px 80px; }
   @media (max-width: 760px) { .ed { grid-template-columns: minmax(0, 1fr); gap: 16px; } .ed-nav { flex-direction: row !important; flex-wrap: wrap; position: static !important; } }
@@ -156,19 +161,60 @@
   .chips li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border-bottom: 1px solid var(--line); color: var(--heading); }
   @media (max-width: 600px) { .lrow { grid-template-columns: minmax(0, 1fr) auto; } .lrow > span:not(.lr-stars) { display: none; } .lrow.static { grid-template-columns: minmax(0, 1fr) auto; } }
   .notice { padding: 12px 14px; border-radius: 8px; background: color-mix(in srgb, var(--accent) 10%, var(--bg-raised)); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); margin-bottom: 18px; font-size: 14px; }
+  /* phones: one-line toolbar (title, status, Save, •••), section tabs in a sideways-scrolling strip,
+     16px inputs so iOS doesn't zoom, bigger tap targets */
+  @media (max-width: 760px) {
+    .ed-bar .wrap { flex-wrap: nowrap; gap: 8px; padding-block: 8px; position: relative; }
+    .ed-title { font-size: 16px; min-width: 0; } .ed-title img { width: 26px; height: 26px; }
+    .ed-status > span { display: none; }
+    .ed-dirty { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 34vw; }
+    .ed-more-btn { display: inline-flex; padding-inline: 10px; letter-spacing: 0; }
+    .ed-extra { display: none; position: absolute; top: 100%; right: 12px; z-index: 30; flex-direction: column; align-items: stretch; gap: 6px; padding: 10px;
+      background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: 10px; box-shadow: 0 12px 32px rgba(0,0,0,.35); }
+    .ed-extra.open { display: flex; }
+    .ed-extra .btn { justify-content: center; text-align: center; }
+    .ed { padding-block: 0 80px; gap: 12px; }
+    .ed-nav { position: sticky !important; top: 47px !important; z-index: 15; flex-wrap: nowrap !important; overflow-x: auto; gap: 4px; margin-inline: -16px; padding: 8px 16px;
+      background: var(--glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); scrollbar-width: none; }
+    .ed-nav::-webkit-scrollbar { display: none; }
+    .ed-nav button { flex: none; white-space: nowrap; padding: 8px 12px; }
+    .ed-nav button[aria-current="true"] { box-shadow: inset 0 -2px 0 var(--accent); }
+    .ed-main h1 { font-size: 22px; margin-top: 8px; }
+    .f input[type=text], .f input[type=date], .f input[type=url], .f select, .f textarea, .rows .row input, .lfilter input, .lfilter select { font-size: 16px; }
+    .logform { padding: 14px 12px 4px; }
+    .lf-head { flex-direction: column; align-items: stretch; }
+    .segtabs { display: flex; overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
+    .segtabs button { flex: 1 0 auto; padding: 8px 10px; }
+    .logbtns { display: flex; flex-wrap: wrap; gap: 8px; } .logbtns .btn { flex: 1 1 auto; justify-content: center; min-height: 40px; }
+    .icon-btn { width: 36px; height: 36px; }
+    .logform .f.check { margin-top: 4px; }
+    .st { width: 32px; } .st { font-size: 28px; }
+    .llist { max-height: none; }
+    .rows .row.artist-row { grid-template-columns: 24px minmax(0, 1fr) auto auto auto !important; }
+    .rows .row.artist-row > .rank-n { grid-column: 1; grid-row: 1; }
+    .rows .row.artist-row input[data-a=name] { grid-column: 2; grid-row: 1; }
+    .rows .row.artist-row [data-rowmove="-1"] { grid-column: 3; grid-row: 1; }
+    .rows .row.artist-row [data-rowmove="1"] { grid-column: 4; grid-row: 1; }
+    .rows .row.artist-row [data-rowdel] { grid-column: 5; grid-row: 1; }
+    .rows .row.artist-row input[data-a=note] { grid-column: 2 / -1; grid-row: 2; }
+    .suggest { left: 8px !important; width: calc(100vw - 16px) !important; }
+  }
 </style>
 </head>
 <body>
 <div class="ed-bar"><div class="wrap">
   <div class="ed-title"><img src="assets/website/logo.png" alt="">Site editor</div>
   <span class="ed-status" id="status"><i></i><span>Not connected</span></span>
-  <span class="ed-dirty" id="dirty" hidden>Unsaved changes</span>
-  <button class="btn" type="button" id="connect-gh" title="Publish straight to GitHub from any computer">Connect GitHub</button>
-  <button class="btn" type="button" id="connect">Connect site folder</button>
-  <button class="btn" type="button" id="download" title="Download content.js (for browsers that cannot save to the folder)">Download</button>
-  <button class="btn go" type="button" id="save" disabled>Save</button>
-  <button class="btn" type="button" id="mode">Preview light</button>
-  <a class="btn" href="index.html" target="_blank" rel="noopener">View site ↗</a>
+  <span class="ed-dirty" id="dirty" hidden></span>
+  <button class="btn go" type="button" id="save" disabled title="Changes also save on their own">Save</button>
+  <button class="btn ed-more-btn" type="button" id="more" aria-expanded="false" aria-controls="extra" aria-label="More">•••</button>
+  <div class="ed-extra" id="extra">
+    <button class="btn" type="button" id="connect-gh" title="Publish straight to GitHub from any computer">Connect GitHub</button>
+    <button class="btn" type="button" id="connect">Connect site folder</button>
+    <button class="btn" type="button" id="download" title="Download content.js (for browsers that cannot save to the folder)">Download</button>
+    <button class="btn" type="button" id="mode">Preview light</button>
+    <a class="btn" href="index.html" target="_blank" rel="noopener">View site ↗</a>
+  </div>
 </div></div>
 <div class="wrap ed">
   <nav class="ed-nav" id="nav" aria-label="Sections"></nav>
@@ -179,7 +225,8 @@
 <script src="data/films.js?v=ce3423c8"></script>
 <script src="data/music.js?v=8e55ff1d"></script>
 <script src="data/listening.js?v=278aeb00"></script>
+<script src="data/art.js?v=c1b88475"></script>
 <script src="assets/covers.js?v=99fec6eb"></script>
-<script src="assets/admin.js?v=3ed25028"></script>
+<script src="assets/admin.js?v=1bc90484"></script>
 </body>
 </html>
