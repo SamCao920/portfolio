@@ -277,11 +277,12 @@ window.SITE = {
         },
         {
           "src": "assets/appearances/10th-madrid-annual-conference-on-austria/365ee5ac-cc37-4f06-af52-0cfb7ae77721.jpg"
+        },
+        {
+          "src": "https://www.youtube.com/watch?v=QcIhRec_yTU"
         }
       ],
-      "body": "Watch my presentation [here](https://www.youtube.com/watch?v=QcIhRec_yTU).",
-      "link": "assets/0 Final Programme II - 10th Annual Madrid Conference on Austrian Economics_QR.pdf",
-      "linkText": "Conference Programme"
+      "body": "Watch my presentation [here](https://www.youtube.com/watch?v=QcIhRec_yTU)."
     }
   ],
   "homeBooks": [
