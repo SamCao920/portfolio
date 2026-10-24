@@ -281,8 +281,7 @@ window.SITE = {
         {
           "src": "https://www.youtube.com/watch?v=QcIhRec_yTU"
         }
-      ],
-      "body": "Watch my presentation [here](https://www.youtube.com/watch?v=QcIhRec_yTU)."
+      ]
     }
   ],
   "homeBooks": [
