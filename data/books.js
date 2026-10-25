@@ -1,6 +1,7 @@
 /* Books: what I have read, am reading and want to read.
    Edit it with admin.html. It must stay valid JavaScript. */
-window.BOOKS = {"updated":"2026-10-22","items":[
+window.BOOKS = {"updated":"2026-10-25","items":[
+  {"t":"Mare liberum","full":"Mare liberum","a":"Hugo Grotius","isbn":"9783764808662","r":null,"read":null,"added":"2026-10-25","shelf":"to-read","fav":false,"review":null,"pages":108,"year":"1618","cover":"https://covers.openlibrary.org/b/id/4391519-M.jpg"},
   {"t":"The Road to Serfdom","full":"The Road to Serfdom","a":"Friedrich A. von Hayek","isbn":"9780226320779","r":null,"read":null,"added":"2026-10-22","shelf":"to-read","fav":false,"review":null,"pages":248,"year":"1944","cover":"https://covers.openlibrary.org/b/id/6991871-M.jpg"},
   {"t":"Life and Fate","full":"Life and Fate","a":"Vasily Grossman","isbn":"9781446467046","r":null,"read":null,"added":"2026-10-20","shelf":"to-read","fav":false,"review":null,"pages":880,"year":"1980","cover":"https://covers.openlibrary.org/b/id/859221-M.jpg"},
   {"t":"Lord Jim","full":"Lord Jim","a":"Joseph Conrad","isbn":null,"r":null,"read":null,"added":"2026-10-19","shelf":"reading","fav":false,"review":null,"pages":null,"year":null,"cover":"https://covers.openlibrary.org/b/id/8236295-M.jpg"},
