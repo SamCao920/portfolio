@@ -1,6 +1,7 @@
 /* Books: what I have read, am reading and want to read.
    Edit it with admin.html. It must stay valid JavaScript. */
 window.BOOKS = {"updated":"2026-10-26","items":[
+  {"t":"The Complacent Class","full":"The Complacent Class","a":"Tyler Cowen","isbn":"9781250153777","r":null,"read":null,"added":"2026-10-26","shelf":"to-read","fav":false,"review":null,"pages":267,"year":"2017","cover":"https://covers.openlibrary.org/b/id/8133667-M.jpg"},
   {"t":"The cult of statistical significance","full":"The cult of statistical significance","a":"Stephen Thomas Ziliak","isbn":"9780472070077","r":null,"read":null,"added":"2026-10-26","shelf":"to-read","fav":false,"review":null,"pages":321,"year":"2008","cover":"https://covers.openlibrary.org/b/id/5426153-M.jpg"},
   {"t":"Meetings with Remarkable Manuscripts","full":"Meetings with Remarkable Manuscripts","a":"Christopher de Hamel","isbn":"9780241003046","r":null,"read":null,"added":"2026-10-26","shelf":"to-read","fav":false,"review":null,"pages":640,"year":"2016","cover":"https://covers.openlibrary.org/b/id/9238075-M.jpg"},
   {"t":"Sexual Personae","full":"Sexual Personae","a":"Camille Paglia","isbn":"9780140157314","r":null,"read":null,"added":"2026-10-26","shelf":"to-read","fav":false,"review":null,"pages":718,"year":"1990","cover":"https://covers.openlibrary.org/b/id/6803284-M.jpg"},
