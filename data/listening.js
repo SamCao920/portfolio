@@ -1,6 +1,6 @@
 /* Music: albums I've listened to, a dated diary, ranked lists and a to-listen list.
    Edit it with admin.html. It must stay valid JavaScript. */
-window.LISTENING = {"updated":"2026-10-24","bio":"The music I love, classical and otherwise.","favorites":[7,10,11,12],"lists":[],"items":[
+window.LISTENING = {"updated":"2026-10-25","bio":"The music I love, classical and otherwise.","favorites":[7,10,11,12],"lists":[],"items":[
   {"t":"Fantasy No. 1 with Fugue","a":"Wolfgang Amadeus Mozart","y":1782,"form":"work","side":"classical","r":4,"liked":false,"added":"2026-10-13","sp":null,"cover":null},
   {"t":"Piano Quintet in C minor","a":"Ralph Vaughan Williams","y":1905,"form":"work","side":"classical","r":3,"liked":false,"added":"2026-10-13","sp":null,"cover":null},
   {"t":"String Quartet in G minor","a":"Claude Debussy","y":1893,"form":"work","side":"classical","r":4.5,"liked":true,"added":"2026-10-13","sp":"track/0iPxJsFS4cLUGb4gwHuOqq","cover":null},
@@ -17,9 +17,11 @@ window.LISTENING = {"updated":"2026-10-24","bio":"The music I love, classical an
   {"t":"String Quartet no. 7 in F major, op. 59 no. 1, \"Razumovsky\"","a":"Ludwig van Beethoven","y":1806,"form":"work","side":"classical","r":4.5,"liked":false,"added":"2026-10-14","sp":null,"cover":"https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/c0/f8/32/c0f8321b-a813-88f0-c6ea-dc42f46a3e3b/5905348663571.jpg/600x600bb.jpg"},
   {"t":"The Unanswered Question","a":"Charles Ives","y":1935,"form":"work","side":"classical","r":4,"liked":false,"added":"2026-10-18","sp":null,"cover":"https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/dc/a4/83/dca483b2-b92c-50f0-951d-878cd35016d6/886447287927.jpg/600x600bb.jpg"},
   {"t":"Eine Kleine Gigue in G major, K.574","a":"Wolfgang Amadeus Mozart","y":1789,"form":"work","side":"classical","r":4,"liked":false,"added":"2026-10-23","sp":null,"cover":"https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/1f/36/3a/1f363a00-9c8c-6fe2-b737-41abae21046a/00028942136922.rgb.jpg/600x600bb.jpg"},
-  {"t":"Prélude à l'après-midi d'un faune, L.86","a":"Claude Debussy","y":1892,"form":"work","side":"classical","r":null,"liked":false,"added":"2026-10-24","sp":null,"cover":"https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/0d/b3/b3/0db3b39d-136c-a8e0-36c2-a3c959a0a393/00028947133223.rgb.jpg/600x600bb.jpg"}
+  {"t":"Prélude à l'après-midi d'un faune, L.86","a":"Claude Debussy","y":1892,"form":"work","side":"classical","r":4,"liked":false,"added":"2026-10-24","sp":null,"cover":"https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/0d/b3/b3/0db3b39d-136c-a8e0-36c2-a3c959a0a393/00028947133223.rgb.jpg/600x600bb.jpg"},
+  {"t":"If ye love Me","a":"Thomas Tallis","y":1565,"form":"work","side":"classical","r":3.5,"liked":false,"added":"2026-10-25","sp":null,"cover":"https://is1-ssl.mzstatic.com/image/thumb/Music128/v4/f3/79/7d/f3797d18-7296-0545-1a0a-d8906998893a/658592071627.jpg/600x600bb.jpg"}
 ],"diary":[
-  {"m":16,"date":"2026-10-24","perf":"Berlin Philharmonic Orchestra & Claudio Abbado","r":null,"again":false,"review":"Ravel's ability to orchestrate remains preternatural."},
+  {"m":17,"date":"2026-10-25","perf":"The Tallis Scholars","r":3.5,"again":false,"review":null},
+  {"m":16,"date":"2026-10-24","perf":"Berlin Philharmonic Orchestra & Claudio Abbado","r":4,"again":false,"review":"Ravel's ability to orchestrate remains preternatural."},
   {"m":15,"date":"2026-10-23","perf":"András Schiff","r":4,"again":false,"review":"A brilliant work that both looks back to the keyboard works of Bach with its form, melodic similarities, and contrapuntal structure, but also looks forward to the serialism of the 20th century with its use of all of the notes of the chromatic scale."},
   {"m":14,"date":"2026-10-18","perf":"Leonard Bernstein, New York Philharmonic & William Vacchiano","r":4,"again":false,"review":null},
   {"m":13,"date":"2026-10-14","perf":"Emerson String Quartet","r":4.5,"again":false,"review":"One of Beethoven's best, consistently excellent across all movements."},
