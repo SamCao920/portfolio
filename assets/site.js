@@ -104,10 +104,7 @@
 
   const NAV = [
     ["index.html", "Home", "home"],
-    ["writings.html", "Papers", "writings"],
-    ["projects.html", "Projects", "projects"],
-    ["appearances.html", "Appearances", "appearances"],
-    ["studio.html", "Studio", "studio"],
+    ["work.html", "Work", "work"],
     ["books.html", "Books", "books"],
     ["films.html", "Films", "films"],
     ["art.html", "Art", "art"],
@@ -120,12 +117,10 @@
   /* ---------- chrome ---------- */
   /* grouped menu items: each group is one entry in the top bar with a dropdown, and a switcher on its pages */
   const GROUPS = [
-    { label: "Work", after: "home", items: [["writings.html", "Papers", "writings"], ["projects.html", "Projects", "projects"], ["appearances.html", "Appearances", "appearances"], ["studio.html", "Studio", "studio"]] },
-    { label: "Taste", after: "studio", items: [["books.html", "Books", "books"], ["films.html", "Films", "films"], ["art.html", "Art", "art"], ["music.html", "Music", "music"]] }
+    { label: "Taste", after: "work", items: [["books.html", "Books", "books"], ["films.html", "Films", "films"], ["art.html", "Art", "art"], ["music.html", "Music", "music"]] }
   ];
-  const TASTE = GROUPS[1].items;
-  const groupCount = k => ({ writings: S.writings.filter(w => w.type !== "appearance" && w.type !== "project").length, projects: S.writings.filter(w => w.type === "project").length, appearances: S.writings.filter(w => w.type === "appearance").length, studio: STUDIO.length,
-    books: BOOKS.filter(b => b.shelf === "read").length, films: FILMS.length, art: ART.length, music: favPeople().length + MU_LISTS.length + PLAY.filter(p => p.status !== "learn").length })[k];
+  const TASTE = GROUPS[0].items;
+  const groupCount = k => ({ books: BOOKS.filter(b => b.shelf === "read").length, films: FILMS.length, art: ART.length, music: favPeople().length + MU_LISTS.length + PLAY.filter(p => p.status !== "learn").length })[k];
   const tasteCount = groupCount;
   const groupOf = key => GROUPS.find(g => g.items.some(it => it[2] === key));
   function header() {
@@ -238,8 +233,9 @@
   }
 
   /* ---------- shared widgets ---------- */
+  /* a page's numbers, as one quiet line under its subtitle: "254 films · 12 this year · 3 lists" */
   function statsRow(items) {
-    return `<div class="stats">${items.map(([n, l]) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`).join("")}</div>`;
+    return `<p class="ledger">${items.filter(([n]) => n).map(([n, l]) => `<span><b>${n}</b> ${esc(l.toLowerCase())}</span>`).join("")}</p>`;
   }
   /* Letterboxd-style ratings histogram. */
   function histogram(rs, step) {
@@ -350,7 +346,7 @@
 
   /* ---------- writing ---------- */
   const TYPE_LABEL = { essay: "Essay", research: "Research", project: "Project", appearance: "Appearance" };
-  const workHref = w => `${w.type === "appearance" ? "appearances" : w.type === "project" ? "projects" : "writings"}.html#${slug(w.title)}`;
+  const workHref = w => `work.html#${slug(w.title)}`;
   function workCover(w) { return w.cover ? `<img alt="" loading="lazy" src="${esc(w.cover)}">` : coverFace(w.title, w.venue.split(/[,·]/)[0]); }
   function workPoster(w) {
     return `<li class="poster-item"><a class="poster" href="${workHref(w)}" title="${esc(w.title)}" aria-label="${esc(w.title)}">${workCover(w)}</a>
@@ -398,11 +394,9 @@
     return `<li class="entry" id="${slug(w.title)}">
       <div class="entry-poster"><span class="poster" aria-hidden="true">${workCover(w)}</span></div>
       <div class="entry-text"><h3>${title}</h3>
-        <div class="entry-meta"><span class="pill">${TYPE_LABEL[w.type] || esc(w.type)}</span>
-          ${w.award ? `<span class="pill award">${esc(w.award)}</span>` : ""}
+        <div class="entry-meta">${w.award ? `<span class="pill award">${esc(w.award)}</span>` : ""}
           ${isOngoing(w) ? '<span class="pill live"><i class="pulse"></i>Happening now</span>' : isUpcoming(w) && w.type === "appearance" ? '<span class="pill wip">Upcoming</span>' : ""}
-          <span>${esc(w.venue)}</span></div>
-        ${w.result ? `<div class="entry-result">${mdInline(w.result, true)}</div>` : ""}
+          <span>${esc(w.venue)}${w.result ? ` · ${mdInline(w.result, true)}` : ""}</span></div>
         <div class="claim">${md(w.claim, { html: true })}</div>
         ${w.body ? `<details><summary>More</summary>${md(w.body, { html: true })}</details>` : ""}
         ${link}${galleryStrip(w)}</div></li>`;
@@ -419,16 +413,10 @@
   function home() {
     const p = S.profile;
     const avatar = p.avatar ? `<img src="${esc(p.avatar)}" alt="${esc(p.name)}">` : esc(p.initials);
-    /* loose title match: "Moby Dick" finds "Moby-Dick or, The Whale" */
-    const loose = t => String(t).toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, " ").trim();
-    const findBook = q => { const n = loose(q); return BOOKS.find(b => loose(b.t) === n) || BOOKS.find(b => loose(b.t).startsWith(n) || loose(b.full || "").startsWith(n)); };
-    const homeBooks = (S.homeBooks && S.homeBooks.length ? S.homeBooks.map(findBook).filter(Boolean) : bookFavs()).slice(0, 4);
-    const favFilms = FD.favorites.map(i => FILMS_ALL[i]).filter(shown);
     const upcoming = S.writings.filter(w => w.type === "appearance" && isUpcoming(w)).sort((a, b) => String(a.start).localeCompare(String(b.start)));
-    const now = upcoming.find(isOngoing), next = upcoming.find(w => !isOngoing(w));
-    const status = now ? `<span class="status live"><i class="pulse"></i>Now: ${esc(now.title)}${now.place ? ", " + esc(now.place) : ""}</span>`
-      : next ? `<span class="status"><i class="dot"></i>Next: ${esc(next.title)}${next.place ? ", " + esc(next.place) : ""} · ${esc(fmtDate(next.start).replace(/, \d{4}$/, ""))}</span>`
-      : `<span class="status"><i class="dot"></i>${esc(p.location)}</span>`;
+    setTimeout(thread);
+    const doors = [["work.html", "Work", "Papers, projects, art, talks"], ["vault.html", "The Vault", "All my notes, as a map you can drag around"],
+      ["books.html", "Taste", "Books, films, art and music I love"], ["socials.html", "Say hi", "Email is best"]];
     return `
       <section class="profile hero${(window.QUOTES || {}).items ? " with-quote" : ""}"><div class="hero-main">
         <div class="profile-id"><div class="avatar ring">${avatar}</div>
@@ -441,22 +429,78 @@
       </section>
       <div class="cols">
         <div>
-          <section class="section">${sectionHead("Favorite books", "books.html#favorites", "All favorites")}
-            <ul class="posters four">${homeBooks.map(b => posterItem(b)).join("")}</ul></section>
-          <section class="section">${sectionHead("Favorite films", "films.html", "All films")}
-            <ul class="posters four">${favFilms.map(f => posterItem(f)).join("")}</ul></section>
-          ${ART.length ? `<section class="section">${sectionHead("Recently seen art", "art.html", "All art")}
-            <ul class="art-grid five">${ART.slice(0, 5).map(artTile).join("")}</ul></section>` : ""}
+          <section class="section">${sectionHead("Follow a thread", "vault.html", "The whole map")}
+            <p class="thread-intro">A note pulled at random from my vault. Click a link to follow where it leads, or pull another.</p>
+            <article class="thread" id="thread" aria-live="polite"><p class="thread-loading">Pulling a note…</p></article>
+            <ol class="thread-trail" id="thread-trail" aria-label="Where you have been"></ol></section>
         </div>
         <aside>
           ${upcoming.length ? `<section class="side-block">${sectionHead("Upcoming")}<ul class="upcoming">${upcoming.map(w =>
             `<li><a href="${workHref(w)}">${esc(w.title)}</a><span>${esc(w.venue)}</span></li>`).join("")}</ul></section>` : ""}
           <section class="side-block">${sectionHead("Now")}<ul>${p.now.map(n => `<li>${esc(n)}</li>`).join("")}</ul></section>
-          <section class="side-block">${sectionHead("Reading")}
-            <ul class="posters two">${booksReading().map(b => posterItem(b, { caption: "Since " + fmtDate(b.added) })).join("") || '<li class="empty">Nothing right now.</li>'}</ul></section>
-          ${filmDiary.length ? `<section class="side-block">${sectionHead("Watched", "films.html#diary", "Diary")}${diaryMini(filmDiary, 2)}</section>` : ""}
+          <section class="side-block">${sectionHead("Around the site")}<ul class="doors">${doors.map(([href, t, sub]) =>
+            `<li><a href="${href}"><b>${t}</b><span>${sub}</span></a></li>`).join("")}</ul></section>
         </aside>
       </div>`;
+  }
+
+  /* Follow a thread: a random note from the vault, its links as next steps, and the path taken so far.
+     Titles come from data/vault-index.js; note text from data/vault-notes/NN.js (the same shards the Vault page reads). */
+  const loadScript = src => new Promise(res => { const sc = document.createElement("script"); sc.src = src; sc.onload = sc.onerror = res; document.head.appendChild(sc); });
+  function thread() {
+    const box = $("#thread"), trailEl = $("#thread-trail"); if (!box) return;
+    const shardOf = t => { let h = 2166136261; for (const ch of String(t)) h = Math.imul(h ^ ch.codePointAt(0), 16777619) >>> 0; return h % 32; };
+    const shards = {};
+    const noteHtml = async t => {
+      const n = shardOf(t);
+      shards[n] = shards[n] || loadScript(`data/vault-notes/${pad(n)}.js?v=${encodeURIComponent(window.VAULT_INDEX.built || "")}`);
+      await shards[n];
+      return (window.VAULT_NOTES || {})[t];
+    };
+    const trail = [];
+    let known, starts;
+    const go = async (t, fromTrail, fresh) => {
+      const html = await noteHtml(t);
+      if (!html) return false;
+      const doc = document.createElement("div"); doc.innerHTML = html;
+      const heads = $$("h4", doc);
+      const summaryHead = heads.find(h => /summary/i.test(h.textContent));
+      let para = summaryHead ? summaryHead.nextElementSibling : $("p", doc);
+      if (para && para.tagName !== "P") para = $("p", doc);
+      const next = [...new Set($$("a.wl[data-note]", doc).map(a => a.dataset.note))].filter(n => n !== t && known.has(n)).slice(0, 6);
+      if (fresh && next.length < 2) return false;   /* a fresh pull should lead somewhere */
+      if (!fromTrail) { const k = trail.indexOf(t); if (k >= 0) trail.splice(k, 1); trail.push(t); if (trail.length > 6) trail.shift(); }
+      const sum = para ? para.innerHTML.replace(/<a class="wl"[^>]*data-note="([^"]*)"[^>]*>(.*?)<\/a>/g, (m, n, txt) => known.has(n.replace(/&amp;/g, "&")) ? `<button type="button" class="wl-go" data-note="${n}">${txt}</button>` : txt) : "";
+      box.classList.add("out");
+      setTimeout(() => {
+        box.innerHTML = `<p class="thread-kicker">${esc(known.get(t) || "Note")}</p>
+          <h3>${esc(t)}</h3>
+          ${sum ? `<p class="thread-body">${sum}</p>` : ""}
+          ${next.length ? `<div class="thread-next"><span>Leads to</span>${next.map(n => `<button type="button" class="wl-go" data-note="${esc(n)}">${esc(n)}</button>`).join("")}</div>` : `<p class="thread-end">A dead end. Pull another.</p>`}
+          <div class="thread-actions"><button type="button" class="btn" id="thread-pull">↻ Pull another</button><a class="read-link" href="${vaultLink(t)}">Read the whole note <span class="arr">→</span></a></div>`;
+        trailEl.innerHTML = trail.length > 1 ? trail.map((n, k) => `<li>${k === trail.length - 1 ? `<span aria-current="step">${esc(n)}</span>` : `<button type="button" class="wl-back" data-note="${esc(n)}">${esc(n)}</button>`}</li>`).join("") : "";
+        box.classList.remove("out");
+      }, box.dataset.ready ? 180 : 0);
+      box.dataset.ready = "1";
+      return true;
+    };
+    const pull = async () => {
+      trail.length = 0;
+      for (let k = 0; k < 8; k++) if (await go(starts[Math.floor(Math.random() * starts.length)], false, k < 7)) return;
+    };
+    box.parentElement.addEventListener("click", e => {
+      const b = e.target.closest(".wl-go, .wl-back, #thread-pull"); if (!b) return;
+      if (b.id === "thread-pull") pull();
+      else { if (b.classList.contains("wl-back")) trail.splice(trail.indexOf(b.dataset.note) + 1); go(b.dataset.note, b.classList.contains("wl-back")); }
+    });
+    (window.VAULT_INDEX ? Promise.resolve() : loadScript("data/vault-index.js")).then(() => {
+      const notes = (window.VAULT_INDEX || {}).notes || [];
+      if (!notes.length) { box.closest(".section").remove(); return; }
+      known = new Map(notes.map(([t, folder]) => [t, folder === "Notes" ? "Note" : folder]));
+      starts = notes.filter(([, folder, links]) => folder === "Notes" && links >= 3).map(([t]) => t);
+      if (!starts.length) starts = notes.map(([t]) => t);
+      pull();
+    });
   }
 
   /* a random line from the vault quote bank (data/quotes.js), different from the last one shown */
@@ -530,62 +574,73 @@
     });
   }
 
-  function writingsPage() {
-    const WR = S.writings.filter(w => w.type !== "appearance" && w.type !== "project");
-    const types = ["all", ...new Set(WR.map(w => w.type))];
-    const html = `
-      <h1 class="page-title">Papers</h1>
-      <p class="page-sub">Essays written for prize competitions, and independent research. Things I’ve built are under <a href="projects.html">Projects</a>; talks and conferences under <a href="appearances.html">Appearances</a>.</p>
-      <div class="filterbar"><div class="group" role="group" aria-label="Filter by type">
-        ${types.map(t => `<button class="chip" type="button" data-type="${t}" aria-pressed="${t === "all"}">${t === "all" ? "All" : (TYPE_LABEL[t] || t) + (t === "research" ? "" : "s")}</button>`).join("")}
-      </div><div class="group"><span id="w-count"></span></div></div>
-      <ul class="entries" id="w-list"></ul>`;
-    setTimeout(() => {
-      let type = "all";
-      const draw = () => {
-        const list = WR.filter(w => type === "all" || w.type === type);
-        $("#w-list").innerHTML = list.map(entry).join("") || '<li class="empty">Nothing here yet.</li>';
-        linkVault($("#w-list"));
-        $("#w-count").textContent = plural(list.length, "entry").replace("entrys", "entries");
-      };
-      $$(".chip[data-type]").forEach(btn => btn.addEventListener("click", () => {
-        type = btn.dataset.type;
-        $$(".chip[data-type]").forEach(b => b.setAttribute("aria-pressed", b === btn));
-        draw();
-      }));
-      draw();
-      if (location.hash) { const t = document.getElementById(location.hash.slice(1)); if (t) { t.scrollIntoView(); t.classList.add("flash"); } }
-    });
-    return html;
-  }
-
-  function projectsPage() {
+  /* Work: papers, projects, art and appearances on one page. The switcher shows one kind or all of them;
+     work.html#papers (or #projects, #art, #appearances) opens on that kind, work.html#<entry slug> on the entry. */
+  function workPage() {
+    const PAPERS = S.writings.filter(w => w.type !== "appearance" && w.type !== "project");
     const PR = S.writings.filter(w => w.type === "project");
-    setTimeout(() => {
-      linkVault($("#app"));
-      if (location.hash) { const t = document.getElementById(location.hash.slice(1)); if (t) { t.scrollIntoView(); t.classList.add("flash"); } }
-    });
-    return `
-      <div class="page-head"><div><h1 class="page-title">Projects</h1><p class="page-sub">Things I’ve built and made.</p></div>
-        ${statsRow([[PR.length, "Projects"]])}</div>
-      ${PR.length ? `<ul class="entries">${PR.map(entry).join("")}</ul>` : '<p class="note">Nothing here yet.</p>'}`;
-  }
-  function appearancesPage() {
     const AP = S.writings.filter(w => w.type === "appearance");
     const when = w => String(w.start || w.end || "");
     const upcoming = AP.filter(isUpcoming).sort((a, b) => when(a).localeCompare(when(b)));
     const past = AP.filter(w => !isUpcoming(w)).sort((a, b) => when(b).localeCompare(when(a)));
-    const photos = AP.reduce((n, w) => n + galleryOf(w).length, 0);
+    const kinds = [...new Set(STUDIO.map(w => S.studio.items[w.i].kind))].filter(Boolean);
+    const list = ws => `<ul class="entries">${ws.map(entry).join("")}</ul>`;
+    const SECS = [
+      ["papers", "Papers", "Essays written for prize competitions, and independent research.", PAPERS.length, () => list(PAPERS)],
+      ["projects", "Projects", "Things I’ve built.", PR.length, () => list(PR)],
+      ["art", "Art", esc((S.studio || {}).intro || "Drawings, paintings and photographs."), STUDIO.length, () => `
+        <ul class="strip" aria-label="Art I’ve made">${STUDIO.map(w => `<li><button class="studio-img" type="button" data-kind="studio" data-i="${w.i}" aria-label="${esc(w.t)}">${thumbImg(w.img, w.t)}</button></li>`).join("")}</ul>
+        <button class="linkish see-all" type="button" data-show="art">See all ${STUDIO.length} with titles <span class="arr">→</span></button>
+        <div class="art-full">
+          <div class="filterbar slim"><div class="group" role="group" aria-label="Filter by medium">
+            ${["All", ...kinds].map(k => `<button class="chip" type="button" data-medium="${k}" aria-pressed="${k === "All"}">${k}</button>`).join("")}
+          </div><span class="count" id="s-count"></span></div>
+          <div class="studio" id="s-grid"></div></div>`],
+      ["appearances", "Appearances", "Conferences, talks and events I’ve been part of.", AP.length, () =>
+        (upcoming.length ? `<h3 class="sub-head">Upcoming</h3>${list(upcoming)}` : "") + (past.length ? `<h3 class="sub-head">Past</h3>${list(past)}` : "")]
+    ].filter(x => x[3]);
+    const html = `
+      <div class="page-head"><div><h1 class="page-title">Work</h1><p class="page-sub">Things I’ve written, built, drawn and shown up to.</p>
+        ${statsRow(SECS.map(([, label, , n]) => [n, label === "Art" ? (n === 1 ? "artwork" : "artworks") : n === 1 ? label.replace(/s$/, "") : label]))}</div></div>
+      <nav class="subnav work-switch" aria-label="Show"><div class="seg">
+        <a href="#all" data-show="all">All</a>${SECS.map(([id, label, , n]) => `<a href="#${id}" data-show="${id}">${label}<span>${n}</span></a>`).join("")}</div></nav>
+      ${SECS.map(([id, label, sub, , body]) => `<section class="section work-sec" id="${id}" data-sec="${id}">
+        <div class="work-sec-head"><h2>${label}</h2><p>${sub}</p></div>${body()}</section>`).join("")}`;
     setTimeout(() => {
-      linkVault($("#app"));
-      if (location.hash) { const t = document.getElementById(location.hash.slice(1)); if (t) { t.scrollIntoView(); t.classList.add("flash"); } }
+      const app = $("#app");
+      const drawArt = k => {
+        const list = STUDIO.filter(w => k === "All" || S.studio.items[w.i].kind === k);
+        $("#s-count").textContent = plural(list.length, "work");
+        $("#s-grid").innerHTML = list.map(w => `<figure class="studio-item"><button class="studio-img" type="button" data-kind="studio" data-i="${w.i}" aria-label="${esc(w.t)}">
+            ${thumbImg(w.img, w.t)}</button>
+          <figcaption><b>${esc(w.t)}</b><span>${esc(w.year)} · ${esc(w.medium)}</span></figcaption></figure>`).join("");
+      };
+      $$(".chip[data-medium]").forEach(b => b.addEventListener("click", () => {
+        $$(".chip[data-medium]").forEach(x => x.setAttribute("aria-pressed", x === b)); drawArt(b.dataset.medium);
+      }));
+      if ($("#s-grid")) drawArt("All");
+      const show = (id, scroll) => {
+        app.dataset.show = id;
+        $$(".work-switch a").forEach(a => a.dataset.show === id ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
+        if (scroll) window.scrollTo({ top: 0 });
+      };
+      app.addEventListener("click", e => {
+        const a = e.target.closest("[data-show]"); if (!a) return;
+        e.preventDefault(); show(a.dataset.show, a.classList.contains("see-all"));
+        history.replaceState(null, "", a.dataset.show === "all" ? location.pathname : "#" + a.dataset.show);
+      });
+      const route = () => {
+        const h = location.hash.slice(1);
+        if (SECS.some(x => x[0] === h)) return show(h, true);
+        show("all");
+        const t = h && document.getElementById(h);
+        if (t) { t.scrollIntoView(); t.classList.remove("flash"); void t.offsetWidth; t.classList.add("flash"); }
+      };
+      route();
+      addEventListener("hashchange", route);
+      linkVault(app);
     });
-    return `
-      <div class="page-head"><div><h1 class="page-title">Appearances</h1><p class="page-sub">Conferences, talks and events I’ve been part of.</p></div>
-        ${statsRow([[AP.length, "Events"], [upcoming.length, "Upcoming"], [photos, "Photos"]])}</div>
-      ${upcoming.length ? `<section class="section">${sectionHead("Upcoming")}<ul class="entries">${upcoming.map(entry).join("")}</ul></section>` : ""}
-      ${past.length ? `<section class="section">${sectionHead("Past")}<ul class="entries">${past.map(entry).join("")}</ul></section>` : ""}
-      ${AP.length ? "" : '<p class="note">Nothing here yet.</p>'}`;
+    return html;
   }
 
   function booksPage() {
@@ -889,31 +944,6 @@
     return `<li class="art-item"><button class="art-tile" type="button" data-kind="studio" data-i="${w.i}" aria-label="${esc(w.t)}, ${esc(w.year)}">${thumbImg(w.img, "")}</button>
       <div class="art-cap"><b>${esc(w.t)}</b><span>${esc(w.year)} · ${esc(w.kind === "studio" ? w.medium.split(" on ")[0] : "")}</span></div></li>`;
   }
-  function studioPage() {
-    const kinds = [...new Set(STUDIO.map(w => w.kind === "studio" ? (S.studio.items[w.i].kind) : ""))].filter(Boolean);
-    const html = `
-      <div class="page-head"><div><h1 class="page-title">Studio</h1><p class="page-sub">${esc((S.studio || {}).intro || "")}</p></div>
-        ${statsRow([[STUDIO.length, "Works"], ...kinds.map(k => [STUDIO.filter(w => S.studio.items[w.i].kind === k).length, k === "Photography" ? "Photos" : k + "s"])])}</div>
-      <div class="filterbar"><div class="group" role="group" aria-label="Filter by medium">
-        ${["All", ...kinds].map(k => `<button class="chip" type="button" data-medium="${k}" aria-pressed="${k === "All"}">${k}</button>`).join("")}
-      </div><span class="count" id="s-count"></span></div>
-      <div class="studio" id="s-grid"></div>`;
-    setTimeout(() => {
-      const draw = k => {
-        const list = STUDIO.filter(w => k === "All" || S.studio.items[w.i].kind === k);
-        $("#s-count").textContent = plural(list.length, "work");
-        $("#s-grid").innerHTML = list.map(w => `<figure class="studio-item"><button class="studio-img" type="button" data-kind="studio" data-i="${w.i}" aria-label="${esc(w.t)}">
-            ${thumbImg(w.img, w.t)}</button>
-          <figcaption><b>${esc(w.t)}</b><span>${esc(w.year)} · ${esc(w.medium)}</span></figcaption></figure>`).join("");
-      };
-      $$(".chip[data-medium]").forEach(b => b.addEventListener("click", () => {
-        $$(".chip[data-medium]").forEach(x => x.setAttribute("aria-pressed", x === b)); draw(b.dataset.medium);
-      }));
-      draw("All");
-    });
-    return html;
-  }
-
   function vaultPage() {
     return `
       <h1 class="page-title">The Vault</h1>
@@ -1233,7 +1263,7 @@
       ...ART.map(a => ({ type: "Art", t: a.t, sub: a.artist, it: a, href: "art.html" })),
       ...PLAY.map(p => ({ type: "Music I play", t: p.t, sub: p.a || "", href: "music.html" })),
       ...MU_LISTS.flatMap(l => l.items.filter(x => x.t).map(x => ({ type: "Music", t: x.t, sub: [x.a, l.name].filter(Boolean).join(" · "), href: `music.html#list-${slug(l.name)}` }))),
-      ...STUDIO.map(w => ({ type: "Studio", t: w.t, sub: `${w.year} · my work`, it: w, href: "studio.html" }))
+      ...STUDIO.map(w => ({ type: "Studio", t: w.t, sub: `${w.year} · my work`, it: w, href: "work.html#art" }))
     ];
     const pal = document.createElement("dialog");
     pal.className = "palette";
@@ -1375,7 +1405,7 @@
     document.body.appendChild(sc);
   }
 
-  const PAGES = { notfound: notFoundPage, home, writings: writingsPage, projects: projectsPage, appearances: appearancesPage, books: booksPage, films: filmsPage, art: artPage, music: musicPage, studio: studioPage, vault: vaultPage, about: aboutPage, socials: socialsPage };
+  const PAGES = { notfound: notFoundPage, home, work: workPage, books: booksPage, films: filmsPage, art: artPage, music: musicPage, vault: vaultPage, about: aboutPage, socials: socialsPage };
   document.body.insertAdjacentHTML("afterbegin", header());
   const app = document.getElementById("app");
   app.innerHTML = `<div class="wrap">${groupOf(page) ? tasteNav() : ""}${(PAGES[page] || home)()}</div>`;

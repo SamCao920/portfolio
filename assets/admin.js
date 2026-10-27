@@ -444,7 +444,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     },
     writings: {
       label: "Writing & events",
-      help: "Essays, research and projects show on the Writing page; appearances show on their own Appearances page, newest first, with an optional photo gallery. Featured items also show on the home page. Appearances with dates drive the “Next:” line and drop off Upcoming after the end date. Simple HTML like <em>italic</em> works in text boxes.",
+      help: "Everything here shows on the Work page, under Papers (essays and research), Projects or Appearances. Appearances are listed newest first, with an optional photo gallery. Appearances with dates drive the “Next:” line and drop off Upcoming after the end date. Simple HTML like <em>italic</em> works in text boxes.",
       render: () => `<button class="btn go add" type="button" data-add="writings">+ Add entry</button>
         <div id="w-cards">${(data.writings || []).map((w, i) => card(w, i)).join("")}</div>`,
       collect: el => {
@@ -457,7 +457,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     },
     studio: {
       label: "Studio",
-      help: "Your own artwork on the Studio page, in this order. Type sets the filter (Drawing, Painting or Photography) and the frame in the 3D view: gold for paintings, walnut and mat for drawings, black gallery frame for photographs. Attach an image with Choose file; it is copied into assets/studio/ on Save.",
+      help: "Your own artwork, in the Art section of the Work page, in this order. Type sets the filter (Drawing, Painting or Photography) and the frame in the 3D view: gold for paintings, walnut and mat for drawings, black gallery frame for photographs. Attach an image with Choose file; it is copied into assets/studio/ on Save.",
       render: () => { const st = data.studio || (data.studio = { intro: "", items: [] }); return `
         <label class="f" for="studio-intro"><span>Intro</span><textarea id="studio-intro" rows="3">${esc(st.intro || "")}</textarea></label>
         <button class="btn go add" type="button" data-add="studio">+ Add work</button>

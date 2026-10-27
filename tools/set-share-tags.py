@@ -2,9 +2,8 @@
 import glob, re, sys, os
 root = sys.argv[1]
 META = {
- 'home':     ('Sam Cao · Fangyuan Cao 曹方源', 'Sam (Fangyuan) Cao, Johns Hopkins. Writing on political economy, philosophy and history, plus the books, films and art I love.', 'home'),
- 'writings': ('Writing · Sam Cao', 'Essays and research on political economy, philosophy and history, including the 2026 Youth Liberty Prize essay.', 'writings'),
- 'studio':   ('Studio · Sam Cao', 'Charcoal drawings and oil paintings by Sam Cao, 2024 to 2025.', 'studio'),
+ 'home':     ('Sam Cao · Fangyuan Cao 曹方源', 'Sam (Fangyuan) Cao, Johns Hopkins. Essays on political economy, philosophy and history, notes, and the books, films and art I love.', 'home'),
+ 'work':     ('Work · Sam Cao', 'Papers, projects, art and appearances by Sam (Fangyuan) Cao: prize essays on political economy and philosophy, things built, drawings and paintings.', 'writings'),
  'books':    ('Books · Sam Cao', 'What Sam Cao has read: ratings, a reading diary, favorites and notes from his vault.', 'books'),
  'films':    ('Films · Sam Cao', 'Favorite films, a viewing diary and ranked lists.', 'films'),
  'art':      ('Art · Sam Cao', 'Artworks Sam Cao has seen in museums, from Rembrandt etchings to Chinese ink scrolls.', 'art'),

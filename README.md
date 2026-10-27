@@ -3,7 +3,7 @@
 Plain HTML, CSS and JS, served by GitHub Pages. No build step.
 
 ## Structure
-- `index.html`, `writings.html`, `books.html`, `films.html`, `art.html`, `vault.html`, `about.html`, `socials.html`: page shells; each sets `data-page` on `<body>`.
+- `index.html`, `work.html`, `books.html`, `films.html`, `art.html`, `vault.html`, `about.html`, `socials.html`: page shells; each sets `data-page` on `<body>`.
 - `data/content.js`: bio, writing, socials and settings. Edit by hand.
 - `data/books.js`, `data/films.js`: my reading and watching log, edited in `admin.html` (Reading, Watching).
 - `data/art.js`, `assets/gallery/`: generated from the Visual Art notes in the Obsidian vault.
