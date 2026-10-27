@@ -524,6 +524,10 @@ window.SITE = {
       "cjk": "Noto Serif SC"
     }
   },
+  "lastfm": {
+    "user": "TrueRoman7",
+    "key": "40fc6486b186a8dbea7cbd2bdf51fdd8"
+  },
   "analytics": {
     "goatcounter": "samcao"
   },
