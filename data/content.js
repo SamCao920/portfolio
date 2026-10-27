@@ -538,7 +538,9 @@ window.SITE = {
       "Wolfgang Amadeus Mozart",
       "Gustav Mahler",
       "Maurice Ravel"
-    ]
+    ],
+    "play": [],
+    "lists": []
   },
   "artists": [
     {
