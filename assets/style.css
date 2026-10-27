@@ -1110,3 +1110,25 @@ dialog.lightbox .vid { width: min(1000px, 90vw); max-width: none; max-height: 74
 .gal-thumb.is-video { cursor: pointer; background: #111; }
 .gal-play { position: absolute; left: 50%; top: 50%; width: 36px; height: 36px; margin: -18px 0 0 -18px; border-radius: 50%; background: rgba(0,0,0,.55); box-shadow: 0 0 0 2px rgba(255,255,255,.85); }
 .gal-play::before { content: ""; position: absolute; left: 14px; top: 10px; border-style: solid; border-width: 8px 0 8px 12px; border-color: transparent transparent transparent #fff; }
+
+/* music: what I play, ranked lists */
+.play-list { list-style: none; margin: 0; padding: 0; }
+.play-entry { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.pe-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.play-entry h3 { margin: 0; font: var(--dw, 700) 18px/1.3 var(--display); color: var(--heading); }
+.play-entry .by { margin: 3px 0 0; color: var(--text-strong); }
+.play-entry .by span { color: var(--muted); }
+.play-entry .review { margin-top: 8px; }
+.play-entry .vid, .play-entry .aud { margin-top: 10px; }
+.aud { display: block; width: 100%; max-width: 520px; height: 40px; }
+.mu-list + .mu-list { margin-top: 26px; }
+.mu-rank { list-style: none; margin: 8px 0 0; padding: 0; }
+.mu-rank li { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.mu-rank i { font: 400 18px/1.3 var(--body); font-style: normal; color: var(--accent); font-variant-numeric: tabular-nums; }
+.mu-rank b { font: var(--dw, 700) 16px/1.3 var(--display); color: var(--heading); margin-right: 8px; }
+.mu-rank span { color: var(--muted); font-size: 14px; }
+.mu-rank p { margin: 3px 0 0; font-size: 14px; color: var(--text); }
+.mu-side { list-style: none; margin: 0; padding: 0; }
+.mu-side li { display: grid; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.mu-side b, .mu-side a { font: var(--dw, 700) 14px/1.35 var(--display); color: var(--heading); }
+.mu-side span { font-size: 12px; color: var(--muted); }

@@ -124,7 +124,7 @@
   ];
   const TASTE = GROUPS[1].items;
   const groupCount = k => ({ writings: S.writings.filter(w => w.type !== "appearance").length, appearances: S.writings.filter(w => w.type === "appearance").length, studio: STUDIO.length,
-    books: BOOKS.filter(b => b.shelf === "read").length, films: FILMS.length, art: ART.length, music: ALBUMS.length })[k];
+    books: BOOKS.filter(b => b.shelf === "read").length, films: FILMS.length, art: ART.length, music: MU_LISTS.length + PLAY.filter(p => p.status !== "learn").length })[k];
   const tasteCount = groupCount;
   const groupOf = key => GROUPS.find(g => g.items.some(it => it[2] === key));
   function header() {
@@ -759,58 +759,48 @@
     if (!names.length) return "";
     return `<div class="top5"><ol>${names.map((a, n) => `<li><i>${n + 1}</i><b>${esc(a)}</b></li>`).join("")}</ol></div>`;
   }
+  /* ---------- music: my ranked lists and what I play (content.js "music", edited in admin) ---------- */
+  const MU = S.music || {};
+  const MU_LISTS = (MU.lists || []).filter(l => l && l.name && (l.items || []).some(x => x.t));
+  const PLAY = (MU.play || []).filter(p => p && p.t);
+  const PLAY_STATUS = { now: "Playing now", played: "Played", learn: "Want to learn" };
+  const audioOf = u => /\.(mp3|m4a|wav|ogg|aac|flac)(?:[?#]\S*)?$/i.test(String(u || "").trim());
+  function recording(u, title) {
+    if (!u) return "";
+    const v = videoOf(u);
+    if (v) return videoPlayer(v, title);
+    if (audioOf(u)) return `<audio class="aud" src="${esc(u)}" controls preload="none"></audio>`;
+    return `<a class="read-link" href="${esc(u)}" target="_blank" rel="noopener">Listen <span class="arr">→</span></a>`;
+  }
+  const playMeta = p => [p.with, p.when].filter(Boolean).map(esc).join(" · ");
+  function playEntry(p) {
+    return `<li class="play-entry"><div class="pe-head"><h3>${esc(p.t)}</h3>${p.status && p.status !== "played" ? `<span class="pill${p.status === "now" ? " live" : ""}">${PLAY_STATUS[p.status]}</span>` : ""}</div>
+      <p class="by">${esc(p.a || "")}${playMeta(p) ? ` <span>· ${playMeta(p)}</span>` : ""}</p>
+      ${p.note ? `<div class="review">${md(p.note)}</div>` : ""}${recording(p.rec, p.t)}</li>`;
+  }
+  function musicList(l) {
+    return `<section class="list-block mu-list" id="list-${slug(l.name)}"><h3 class="list-title">${esc(l.name)}</h3>
+      ${l.desc ? `<div class="list-desc">${md(l.desc)}</div>` : ""}
+      <ol class="mu-rank">${l.items.filter(x => x.t).map((x, n) => `<li><i>${n + 1}</i><div><b>${esc(x.t)}</b>${x.a ? `<span>${esc(x.a)}</span>` : ""}
+        ${x.note ? `<p>${mdInline(x.note)}</p>` : ""}</div></li>`).join("")}</ol></section>`;
+  }
   function musicPage() {
-    const sideOf = it => it.side === "classical" ? "classical" : "other";
-    const decades = [...new Set(ALBUMS.filter(a => a.y).map(a => Math.floor(a.y / 10) * 10))].sort((a, b) => b - a);
-    const favs = LD.favorites.map(i => ALBUMS[i]).filter(Boolean);
-    const yearCount = new Set(albumDiary.filter(d => parse(d.date).y === thisYear).map(d => d.m)).size;
+    const now = PLAY.filter(p => p.status === "now"), learn = PLAY.filter(p => p.status === "learn"), played = PLAY.filter(p => p.status !== "now" && p.status !== "learn");
     const empty = msg => `<p class="note">${msg}</p>`;
-    const forms = Object.keys(FORMS).filter(f => ALBUMS.some(a => formOf(a) === f) || QUEUE.some(a => formOf(a) === f));
-    const formFilter = id => ({ id, label: "Show", options: [["all", "Everything"], ...forms.map(f => [f, FORMS[f] + "s"])], test: (a, v) => formOf(a) === v });
-    const sideFilter = id => ({ id, label: "Classical", options: [["all", "Either"], ["classical", "Classical"], ["other", "Not classical"]], test: (a, v) => sideOf(a) === v });
-      const defs = [
-      ["library", "Library", body => ALBUMS.length ? grid(body, ALBUMS, {
-        id: "ag", noun: "piece",
-        filters: [formFilter("ag-form"), sideFilter("ag-side"),
-          { id: "ag-decade", label: "Decade", options: [["all", "All"], ...decades.map(d => [String(d), d + "s"])], test: (a, v) => a.y && Math.floor(a.y / 10) * 10 === +v },
-          { id: "ag-rating", ...ratingFilter(0.5) },
-          { id: "ag-liked", label: "Liked", options: [["all", "All"], ["liked", "Liked"]], test: a => a.liked }],
-        sorts: [["added", "When added", (a, b) => String(b.added || "").localeCompare(String(a.added || "")) || b.i - a.i],
-                ["rating", "Rating", (a, b) => (b.r ?? 0) - (a.r ?? 0)],
-                ["new", "Newest", (a, b) => (b.y || 0) - (a.y || 0)],
-                ["old", "Oldest", (a, b) => (a.y || 9999) - (b.y || 9999)],
-                ["title", "Title", (a, b) => a.t.localeCompare(b.t)],
-                ["artist", "Artist or composer", (a, b) => String(a.a).localeCompare(String(b.a))]]
-      }) : (body.innerHTML = empty("Nothing logged yet."))],
-      ["diary", "Diary", body => { body.innerHTML = albumDiary.length ? diaryTable(albumDiary, { label: "Music" }) : empty("Nothing in the diary yet."); }],
-      ["lists", "Lists", body => {
-        body.innerHTML = LD.lists.length ? LD.lists.map(l => `<section class="list-block"><h3 class="list-title">${esc(l.name)}</h3>
-          ${l.desc ? `<p class="list-desc">${esc(l.desc)}</p>` : ""}<p class="list-count">${plural(l.items.length, "piece")}</p>
-          <ul class="posters six ranked">${l.items.map(x => ALBUMS[x.m] ? posterItem(ALBUMS[x.m], { rank: x.pos }) : "").join("")}</ul></section>`).join("") : empty("No lists yet.");
-      }],
-      ["to-listen", "To listen", body => QUEUE.length ? grid(body, QUEUE, {
-        id: "aq", noun: "piece", filters: [formFilter("aq-form"), sideFilter("aq-side")],
-        sorts: [["added", "Recently added", byDateDesc("added")], ["title", "Title", (a, b) => a.t.localeCompare(b.t)], ["artist", "Artist or composer", (a, b) => String(a.a).localeCompare(String(b.a))]],
-        item: () => ({ caption: "" })
-      }) : (body.innerHTML = empty("Nothing queued."))]
-    ];
-    const [tabHtml, start] = tabs("music", defs);
-    setTimeout(start);
     return `
-      <div class="page-head"><div><h1 class="page-title">Music</h1><p class="page-sub">${mdInline(LD.bio || "The music I love, classical and otherwise.")}</p></div>
-        ${statsRow([[ALBUMS.length, "Pieces"], [yearCount, "This year"], [LD.lists.length, "Lists"], [QUEUE.length, "To listen"]])}</div>
+      <div class="page-head"><div><h1 class="page-title">Music</h1><p class="page-sub">${mdInline(MU.bio || "The music I love, classical and otherwise, and what I play on the violin.")}</p></div>
+        ${statsRow([[MU_LISTS.length, "Lists"], [PLAY.filter(p => p.status !== "learn").length, "Pieces played"], [now.length, "Playing now"]])}</div>
       <div class="cols">
         <div>
-          ${favs.length ? `<section class="section">${sectionHead("Favorites")}<ul class="posters four">${favs.map(a => posterItem(a)).join("")}</ul></section>` : ""}
           ${topPicks().length ? `<section class="section">${sectionHead("Top five composers and artists")}${topFive()}</section>` : ""}
-          ${albumDiary.length ? `<section class="section">${sectionHead("Recent activity", "music.html#diary", "All")}
-            <ul class="posters four">${albumDiary.slice(0, 4).map(d => posterItem(d.it, { r: d.r })).join("")}</ul></section>` : ""}
-          <section class="section">${tabHtml}</section>
+          <section class="section">${sectionHead("What I play")}
+            ${now.length || played.length ? `<ul class="play-list">${[...now, ...played].map(playEntry).join("")}</ul>` : empty("Nothing here yet.")}</section>
+          <section class="section">${sectionHead("Lists")}${MU_LISTS.length ? MU_LISTS.map(musicList).join("") : empty("No lists yet.")}</section>
         </div>
         <aside>
-          ${ALBUMS.some(a => a.r != null) ? ratingsBlock(ALBUMS.filter(a => a.r != null).map(a => a.r), 0.5) : ""}
-          ${albumDiary.length ? `<section class="side-block">${sectionHead("Diary", "music.html#diary", String(albumDiary.length))}${diaryMini(albumDiary, 3)}</section>` : ""}
-          ${QUEUE.length ? `<section class="side-block">${sectionHead("Up next", "music.html#to-listen", "All")}<ul class="recent-albums">${QUEUE.slice(0, 6).map(q => `<li><span class="ra-d"></span><button type="button" class="linkish" data-kind="queue" data-i="${q.i}"><b>${esc(q.t)}</b><span>${esc(q.a || "")}</span></button></li>`).join("")}</ul></section>` : ""}
+          ${now.length ? `<section class="side-block">${sectionHead("On my stand")}<ul class="mu-side">${now.map(p => `<li><b>${esc(p.t)}</b><span>${esc([p.a, p.with].filter(Boolean).join(" · "))}</span></li>`).join("")}</ul></section>` : ""}
+          ${learn.length ? `<section class="side-block">${sectionHead("Want to learn")}<ul class="mu-side">${learn.map(p => `<li><b>${esc(p.t)}</b><span>${esc(p.a || "")}</span></li>`).join("")}</ul></section>` : ""}
+          ${MU_LISTS.length > 1 ? `<section class="side-block">${sectionHead("Lists")}<ul class="mu-side">${MU_LISTS.map(l => `<li><a href="#list-${slug(l.name)}">${esc(l.name)}</a><span>${plural(l.items.filter(x => x.t).length, "entry", "entries")}</span></li>`).join("")}</ul></section>` : ""}
         </aside>
       </div>`;
   }
@@ -915,8 +905,8 @@
     const rows = [];
     const book = booksReading()[0];
     if (book) rows.push(["Reading", book.t, book.a]);
-    const heard = albumDiary[0];
-    if (heard) rows.push(["Listened to", heard.it.t, [heard.it.a, heard.perf].filter(Boolean).join(" · ")]);
+    const playing = PLAY.find(p => p.status === "now");
+    if (playing) rows.push(["Playing", playing.t, playing.a || ""]);
     const seen = filmDiary[0];
     if (seen) rows.push(["Watched", seen.it.t, String(seen.it.y || "")]);
     if (!rows.length) return `<p class="ccard-tag">${esc(S.profile.tagline || "")}</p>`;
@@ -1177,7 +1167,8 @@
       ...BOOKS.filter(b => b.shelf !== "to-read").map(b => ({ type: "Book", t: b.t, sub: b.a, it: b, href: "books.html" })),
       ...FILMS.map(f => ({ type: "Film", t: f.t, sub: String(f.y || ""), it: f, href: "films.html" })),
       ...ART.map(a => ({ type: "Art", t: a.t, sub: a.artist, it: a, href: "art.html" })),
-      ...ALBUMS.map(a => ({ type: FORMS[formOf(a)], t: a.t, sub: a.a, it: a, href: "music.html" })),
+      ...PLAY.map(p => ({ type: "Music I play", t: p.t, sub: p.a || "", href: "music.html" })),
+      ...MU_LISTS.flatMap(l => l.items.filter(x => x.t).map(x => ({ type: "Music", t: x.t, sub: [x.a, l.name].filter(Boolean).join(" · "), href: `music.html#list-${slug(l.name)}` }))),
       ...STUDIO.map(w => ({ type: "Studio", t: w.t, sub: `${w.year} · my work`, it: w, href: "studio.html" }))
     ];
     const pal = document.createElement("dialog");

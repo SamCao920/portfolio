@@ -10,7 +10,7 @@
 <link rel="icon" href="assets/website/my-notion-face-transparent.ico" type="image/x-icon">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="assets/style.css?v=c69f3c83">
+<link rel="stylesheet" href="assets/style.css?v=d94e592b">
 <style>
   /* Editor layout: sticky toolbar, section list on the left, form on the right. */
   body { min-height: 100vh; }
@@ -26,6 +26,12 @@
   .ed-dirty[data-kind="ok"] { color: #2fa36b; }
   .ed-extra { display: contents; }
   .ed-more-btn { display: none; }
+  .rows .row.play-row { grid-template-columns: minmax(0, 2fr) minmax(0, 1.4fr) 140px minmax(0, 1.4fr) minmax(0, 1fr); grid-template-areas: "t a st w wh" "rec rec note note btns"; padding: 10px; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 10px; }
+  .play-row [data-p=t] { grid-area: t; } .play-row [data-p=a] { grid-area: a; } .play-row [data-p=status] { grid-area: st; } .play-row [data-p=with] { grid-area: w; }
+  .play-row [data-p=when] { grid-area: wh; } .play-row [data-p=rec] { grid-area: rec; } .rows .row.play-row [data-p=note] { grid-area: note; } .play-row .row-btns { grid-area: btns; display: flex; gap: 6px; justify-content: flex-end; }
+  .play-row select { border: 1px solid var(--line-strong); border-radius: 6px; background: var(--bg-glow); color: var(--text-strong); font: 14px var(--body); padding: 7px 6px; min-width: 0; }
+  .rows .row.rank-row.mu-item { grid-template-columns: 28px minmax(0, 2fr) minmax(0, 1.2fr) minmax(0, 1.6fr) auto auto auto !important; }
+  .mu-listcard { margin-bottom: 14px; } .mu-listcard .logbtns { align-items: center; }
   .artist-row { grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1.4fr) auto auto auto !important; }
   .btn[disabled] { opacity: .45; cursor: not-allowed; transform: none !important; }
   .ed { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 32px; max-width: 1100px; padding-block: 28px 80px; }
@@ -165,7 +171,7 @@
      16px inputs so iOS doesn't zoom, bigger tap targets */
   @media (max-width: 760px) {
     .ed-bar .wrap { flex-wrap: nowrap; gap: 8px; padding-block: 8px; position: relative; }
-    .ed-title { font-size: 16px; min-width: 0; } .ed-title img { width: 26px; height: 26px; }
+    .ed-title { font-size: 16px; min-width: 0; white-space: nowrap; } .ed-title img { width: 26px; height: 26px; }
     .ed-status > span { display: none; }
     .ed-dirty { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 34vw; }
     .ed-more-btn { display: inline-flex; padding-inline: 10px; letter-spacing: 0; }
@@ -198,6 +204,12 @@
     .rows .row.artist-row [data-rowdel] { grid-column: 5; grid-row: 1; }
     .rows .row.artist-row input[data-a=note] { grid-column: 2 / -1; grid-row: 2; }
     .suggest { left: 8px !important; width: calc(100vw - 16px) !important; }
+    .rows .row.play-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "t t" "a st" "w wh" "rec rec" "note note" "btns btns"; }
+    .rows .row.play-row input { grid-column: auto; }
+    .rows .row.rank-row.mu-item { grid-template-columns: 24px minmax(0, 1fr) auto auto auto !important; }
+    .rows .row.rank-row.mu-item > .rank-n { grid-column: 1; grid-row: 1; } .rows .row.rank-row.mu-item input[data-i=t] { grid-column: 2; grid-row: 1; }
+    .rows .row.rank-row.mu-item [data-rowmove="-1"] { grid-column: 3; grid-row: 1; } .rows .row.rank-row.mu-item [data-rowmove="1"] { grid-column: 4; grid-row: 1; } .rows .row.rank-row.mu-item [data-rowdel] { grid-column: 5; grid-row: 1; }
+    .rows .row.rank-row.mu-item input[data-i=a] { grid-column: 2 / -1; grid-row: 2; } .rows .row.rank-row.mu-item input[data-i=note] { grid-column: 2 / -1; grid-row: 3; }
   }
 </style>
 </head>
@@ -227,6 +239,6 @@
 <script src="data/listening.js?v=0adc9951"></script>
 <script src="data/art.js?v=3343d752"></script>
 <script src="assets/covers.js?v=99fec6eb"></script>
-<script src="assets/admin.js?v=ebf1d4ed"></script>
+<script src="assets/admin.js?v=a2d1baaa"></script>
 </body>
 </html>

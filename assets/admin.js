@@ -899,6 +899,27 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       <datalist id="dl-top">${Object.keys(MU_SIDE()).map(a => `<option value="${esc(a)}"></option>`).join("")}</datalist>`;
   }
 
+  /* music: a piece I play, and a ranked list with free-form entries */
+  const PLAY_ST = [["now", "Playing now"], ["played", "Played"], ["learn", "Want to learn"]];
+  const playRow = (p = {}) => `<div class="row play-row">
+    <input data-p="t" value="${esc(p.t || "")}" placeholder="Piece" aria-label="Piece">
+    <input data-p="a" value="${esc(p.a || "")}" list="dl-composers" placeholder="Composer" aria-label="Composer">
+    <select data-p="status" aria-label="Status">${PLAY_ST.map(([k, l]) => `<option value="${k}" ${(p.status || "played") === k ? "selected" : ""}>${l}</option>`).join("")}</select>
+    <input data-p="with" value="${esc(p.with || "")}" placeholder="With (orchestra, quartet, solo…)" aria-label="With">
+    <input data-p="when" value="${esc(p.when || "")}" placeholder="When (Fall 2026)" aria-label="When">
+    <input data-p="rec" value="${esc(p.rec || "")}" placeholder="Recording link (optional)" aria-label="Recording">
+    <input data-p="note" value="${esc(p.note || "")}" placeholder="Note (optional, markdown)" aria-label="Note">
+    <span class="row-btns"><button class="icon-btn" type="button" data-rowmove="-1" aria-label="Move up">↑</button><button class="icon-btn" type="button" data-rowmove="1" aria-label="Move down">↓</button><button class="icon-btn danger" type="button" data-rowdel aria-label="Remove">×</button></span></div>`;
+  const muItemRow = (x = {}) => `<div class="row rank-row mu-item"><span class="rank-n" aria-hidden="true"></span>
+    <input data-i="t" value="${esc(x.t || "")}" placeholder="Piece, composer, recording…" aria-label="Entry">
+    <input data-i="a" value="${esc(x.a || "")}" list="dl-composers" placeholder="By (optional)" aria-label="By">
+    <input data-i="note" value="${esc(x.note || "")}" placeholder="Note (optional)" aria-label="Note">
+    <button class="icon-btn" type="button" data-rowmove="-1" aria-label="Move up">↑</button><button class="icon-btn" type="button" data-rowmove="1" aria-label="Move down">↓</button><button class="icon-btn danger" type="button" data-rowdel aria-label="Remove">×</button></div>`;
+  const muListHtml = (l = {}, j) => `<div class="mu-listcard logform" data-j="${j}">
+    <div class="grid2"><label class="f"><span>List name</span><input type="text" data-l="name" value="${esc(l.name || "")}" placeholder="Top 10 classical pieces"></label>
+      <label class="f"><span>Description (optional)</span><input type="text" data-l="desc" value="${esc(l.desc || "")}"></label></div>
+    <div class="rows top5-rows wide">${(l.items && l.items.length ? l.items : [{}]).map(muItemRow).join("")}</div>
+    <div class="logbtns"><button class="btn add" type="button" data-act="mu-additem" data-j="${j}">+ Add entry</button><button class="btn danger-btn" type="button" data-act="mu-dellist" data-j="${j}">Delete list</button></div></div>`;
   const LOG_SECTIONS = {
     reading: {
       label: "Reading",
@@ -941,33 +962,33 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     },
     music: {
       label: "Music",
-      help: "Log music here, like films. An entry can be an album, a song or a classical work: rate a Beethoven quartet as a work, and note who played it on each listen. Logging adds a diary entry, adds the piece if it’s new, updates its rating and takes it off To listen. Save writes data/listening.js.",
+      help: "Your ranked lists (favorite pieces, composers, recordings, anything) and the pieces you play. Lists keep their order; leave a list's name empty to drop it. Notes take markdown; a recording can be a YouTube or Vimeo link or an audio or video file.",
       render: () => {
-        const opts = listening.items.map((a, i) => [a, i]).sort(([a], [b]) => a.t.localeCompare(b.t));
-        return `<div data-nodirty>${albumFormHtml()}
-        <div class="section-head" style="margin-top:26px"><h2>Favorites</h2></div>
-        <div class="grid2 favs">${[0, 1, 2, 3].map(k => `<label class="f"><span>Favorite ${k + 1}</span><select data-afav="${k}"><option value="">None</option>${opts.map(([a, i]) =>
-          `<option value="${i}" ${listening.favorites[k] === i ? "selected" : ""}>${esc(albumLabel(a))}</option>`).join("")}</select></label>`).join("")}</div>
-        <div class="section-head" style="margin-top:26px"><h2>To listen</h2></div>
-        <div class="lfilter" id="ql-form"><input type="text" data-ql="t" placeholder="Title" aria-label="Title" value="${esc(queueForm.t || "")}" list="al-titles-q"><input type="text" data-ql="a" placeholder="Artist or composer" aria-label="Artist or composer" value="${esc(queueForm.a || "")}">
-          <select data-ql="form" aria-label="What is it">${FORMS.map(([k, l]) => `<option value="${k}" ${queueForm.form === k ? "selected" : ""}>${l.split(" (")[0]}</option>`).join("")}</select>
-          <button class="btn" type="button" data-act="ql-add">+ Add</button></div>
-        <datalist id="al-titles-q">${MU_ALBUMS().map(x => `<option value="${esc(x.t)}">${esc(x.a)}</option>`).join("")}</datalist>
-        <ul class="llist">${listening.queue.map((q, i) => `<li class="lrow static"><b>${esc(q.t)}</b><span>${esc(q.a || "")}</span><span class="lr-date">${esc(q.added || "")}</span>
-          <span class="lr-acts"><button class="btn" type="button" data-act="ql-done" data-i="${i}">Listened</button><button class="icon-btn danger" type="button" data-act="ql-del" data-i="${i}" aria-label="Remove">×</button></span></li>`).join("") || '<li class="lempty">Empty.</li>'}</ul>
-        ${listsHtml("listening")}
-        <div class="section-head" style="margin-top:26px"><h2>History</h2>${coversBtn("listening")}</div>
-        <div class="lfilter"><input type="search" id="al-q" placeholder="Search" aria-label="Search albums">
-          <select id="al-show" aria-label="Show"><option value="diary">Diary (${listening.diary.length})</option><option value="albums">Library (${listening.items.length})</option></select></div>
-        <ul class="llist" id="al-list">${albumRows()}</ul></div>
-        ${topFiveHtml()}`;
+        const m = data.music || {};
+        const lists = m.lists || [], play = m.play || [];
+        return `${field(m, "bio", "Line under the page title", { prefix: "mu-", placeholder: "The music I love, classical and otherwise, and what I play on the violin." })}
+        ${topFiveHtml()}
+        <div class="section-head" style="margin-top:26px"><h2>What I play</h2></div>
+        <p class="ed-help">Pieces on your stand, ones you’ve performed, and ones you want to learn. Playing now also shows on your contact card.</p>
+        <div class="rows" data-rows="mu-play">${(play.length ? play : []).map(playRow).join("")}</div>
+        <button class="btn add" type="button" data-act="mu-addplay">+ Add a piece</button>
+        <div class="section-head" style="margin-top:26px"><h2>Lists</h2></div>
+        <div id="mu-lists">${lists.map(muListHtml).join("")}</div>
+        <button class="btn add" type="button" data-act="mu-addlist">+ New list</button>
+        <datalist id="dl-composers">${[...new Set([...Object.keys(MU_SIDE()), ...listening.items.map(a => a.a)].filter(Boolean))].sort().map(a => `<option value="${esc(a)}"></option>`).join("")}</datalist>`;
       },
       collect: el => {
-        const fm = $("#al-form", el); if (fm) { const v = {}; readInto(fm, v); albumForm.v = v; }
-        $$("[data-ql]", el).forEach(i => { queueForm[i.dataset.ql] = i.value; });
-        collectLists(el, "listening");
-        const read = side => $$(`[data-rows=m-${side}] input`, el).map(i => i.value.trim()).filter(Boolean);
-        if ($("[data-rows=m-top]", el)) data.music = { top: read("top") };
+        if (!$("[data-rows=mu-play]", el)) return;
+        const v = el2 => (el2 || {}).value ? el2.value.trim() : "";
+        const top = $$("[data-rows=m-top] input", el).map(i => i.value.trim()).filter(Boolean);
+        const play = $$("[data-rows=mu-play] .row", el).map(r => {
+          const o = {}; ["t", "a", "status", "with", "when", "rec", "note"].forEach(k => { const x = v($(`[data-p=${k}]`, r)); if (x) o[k] = x; }); return o;
+        }).filter(p => p.t);
+        const lists = $$(".mu-listcard", el).map(c => ({ name: v($("[data-l=name]", c)), desc: v($("[data-l=desc]", c)) || undefined,
+          items: $$(".row", c).map(r => { const o = { t: v($("[data-i=t]", r)) }; const a = v($("[data-i=a]", r)), n = v($("[data-i=note]", r)); if (a) o.a = a; if (n) o.note = n; return o; }).filter(x => x.t) }))
+          .filter(l => l.name || l.items.length);
+        const bio = v($("#mu-bio", el));
+        data.music = { ...(bio ? { bio } : {}), top, play, lists };
       }
     }
   };
@@ -1080,6 +1101,10 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       toReadForm = {}; markLog("books"); render(); toast("Added to Want to read");
       autoCover("books", books.items[0], "book");
     }
+    else if (act === "mu-addplay") { $("[data-rows=mu-play]").insertAdjacentHTML("beforeend", playRow({ status: "now" })); $("[data-rows=mu-play] .row:last-child input").focus(); markDirty(); }
+    else if (act === "mu-addlist") { collect(); data.music = data.music || {}; (data.music.lists = data.music.lists || []).push({ name: "", items: [] }); render(); const c = $$(".mu-listcard").pop(); c.scrollIntoView({ block: "center" }); $("[data-l=name]", c).focus(); markDirty(); }
+    else if (act === "mu-additem") { const rows = $(`.mu-listcard[data-j="${a.dataset.j}"] .rows`); rows.insertAdjacentHTML("beforeend", muItemRow()); $(".row:last-child input", rows).focus(); markDirty(); }
+    else if (act === "mu-dellist") { if (!armed()) return; collect(); const c = $(`.mu-listcard[data-j="${a.dataset.j}"]`); c.remove(); collect(); render(); markDirty(); toast("List deleted"); }
     else if (act === "al-save") { SECTIONS.music.collect(el); commitAlbum(albumForm.v); }
     else if (act === "al-cancel") { albumForm = freshForm(); render(); }
     else if (act === "al-edit") { albumForm = { mode: "album", i, v: albumVals(listening.items[i]) }; top(); }
