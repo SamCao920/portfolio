@@ -415,6 +415,16 @@
     const avatar = p.avatar ? `<img src="${esc(p.avatar)}" alt="${esc(p.name)}">` : esc(p.initials);
     const upcoming = S.writings.filter(w => w.type === "appearance" && isUpcoming(w)).sort((a, b) => String(a.start).localeCompare(String(b.start)));
     setTimeout(thread);
+    const reading = booksReading().slice(0, 2);
+    const playing = PLAY.filter(x => x.status === "now").slice(0, 3);
+    /* Lately: the newest entries across my logs and my work, one list */
+    const feed = [
+      ...filmDiary.map(d => ({ date: d.date, it: d.it, verb: d.rewatch ? "Rewatched" : "Watched", sub: String(d.it.y || ""), r: d.r })),
+      ...booksRead().filter(b => b.read).map(b => ({ date: b.read, it: b, verb: "Finished", sub: b.a, r: b.r })),
+      ...albumDiary.map(d => ({ date: d.date, it: d.it, verb: "Listened to", sub: d.it.a, r: d.r })),
+      ...S.writings.filter(w => w.type === "appearance" && w.start && w.start <= TODAY).map(w => ({ date: w.start, w, verb: "Went to", sub: w.place || "" }))
+    ].filter(e => e.date).sort(byDateDesc("date"))
+      .filter(function (e) { const k = e.verb === "Rewatched" ? "Watched" : e.verb; this[k] = (this[k] || 0) + 1; return this[k] <= 3; }, {}).slice(0, 8);   /* at most three of a kind, so one log can’t fill it */
     const doors = [["work.html", "Work", "Papers, projects, art, talks"], ["vault.html", "The Vault", "All my notes, as a map you can drag around"],
       ["books.html", "Taste", "Books, films, art and music I love"], ["socials.html", "Say hi", "Email is best"]];
     return `
@@ -433,11 +443,20 @@
             <p class="thread-intro">A note pulled at random from my vault. Click a link to follow where it leads, or pull another.</p>
             <article class="thread" id="thread" aria-live="polite"><p class="thread-loading">Pulling a note…</p></article>
             <ol class="thread-trail" id="thread-trail" aria-label="Where you have been"></ol></section>
+          ${feed.length ? `<section class="section">${sectionHead("Lately")}<ul class="feed">${feed.map(e => `<li>
+            <time datetime="${esc(e.date)}">${esc(fmtDate(e.date).replace(/, \d{4}$/, ""))}</time>
+            <span class="feed-thumb">${e.it ? poster(e.it) : e.w ? `<a class="poster" href="${workHref(e.w)}" aria-label="${esc(e.w.title)}">${workCover(e.w)}</a>` : ""}</span>
+            <div><span class="feed-verb">${e.verb}</span> ${e.it ? `<button type="button" class="linkish" data-kind="${e.it.kind}" data-i="${e.it.i}">${esc(e.it.t)}</button>` : `<a href="${workHref(e.w)}">${esc(e.w.title)}</a>`}
+              ${e.sub ? `<span class="feed-sub">${esc(e.sub)}</span>` : ""} ${stars(e.r)}</div></li>`).join("")}</ul></section>` : ""}
         </div>
         <aside>
           ${upcoming.length ? `<section class="side-block">${sectionHead("Upcoming")}<ul class="upcoming">${upcoming.map(w =>
             `<li><a href="${workHref(w)}">${esc(w.title)}</a><span>${esc(w.venue)}</span></li>`).join("")}</ul></section>` : ""}
           <section class="side-block">${sectionHead("Now")}<ul>${p.now.map(n => `<li>${esc(n)}</li>`).join("")}</ul></section>
+          ${reading.length ? `<section class="side-block">${sectionHead("Reading", "books.html", "Books")}
+            <ul class="posters two">${reading.map(b => posterItem(b, { caption: "Since " + fmtDate(b.added).replace(/, \d{4}$/, "") })).join("")}</ul></section>` : ""}
+          ${playing.length ? `<section class="side-block">${sectionHead("Practicing", "music.html", "Music")}<ul class="upcoming">${playing.map(x =>
+            `<li><b>${esc(x.t)}</b><span>${esc(x.a || "")}</span></li>`).join("")}</ul></section>` : ""}
           <section class="side-block">${sectionHead("Around the site")}<ul class="doors">${doors.map(([href, t, sub]) =>
             `<li><a href="${href}"><b>${t}</b><span>${sub}</span></a></li>`).join("")}</ul></section>
         </aside>

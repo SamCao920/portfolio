@@ -275,7 +275,7 @@ a.poster { color: inherit; }
 @media (max-width: 780px) { .about-portrait { max-width: 220px; } }
 
 /* ---------- vault graph ---------- */
-#graph-wrap { position: relative; height: clamp(380px, calc(100vh - 300px), 720px); margin-top: 22px; background: var(--bg-raised); border-radius: 4px; box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+#graph-wrap { position: relative; height: max(380px, calc(100svh - 430px)); margin-top: 22px; background: var(--bg-raised); border-radius: 4px; box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
 #graph { width: 100%; height: 100%; display: block; cursor: grab; touch-action: pan-y; }
 #graph.dragging { cursor: grabbing; }
 #graph.on-node { cursor: pointer; }
@@ -1244,3 +1244,17 @@ ul.pp-tracks { list-style: none; padding-left: 0; }
 .constellation g { cursor: pointer; }
 .constellation g:hover circle:not(.hit) { fill: var(--heading); r: 6; }
 @media (max-width: 600px) { .thread { grid-template-columns: 76px minmax(0, 1fr); gap: 14px; } }
+
+/* ---------- home: Lately, one list across the logs ---------- */
+.feed { list-style: none; margin: 0; padding: 0; }
+.feed li { display: grid; grid-template-columns: 52px 34px minmax(0, 1fr); gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.feed li:last-child { border-bottom: 0; }
+.feed time { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.feed-thumb .poster { width: 34px; }
+.feed-thumb .cover-title, .feed-thumb .cover-author { display: none; }
+.feed-verb { color: var(--muted); }
+.feed .linkish, .feed div > a { font-weight: 600; color: var(--text-strong); white-space: normal; display: inline; }
+.feed div > a:hover { color: var(--blue); }
+.feed-sub { color: var(--muted); font-size: 13px; }
+.feed .stars { margin-left: 4px; font-size: 11px; }
+@media (max-width: 780px) { aside .posters.two { max-width: 240px; } }
