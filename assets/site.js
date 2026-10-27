@@ -459,6 +459,18 @@
     };
     const trail = [];
     let known, starts;
+    /* which book or film each note came from, so the card can show its cover (data/notes.js lists each source's ideas) */
+    const SRC = new Map();
+    [...BOOKS, ...FILMS_ALL].forEach(it => (it.notes || []).forEach(n => [n.note, ...(n.ideas || [])].forEach(t => SRC.has(t) || SRC.set(t, it))));
+    /* no source: draw the note and its neighbours as a small star map; each point follows that link */
+    const constellation = (t, next) => {
+      const W = 120, H = 150, cx = 60, cy = 75, r = 44;
+      const pts = next.map((n, k) => { const a = -Math.PI / 2 + k * 2 * Math.PI / next.length + (shardOf(t) % 7) * .1; return [n, cx + r * Math.cos(a), cy + r * 1.15 * Math.sin(a)]; });
+      return `<svg class="constellation" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(t)} and the ${plural(next.length, "note")} it links to">
+        ${pts.map(([, x, y]) => `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`).join("")}
+        ${pts.map(([n, x, y]) => `<g class="wl-go" data-note="${esc(n)}"><title>${esc(n)}</title><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="12" class="hit"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.5"/></g>`).join("")}
+        <circle class="me" cx="${cx}" cy="${cy}" r="8"/></svg>`;
+    };
     const go = async (t, fromTrail, fresh) => {
       const html = await noteHtml(t);
       if (!html) return false;
@@ -473,11 +485,14 @@
       const sum = para ? para.innerHTML.replace(/<a class="wl"[^>]*data-note="([^"]*)"[^>]*>(.*?)<\/a>/g, (m, n, txt) => known.has(n.replace(/&amp;/g, "&")) ? `<button type="button" class="wl-go" data-note="${n}">${txt}</button>` : txt) : "";
       box.classList.add("out");
       setTimeout(() => {
-        box.innerHTML = `<p class="thread-kicker">${esc(known.get(t) || "Note")}</p>
+        const src = SRC.get(t);
+        box.innerHTML = `<div class="thread-visual">${src ? poster(src) : constellation(t, next)}</div><div class="thread-text">
+          <p class="thread-kicker">${src && src.notes.some(n => n.note === t) ? (src.kind === "book" ? "Book" : "Film") : esc(known.get(t) || "Note")}${src && !src.notes.some(n => n.note === t) ? ` · from <cite>${esc(src.t)}</cite>` : ""}</p>
           <h3>${esc(t)}</h3>
           ${sum ? `<p class="thread-body">${sum}</p>` : ""}
           ${next.length ? `<div class="thread-next"><span>Leads to</span>${next.map(n => `<button type="button" class="wl-go" data-note="${esc(n)}">${esc(n)}</button>`).join("")}</div>` : `<p class="thread-end">A dead end. Pull another.</p>`}
-          <div class="thread-actions"><button type="button" class="btn" id="thread-pull">↻ Pull another</button><a class="read-link" href="${vaultLink(t)}">Read the whole note <span class="arr">→</span></a></div>`;
+          <div class="thread-actions"><button type="button" class="btn" id="thread-pull">↻ Pull another</button><a class="read-link" href="${vaultLink(t)}">Read the whole note <span class="arr">→</span></a></div></div>`;
+        watchCovers(box);
         trailEl.innerHTML = trail.length > 1 ? trail.map((n, k) => `<li>${k === trail.length - 1 ? `<span aria-current="step">${esc(n)}</span>` : `<button type="button" class="wl-back" data-note="${esc(n)}">${esc(n)}</button>`}</li>`).join("") : "";
         box.classList.remove("out");
       }, box.dataset.ready ? 180 : 0);
@@ -497,7 +512,7 @@
       const notes = (window.VAULT_INDEX || {}).notes || [];
       if (!notes.length) { box.closest(".section").remove(); return; }
       known = new Map(notes.map(([t, folder]) => [t, folder === "Notes" ? "Note" : folder]));
-      starts = notes.filter(([, folder, links]) => folder === "Notes" && links >= 3).map(([t]) => t);
+      starts = notes.filter(([t, folder]) => folder === "Notes" && SRC.has(t)).map(([t]) => t);
       if (!starts.length) starts = notes.map(([t]) => t);
       pull();
     });
