@@ -418,6 +418,12 @@
     const reading = booksReading().slice(0, 2);
     const playing = PLAY.filter(x => x.status === "now").slice(0, 3);
     setTimeout(lately);
+    setTimeout(() => {   /* keep the sidebar in view while the long column scrolls, but only when it fits on screen */
+      const side = $(".home-side"); if (!side) return;
+      const fit = () => side.classList.toggle("stick", side.offsetHeight < innerHeight - 110 && matchMedia("(min-width: 781px)").matches);
+      fit(); addEventListener("resize", fit); setTimeout(fit, 1500);
+    });
+    const artPick = ART.filter(a => a.img).sort(() => Math.random() - .5)[0];
     const doors = [["work.html", "Work", "Papers, projects, art, talks"], ["vault.html", "The Vault", "All my notes, as a map you can drag around"],
       ["books.html", "Taste", "Books, films, art and music I love"], ["socials.html", "Say hi", "Email is best"]];
     return `
@@ -438,7 +444,7 @@
             <ol class="thread-trail" id="thread-trail" aria-label="Where you have been"></ol></section>
           <section class="section">${sectionHead("Lately")}<ul class="feed" id="lately"></ul></section>
         </div>
-        <aside>
+        <aside class="home-side">
           ${upcoming.length ? `<section class="side-block">${sectionHead("Upcoming")}<ul class="upcoming">${upcoming.map(w =>
             `<li><a href="${workHref(w)}">${esc(w.title)}</a><span>${esc(w.venue)}</span></li>`).join("")}</ul></section>` : ""}
           <section class="side-block">${sectionHead("Now")}<ul>${p.now.map(n => `<li>${esc(n)}</li>`).join("")}</ul></section>
@@ -446,6 +452,8 @@
             <ul class="posters two">${reading.map(b => posterItem(b, { caption: "Since " + fmtDate(b.added).replace(/, \d{4}$/, "") })).join("")}</ul></section>` : ""}
           ${playing.length ? `<section class="side-block">${sectionHead("Practicing", "music.html", "Music")}<ul class="upcoming">${playing.map(x =>
             `<li><b>${esc(x.t)}</b><span>${esc(x.a || "")}</span></li>`).join("")}</ul></section>` : ""}
+          ${artPick ? `<section class="side-block">${sectionHead("Looking at", "art.html", "All art")}
+            <ul class="art-grid one">${artTile(artPick)}</ul></section>` : ""}
           <section class="side-block">${sectionHead("Around the site")}<ul class="doors">${doors.map(([href, t, sub]) =>
             `<li><a href="${href}"><b>${t}</b><span>${sub}</span></a></li>`).join("")}</ul></section>
         </aside>
