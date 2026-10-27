@@ -417,14 +417,7 @@
     setTimeout(thread);
     const reading = booksReading().slice(0, 2);
     const playing = PLAY.filter(x => x.status === "now").slice(0, 3);
-    /* Lately: the newest entries across my logs and my work, one list */
-    const feed = [
-      ...filmDiary.map(d => ({ date: d.date, it: d.it, verb: d.rewatch ? "Rewatched" : "Watched", sub: String(d.it.y || ""), r: d.r })),
-      ...booksRead().filter(b => b.read).map(b => ({ date: b.read, it: b, verb: "Finished", sub: b.a, r: b.r })),
-      ...albumDiary.map(d => ({ date: d.date, it: d.it, verb: "Listened to", sub: d.it.a, r: d.r })),
-      ...S.writings.filter(w => w.type === "appearance" && w.start && w.start <= TODAY).map(w => ({ date: w.start, w, verb: "Went to", sub: w.place || "" }))
-    ].filter(e => e.date).sort(byDateDesc("date"))
-      .filter(function (e) { const k = e.verb === "Rewatched" ? "Watched" : e.verb; this[k] = (this[k] || 0) + 1; return this[k] <= 3; }, {}).slice(0, 8);   /* at most three of a kind, so one log can’t fill it */
+    setTimeout(lately);
     const doors = [["work.html", "Work", "Papers, projects, art, talks"], ["vault.html", "The Vault", "All my notes, as a map you can drag around"],
       ["books.html", "Taste", "Books, films, art and music I love"], ["socials.html", "Say hi", "Email is best"]];
     return `
@@ -443,11 +436,7 @@
             <p class="thread-intro">A note pulled at random from my vault. Click a link to follow where it leads, or pull another.</p>
             <article class="thread" id="thread" aria-live="polite"><p class="thread-loading">Pulling a note…</p></article>
             <ol class="thread-trail" id="thread-trail" aria-label="Where you have been"></ol></section>
-          ${feed.length ? `<section class="section">${sectionHead("Lately")}<ul class="feed">${feed.map(e => `<li>
-            <time datetime="${esc(e.date)}">${esc(fmtDate(e.date).replace(/, \d{4}$/, ""))}</time>
-            <span class="feed-thumb">${e.it ? poster(e.it) : e.w ? `<a class="poster" href="${workHref(e.w)}" aria-label="${esc(e.w.title)}">${workCover(e.w)}</a>` : ""}</span>
-            <div><span class="feed-verb">${e.verb}</span> ${e.it ? `<button type="button" class="linkish" data-kind="${e.it.kind}" data-i="${e.it.i}">${esc(e.it.t)}</button>` : `<a href="${workHref(e.w)}">${esc(e.w.title)}</a>`}
-              ${e.sub ? `<span class="feed-sub">${esc(e.sub)}</span>` : ""} ${stars(e.r)}</div></li>`).join("")}</ul></section>` : ""}
+          <section class="section">${sectionHead("Lately")}<ul class="feed" id="lately"></ul></section>
         </div>
         <aside>
           ${upcoming.length ? `<section class="side-block">${sectionHead("Upcoming")}<ul class="upcoming">${upcoming.map(w =>
@@ -461,6 +450,63 @@
             `<li><a href="${href}"><b>${t}</b><span>${sub}</span></a></li>`).join("")}</ul></section>
         </aside>
       </div>`;
+  }
+
+  /* Lately: the newest things across the site, one list. Films, books and appearances come from the data files;
+     notes I added come from data/vault-index.js (dates written by tools/build-graph.py); music, when content.js has
+     "lastfm": { "user": ..., "key": ... }, comes from Last.fm, which Spotify can feed automatically. */
+  let vaultIndexP;
+  const vaultIndex = () => vaultIndexP || (vaultIndexP = window.VAULT_INDEX ? Promise.resolve() : loadScript("data/vault-index.js"));
+  function lately() {
+    const ul = $("#lately"); if (!ul) return;
+    const rows = [
+      ...filmDiary.map(d => ({ date: d.date, kind: "film", it: d.it, verb: d.rewatch ? "Rewatched" : "Watched", sub: String(d.it.y || ""), r: d.r })),
+      ...booksRead().filter(b => b.read).map(b => ({ date: b.read, kind: "book", it: b, verb: "Finished", sub: b.a, r: b.r })),
+      ...S.writings.filter(w => w.type === "appearance" && w.start && w.start <= TODAY).map(w => ({ date: w.start, kind: "work", w, verb: "Went to", sub: w.place || "" }))
+    ];
+    const short = d => d === TODAY ? "Today" : fmtDate(d).replace(/, \d{4}$/, "");
+    const row = e => `<li${e.now ? ' class="now"' : ""}><time datetime="${esc(e.date)}">${e.now ? '<i class="pulse"></i>Now' : esc(short(e.date))}</time>
+      <span class="feed-thumb">${e.it ? poster(e.it) : e.w ? `<a class="poster" href="${workHref(e.w)}" aria-label="${esc(e.w.title)}">${workCover(e.w)}</a>`
+        : e.img ? `<span class="poster sq"><img alt="" loading="lazy" src="${esc(e.img)}" referrerpolicy="no-referrer" onerror="this.remove()"></span>` : `<span class="feed-dot${e.kind === "music" ? " music" : ""}" aria-hidden="true"></span>`}</span>
+      <div><span class="feed-verb">${e.verb}</span> ${e.it ? `<button type="button" class="linkish" data-kind="${e.it.kind}" data-i="${e.it.i}">${esc(e.it.t)}</button>`
+        : e.w ? `<a href="${workHref(e.w)}">${esc(e.w.title)}</a>`
+        : e.notes ? e.notes.slice(0, 2).map(t => `<a href="${vaultLink(t)}">${esc(t)}</a>`).join('<span class="feed-sub">, </span>') + (e.notes.length > 2 ? ` <span class="feed-sub">and ${e.notes.length - 2} more</span>` : "")
+        : `<b>${esc(e.title)}</b>`}
+        ${e.sub ? `<span class="feed-sub">${esc(e.sub)}</span>` : ""} ${stars(e.r)}</div></li>`;
+    const draw = () => {
+      const seen = {};   /* at most three of a kind, so one log can’t fill the list */
+      const list = rows.filter(e => e.date).sort((a, b) => (b.now - a.now) || String(b.date).localeCompare(String(a.date)))
+        .filter(e => (seen[e.kind] = (seen[e.kind] || 0) + 1) <= 3).slice(0, 8);
+      ul.innerHTML = list.map(row).join("");
+      ul.closest(".section").hidden = !list.length;
+      watchCovers(ul);
+    };
+    draw();
+    /* notes added, one row per day */
+    vaultIndex().then(() => {
+      const byDay = new Map();
+      ((window.VAULT_INDEX || {}).notes || []).forEach(([t, , , made]) => { if (made && made <= TODAY) byDay.set(made, [...(byDay.get(made) || []), t]); });
+      [...byDay].filter(([, notes]) => notes.length <= 12).forEach(([date, notes]) =>   /* a bigger day is an import or a sync, not writing */
+        rows.push({ date, kind: "note", notes, verb: notes.length === 1 ? "Wrote a note:" : `Wrote ${notes.length} notes:` }));
+      if (byDay.size) draw();
+    });
+    /* music from Last.fm: plays grouped by album, newest first */
+    const fm = S.lastfm || {};
+    if (fm.user && fm.key) fetch(`https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${encodeURIComponent(fm.user)}&api_key=${encodeURIComponent(fm.key)}&format=json&limit=60`)
+      .then(r => r.ok ? r.json() : null).then(j => {
+        const tracks = (((j || {}).recenttracks || {}).track || []);
+        const groups = [];
+        tracks.forEach(t => {
+          const artist = (t.artist || {})["#text"] || "", album = (t.album || {})["#text"] || "", now = ((t["@attr"] || {}).nowplaying === "true");
+          const date = now ? TODAY : t.date ? isoOf(new Date(+t.date.uts * 1000)) : null; if (!date) return;
+          const key = (album || t.name) + "|" + artist;
+          const g = groups.find(x => x.key === key && x.date === date);
+          if (g) { g.plays++; if (now) g.now = true; return; }
+          const img = ((t.image || []).find(x => x.size === "medium") || {})["#text"] || "";
+          groups.push({ key, date, now, plays: 1, kind: "music", verb: now ? "Listening to" : "Listened to", title: album || t.name, sub: artist, img: /2a96cbd8b46e442fc41c2b86b821562f/.test(img) ? "" : img });
+        });
+        if (groups.length) { rows.push(...groups); draw(); }
+      }).catch(() => {});
   }
 
   /* Follow a thread: a random note from the vault, its links as next steps, and the path taken so far.
@@ -527,7 +573,7 @@
       if (b.id === "thread-pull") pull();
       else { if (b.classList.contains("wl-back")) trail.splice(trail.indexOf(b.dataset.note) + 1); go(b.dataset.note, b.classList.contains("wl-back")); }
     });
-    (window.VAULT_INDEX ? Promise.resolve() : loadScript("data/vault-index.js")).then(() => {
+    vaultIndex().then(() => {
       const notes = (window.VAULT_INDEX || {}).notes || [];
       if (!notes.length) { box.closest(".section").remove(); return; }
       known = new Map(notes.map(([t, folder]) => [t, folder === "Notes" ? "Note" : folder]));
