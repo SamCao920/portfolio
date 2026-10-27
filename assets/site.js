@@ -104,7 +104,7 @@
 
   const NAV = [
     ["index.html", "Home", "home"],
-    ["writings.html", "Writing", "writings"],
+    ["writings.html", "Papers", "writings"],
     ["projects.html", "Projects", "projects"],
     ["appearances.html", "Appearances", "appearances"],
     ["studio.html", "Studio", "studio"],
@@ -120,7 +120,7 @@
   /* ---------- chrome ---------- */
   /* grouped menu items: each group is one entry in the top bar with a dropdown, and a switcher on its pages */
   const GROUPS = [
-    { label: "Work", after: "home", items: [["writings.html", "Writing", "writings"], ["projects.html", "Projects", "projects"], ["appearances.html", "Appearances", "appearances"], ["studio.html", "Studio", "studio"]] },
+    { label: "Work", after: "home", items: [["writings.html", "Papers", "writings"], ["projects.html", "Projects", "projects"], ["appearances.html", "Appearances", "appearances"], ["studio.html", "Studio", "studio"]] },
     { label: "Taste", after: "studio", items: [["books.html", "Books", "books"], ["films.html", "Films", "films"], ["art.html", "Art", "art"], ["music.html", "Music", "music"]] }
   ];
   const TASTE = GROUPS[1].items;
@@ -534,8 +534,8 @@
     const WR = S.writings.filter(w => w.type !== "appearance" && w.type !== "project");
     const types = ["all", ...new Set(WR.map(w => w.type))];
     const html = `
-      <h1 class="page-title">Writing</h1>
-      <p class="page-sub">Essays and research. Things I’ve built are under <a href="projects.html">Projects</a>; talks and conferences under <a href="appearances.html">Appearances</a>.</p>
+      <h1 class="page-title">Papers</h1>
+      <p class="page-sub">Essays written for prize competitions, and independent research. Things I’ve built are under <a href="projects.html">Projects</a>; talks and conferences under <a href="appearances.html">Appearances</a>.</p>
       <div class="filterbar"><div class="group" role="group" aria-label="Filter by type">
         ${types.map(t => `<button class="chip" type="button" data-type="${t}" aria-pressed="${t === "all"}">${t === "all" ? "All" : (TYPE_LABEL[t] || t) + (t === "research" ? "" : "s")}</button>`).join("")}
       </div><div class="group"><span id="w-count"></span></div></div>
