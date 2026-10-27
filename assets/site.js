@@ -105,6 +105,7 @@
   const NAV = [
     ["index.html", "Home", "home"],
     ["writings.html", "Writing", "writings"],
+    ["projects.html", "Projects", "projects"],
     ["appearances.html", "Appearances", "appearances"],
     ["studio.html", "Studio", "studio"],
     ["books.html", "Books", "books"],
@@ -119,12 +120,12 @@
   /* ---------- chrome ---------- */
   /* grouped menu items: each group is one entry in the top bar with a dropdown, and a switcher on its pages */
   const GROUPS = [
-    { label: "Work", after: "home", items: [["writings.html", "Writing", "writings"], ["appearances.html", "Appearances", "appearances"], ["studio.html", "Studio", "studio"]] },
+    { label: "Work", after: "home", items: [["writings.html", "Writing", "writings"], ["projects.html", "Projects", "projects"], ["appearances.html", "Appearances", "appearances"], ["studio.html", "Studio", "studio"]] },
     { label: "Taste", after: "studio", items: [["books.html", "Books", "books"], ["films.html", "Films", "films"], ["art.html", "Art", "art"], ["music.html", "Music", "music"]] }
   ];
   const TASTE = GROUPS[1].items;
-  const groupCount = k => ({ writings: S.writings.filter(w => w.type !== "appearance").length, appearances: S.writings.filter(w => w.type === "appearance").length, studio: STUDIO.length,
-    books: BOOKS.filter(b => b.shelf === "read").length, films: FILMS.length, art: ART.length, music: MU_LISTS.length + PLAY.filter(p => p.status !== "learn").length })[k];
+  const groupCount = k => ({ writings: S.writings.filter(w => w.type !== "appearance" && w.type !== "project").length, projects: S.writings.filter(w => w.type === "project").length, appearances: S.writings.filter(w => w.type === "appearance").length, studio: STUDIO.length,
+    books: BOOKS.filter(b => b.shelf === "read").length, films: FILMS.length, art: ART.length, music: favPeople().length + MU_LISTS.length + PLAY.filter(p => p.status !== "learn").length })[k];
   const tasteCount = groupCount;
   const groupOf = key => GROUPS.find(g => g.items.some(it => it[2] === key));
   function header() {
@@ -349,7 +350,7 @@
 
   /* ---------- writing ---------- */
   const TYPE_LABEL = { essay: "Essay", research: "Research", project: "Project", appearance: "Appearance" };
-  const workHref = w => `${w.type === "appearance" ? "appearances" : "writings"}.html#${slug(w.title)}`;
+  const workHref = w => `${w.type === "appearance" ? "appearances" : w.type === "project" ? "projects" : "writings"}.html#${slug(w.title)}`;
   function workCover(w) { return w.cover ? `<img alt="" loading="lazy" src="${esc(w.cover)}">` : coverFace(w.title, w.venue.split(/[,·]/)[0]); }
   function workPoster(w) {
     return `<li class="poster-item"><a class="poster" href="${workHref(w)}" title="${esc(w.title)}" aria-label="${esc(w.title)}">${workCover(w)}</a>
@@ -530,11 +531,11 @@
   }
 
   function writingsPage() {
-    const WR = S.writings.filter(w => w.type !== "appearance");
+    const WR = S.writings.filter(w => w.type !== "appearance" && w.type !== "project");
     const types = ["all", ...new Set(WR.map(w => w.type))];
     const html = `
-      <h1 class="page-title">Writing &amp; projects</h1>
-      <p class="page-sub">Essays, research and projects. Talks and conferences are under <a href="appearances.html">Appearances</a>.</p>
+      <h1 class="page-title">Writing</h1>
+      <p class="page-sub">Essays and research. Things I’ve built are under <a href="projects.html">Projects</a>; talks and conferences under <a href="appearances.html">Appearances</a>.</p>
       <div class="filterbar"><div class="group" role="group" aria-label="Filter by type">
         ${types.map(t => `<button class="chip" type="button" data-type="${t}" aria-pressed="${t === "all"}">${t === "all" ? "All" : (TYPE_LABEL[t] || t) + (t === "research" ? "" : "s")}</button>`).join("")}
       </div><div class="group"><span id="w-count"></span></div></div>
@@ -558,6 +559,17 @@
     return html;
   }
 
+  function projectsPage() {
+    const PR = S.writings.filter(w => w.type === "project");
+    setTimeout(() => {
+      linkVault($("#app"));
+      if (location.hash) { const t = document.getElementById(location.hash.slice(1)); if (t) { t.scrollIntoView(); t.classList.add("flash"); } }
+    });
+    return `
+      <div class="page-head"><div><h1 class="page-title">Projects</h1><p class="page-sub">Things I’ve built and made.</p></div>
+        ${statsRow([[PR.length, "Projects"]])}</div>
+      ${PR.length ? `<ul class="entries">${PR.map(entry).join("")}</ul>` : '<p class="note">Nothing here yet.</p>'}`;
+  }
   function appearancesPage() {
     const AP = S.writings.filter(w => w.type === "appearance");
     const when = w => String(w.start || w.end || "");
@@ -752,12 +764,63 @@
 
 
   /* ---------- music: aggregates of my Spotify history (data/music.js) ---------- */
-  /* Top five composers and artists: my picks from admin (content.js, music.top). */
-  const topPicks = () => { const m = S.music || {}; return (m.top || [...(m.classical || []), ...(m.other || [])]).filter(Boolean).slice(0, 5); };
+  /* Favorite composers and artists: my ranked picks from admin (content.js music.top: names, or {name, img, note}).
+     Each has a portrait (mine, or Wikipedia's) and opens a panel: a short Wikipedia summary, my note, my most played
+     tracks by them (from my Spotify history, data/music.js, loaded on the Music page only), what I play by them and
+     where they appear in my lists. */
+  const favPeople = () => { const m = S.music || {}; return (m.top || [...(m.classical || []), ...(m.other || [])]).map(x => typeof x === "string" ? { name: x } : x).filter(x => x && x.name); };
+  const topPicks = () => favPeople().map(x => x.name);
+  const wikiCache = {};
+  function wikiSummary(name) {
+    if (wikiCache[name]) return wikiCache[name];
+    const key = "wk1:" + name;
+    try { const c = JSON.parse(localStorage.getItem(key) || "null"); if (c && Date.now() - c.at < 14 * 864e5) return (wikiCache[name] = Promise.resolve(c.v)); } catch (e) {}
+    return (wikiCache[name] = fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + encodeURIComponent(name.replace(/ /g, "_")) + "?redirect=true")
+      .then(r => r.ok ? r.json() : null).then(j => {
+        const v = j && j.type !== "disambiguation" ? { img: (j.thumbnail || {}).source || "", text: j.extract || "", desc: j.description || "", url: ((j.content_urls || {}).desktop || {}).page || "" } : null;
+        try { localStorage.setItem(key, JSON.stringify({ at: Date.now(), v })); } catch (e) {}
+        return v;
+      }).catch(() => null));
+  }
+  const nameKey = s => String(s || "").normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9 ]+/g, " ").trim();
+  const samePerson = (a, b) => { const x = nameKey(a), y = nameKey(b); if (!x || !y) return false; if (x === y) return true;
+    const lx = x.split(" ").pop(), ly = y.split(" ").pop(); return lx === ly && lx.length > 3; };
+  /* my most played tracks by someone: all-time lists first, then each year's, in listening order */
+  function mostPlayed(name, n = 5) {
+    const M = window.MUSIC; if (!M) return [];
+    const ids = [];
+    for (const side of Object.keys(M.periods || {})) for (const per of ["all", ...Object.keys(M.periods[side]).filter(k => k !== "all").sort().reverse()])
+      for (const i of (M.periods[side][per] || {}).tracks || []) if (!ids.includes(i) && M.tracks[i] && samePerson(M.tracks[i].a, name)) ids.push(i);
+    return ids.slice(0, n).map(i => M.tracks[i]);
+  }
   function topFive() {
-    const names = topPicks();
-    if (!names.length) return "";
-    return `<div class="top5"><ol>${names.map((a, n) => `<li><i>${n + 1}</i><b>${esc(a)}</b></li>`).join("")}</ol></div>`;
+    const people = favPeople();
+    if (!people.length) return "";
+    setTimeout(() => people.forEach((p, k) => { if (p.img) return; wikiSummary(p.name).then(v => { const im = $(`.fav-people [data-fp="${k}"] .fp-img`); if (v && v.img && im) { im.src = v.img; im.hidden = false; } }); }));
+    return `<ol class="fav-people">${people.map((p, n) => `<li><button type="button" class="fp" data-fp="${n}" aria-label="${esc(p.name)}: more">
+      <i class="fp-n">${n + 1}</i><span class="fp-face"><span class="fp-init" aria-hidden="true">${esc(p.name.split(" ").pop().slice(0, 1))}</span><img class="fp-img" alt="" ${p.img ? `src="${esc(p.img)}"` : "hidden"} referrerpolicy="no-referrer" onerror="this.hidden=true"></span>
+      <span class="fp-text"><b>${esc(p.name)}</b>${p.note ? `<span>${mdInline(p.note)}</span>` : ""}</span><span class="fp-more" aria-hidden="true">→</span></button></li>`).join("")}</ol>`;
+  }
+  function personPanel() {
+    const dlg = document.createElement("dialog"); dlg.className = "person-dlg"; document.body.appendChild(dlg);
+    const open = async k => {
+      const p = favPeople()[k]; if (!p) return;
+      const tracks = mostPlayed(p.name), plays = PLAY.filter(x => samePerson(x.a, p.name));
+      const inLists = MU_LISTS.flatMap(l => l.items.map((x, i) => ({ x, i, l })).filter(o => samePerson(o.x.a, p.name)));
+      const body = w => `<button class="dlg-close" type="button" aria-label="Close">×</button>
+        <div class="pp-head"><span class="pp-face">${p.img || (w && w.img) ? `<img src="${esc(p.img || w.img)}" alt="" referrerpolicy="no-referrer">` : `<span class="fp-init">${esc(p.name.split(" ").pop().slice(0, 1))}</span>`}</span>
+          <div><p class="pp-rank">Number ${k + 1} of my favorites</p><h3>${esc(p.name)}</h3>${w && w.desc ? `<p class="by">${esc(w.desc)}</p>` : ""}</div></div>
+        ${p.note ? `<div class="review">${md(p.note)}</div>` : ""}
+        ${w && w.text ? `<p class="pp-wiki">${esc(w.text)} ${w.url ? `<a href="${esc(w.url)}" target="_blank" rel="noopener">Wikipedia</a>` : ""}</p>` : w === undefined ? '<p class="pp-wiki note">Loading…</p>' : ""}
+        ${tracks.length ? `<h4>What I listen to most</h4><ol class="pp-tracks">${tracks.map(t => `<li><a href="https://open.spotify.com/track/${esc(t.id)}" target="_blank" rel="noopener">${esc(t.t)}</a></li>`).join("")}</ol>` : ""}
+        ${plays.length ? `<h4>What I play by them</h4><ul class="pp-tracks">${plays.map(x => `<li>${esc(x.t)}<span>${esc([PLAY_STATUS[x.status || "played"], x.with, x.when].filter(Boolean).join(" · "))}</span></li>`).join("")}</ul>` : ""}
+        ${inLists.length ? `<h4>In my lists</h4><ul class="pp-tracks">${inLists.map(o => `<li>${esc(o.x.t)}<span>Number ${o.i + 1} in <a href="#list-${slug(o.l.name)}">${esc(o.l.name)}</a></span></li>`).join("")}</ul>` : ""}`;
+      const paint = w => { dlg.innerHTML = body(w); $(".dlg-close", dlg).onclick = () => dlg.close(); $$("a[href^='#list-']", dlg).forEach(a => a.addEventListener("click", () => dlg.close())); };
+      paint(undefined); if (!dlg.open) dlg.showModal();
+      paint(await wikiSummary(p.name));
+    };
+    document.addEventListener("click", e => { const b = e.target.closest("[data-fp]"); if (b) open(+b.dataset.fp); });
+    dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
   }
   /* ---------- music: my ranked lists and what I play (content.js "music", edited in admin) ---------- */
   const MU = S.music || {};
@@ -785,6 +848,7 @@
         ${x.note ? `<p>${mdInline(x.note)}</p>` : ""}</div></li>`).join("")}</ol></section>`;
   }
   function musicPage() {
+    setTimeout(personPanel);
     const now = PLAY.filter(p => p.status === "now"), learn = PLAY.filter(p => p.status === "learn"), played = PLAY.filter(p => p.status !== "now" && p.status !== "learn");
     const empty = msg => `<p class="note">${msg}</p>`;
     return `
@@ -792,7 +856,7 @@
         ${statsRow([[MU_LISTS.length, "Lists"], [PLAY.filter(p => p.status !== "learn").length, "Pieces played"], [now.length, "Playing now"]])}</div>
       <div class="cols">
         <div>
-          ${topPicks().length ? `<section class="section">${sectionHead("Top five composers and artists")}${topFive()}</section>` : ""}
+          ${favPeople().length ? `<section class="section">${sectionHead("Favorite composers and artists")}${topFive()}</section>` : ""}
           <section class="section">${sectionHead("What I play")}
             ${now.length || played.length ? `<ul class="play-list">${[...now, ...played].map(playEntry).join("")}</ul>` : empty("Nothing here yet.")}</section>
           <section class="section">${sectionHead("Lists")}${MU_LISTS.length ? MU_LISTS.map(musicList).join("") : empty("No lists yet.")}</section>
@@ -1311,7 +1375,7 @@
     document.body.appendChild(sc);
   }
 
-  const PAGES = { notfound: notFoundPage, home, writings: writingsPage, appearances: appearancesPage, books: booksPage, films: filmsPage, art: artPage, music: musicPage, studio: studioPage, vault: vaultPage, about: aboutPage, socials: socialsPage };
+  const PAGES = { notfound: notFoundPage, home, writings: writingsPage, projects: projectsPage, appearances: appearancesPage, books: booksPage, films: filmsPage, art: artPage, music: musicPage, studio: studioPage, vault: vaultPage, about: aboutPage, socials: socialsPage };
   document.body.insertAdjacentHTML("afterbegin", header());
   const app = document.getElementById("app");
   app.innerHTML = `<div class="wrap">${groupOf(page) ? tasteNav() : ""}${(PAGES[page] || home)()}</div>`;

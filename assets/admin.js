@@ -887,17 +887,39 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       <span class="lr-stars">${starTxt(d.r)}${d.again ? " ↻" : ""}${d.review ? " ✎" : ""}</span><span class="lr-date">${esc(d.date)}</span></button></li>`).join("") || '<li class="lempty">Nothing logged yet.</li>')
       + (L.length > 100 ? `<li class="lempty">Showing 100 of ${L.length}. Search to narrow.</li>` : "");
   }
-  /* top five composers and artists: one ranked list in content.js as data.music.top */
+  /* favorite composers and artists: a ranked list in content.js as data.music.top, each a name or {name, img, note}.
+     A portrait is looked up on Wikipedia when you type a name; replace it with your own (path or URL, or Choose file). */
+  const favRow = (x = {}) => { x = typeof x === "string" ? { name: x } : x;
+    return `<div class="row fav-row"><span class="rank-n" aria-hidden="true"></span>
+    <input data-fv="name" value="${esc(x.name || "")}" list="dl-composers" placeholder="Composer or artist" aria-label="Name">
+    <div class="filerow" data-fv-wrap><img class="fv-thumb" alt="" ${x.img ? `src="${esc(x.img)}"` : "hidden"} referrerpolicy="no-referrer"><input type="text" data-fv="img" value="${esc(x.img || "")}" placeholder="Portrait: found automatically" aria-label="Portrait"><label class="btn" tabindex="0">Choose<input type="file" hidden data-file="img" data-dir="assets/music/portraits" accept="image/*"></label></div>
+    <input data-fv="note" value="${esc(x.note || "")}" placeholder="Note (optional)" aria-label="Note">
+    <span class="row-btns"><button class="icon-btn" type="button" data-rowmove="-1" aria-label="Move up">↑</button><button class="icon-btn" type="button" data-rowmove="1" aria-label="Move down">↓</button><button class="icon-btn danger" type="button" data-rowdel aria-label="Remove">×</button></span></div>`; };
   function topFiveHtml() {
     const m = data.music || {};
-    const names = (m.top || [...(m.classical || []), ...(m.other || [])]).slice(0, 5);
-    while (names.length < 5) names.push("");
-    return `<div class="section-head" style="margin-top:26px"><h2>Top five composers and artists</h2></div>
-      <p class="ed-help">One ranked list, shown near the top of the Music page. Leave it empty to hide it.</p>
-      <div class="rows top5-rows" data-rows="m-top">${names.map((n, i) => `<div class="row rank-row"><span class="rank-n" aria-hidden="true"></span><input value="${esc(n)}" list="dl-top" placeholder="Composer or artist" aria-label="Top five, number ${i + 1}">
-        <button class="icon-btn" type="button" data-rowmove="-1" aria-label="Move up">↑</button><button class="icon-btn" type="button" data-rowmove="1" aria-label="Move down">↓</button></div>`).join("")}</div>
-      <datalist id="dl-top">${Object.keys(MU_SIDE()).map(a => `<option value="${esc(a)}"></option>`).join("")}</datalist>`;
+    const people = m.top || [...(m.classical || []), ...(m.other || [])];
+    return `<div class="section-head" style="margin-top:26px"><h2>Favorite composers and artists</h2></div>
+      <p class="ed-help">Ranked, best first. Each opens a panel on the Music page with a short Wikipedia summary, your note, the tracks you play most by them (from your Spotify history), what you play by them and where they are in your lists.</p>
+      <div class="rows top5-rows wide" data-rows="m-top">${(people.length ? people : [""]).map(favRow).join("")}</div>
+      <button class="btn add" type="button" data-act="mu-addfav">+ Add composer or artist</button>`;
   }
+  async function wikiPortrait(name) {
+    try {
+      const r = await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + encodeURIComponent(name.trim().replace(/ /g, "_")) + "?redirect=true");
+      const j = r.ok ? await r.json() : null;
+      return j && j.type !== "disambiguation" && j.thumbnail ? j.thumbnail.source : "";
+    } catch (e) { return ""; }
+  }
+  document.addEventListener("change", async e => {
+    const t = e.target;
+    if (t.matches && t.matches("[data-fv=img]")) { const im = $(".fv-thumb", t.closest(".row")); im.hidden = !t.value; if (t.value && !/^assets\//.test(t.value)) im.src = t.value; return; }
+    if (!t.matches || !t.matches("[data-fv=name]") || !t.value.trim()) return;
+    const row = t.closest(".row"), img = $("[data-fv=img]", row);
+    if (img.value.trim()) return;
+    const url = await wikiPortrait(t.value);
+    if (url && !img.value.trim()) { img.value = url; const im = $(".fv-thumb", row); im.src = url; im.hidden = false; markDirty(); }
+    else if (!url) toast(`No Wikipedia portrait found for ${t.value.trim()}. Try the full name, or choose a picture.`);
+  });
 
   /* music: a piece I play, and a ranked list with free-form entries */
   const PLAY_ST = [["now", "Playing now"], ["played", "Played"], ["learn", "Want to learn"]];
@@ -980,7 +1002,10 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       collect: el => {
         if (!$("[data-rows=mu-play]", el)) return;
         const v = el2 => (el2 || {}).value ? el2.value.trim() : "";
-        const top = $$("[data-rows=m-top] input", el).map(i => i.value.trim()).filter(Boolean);
+        const top = $$("[data-rows=m-top] .row", el).map(r => {
+          const name = v($("[data-fv=name]", r)), img = v($("[data-fv=img]", r)), note = v($("[data-fv=note]", r));
+          return !name ? null : img || note ? { name, ...(img ? { img } : {}), ...(note ? { note } : {}) } : name;
+        }).filter(Boolean);
         const play = $$("[data-rows=mu-play] .row", el).map(r => {
           const o = {}; ["t", "a", "status", "with", "when", "rec", "note"].forEach(k => { const x = v($(`[data-p=${k}]`, r)); if (x) o[k] = x; }); return o;
         }).filter(p => p.t);
@@ -1101,6 +1126,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       toReadForm = {}; markLog("books"); render(); toast("Added to Want to read");
       autoCover("books", books.items[0], "book");
     }
+    else if (act === "mu-addfav") { $("[data-rows=m-top]").insertAdjacentHTML("beforeend", favRow()); $("[data-rows=m-top] .row:last-child input").focus(); markDirty(); }
     else if (act === "mu-addplay") { $("[data-rows=mu-play]").insertAdjacentHTML("beforeend", playRow({ status: "now" })); $("[data-rows=mu-play] .row:last-child input").focus(); markDirty(); }
     else if (act === "mu-addlist") { collect(); data.music = data.music || {}; (data.music.lists = data.music.lists || []).push({ name: "", items: [] }); render(); const c = $$(".mu-listcard").pop(); c.scrollIntoView({ block: "center" }); $("[data-l=name]", c).focus(); markDirty(); }
     else if (act === "mu-additem") { const rows = $(`.mu-listcard[data-j="${a.dataset.j}"] .rows`); rows.insertAdjacentHTML("beforeend", muItemRow()); $(".row:last-child input", rows).focus(); markDirty(); }

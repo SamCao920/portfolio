@@ -1132,3 +1132,30 @@ dialog.lightbox .vid { width: min(1000px, 90vw); max-width: none; max-height: 74
 .mu-side li { display: grid; padding: 8px 0; border-bottom: 1px solid var(--line); }
 .mu-side b, .mu-side a { font: var(--dw, 700) 14px/1.35 var(--display); color: var(--heading); }
 .mu-side span { font-size: 12px; color: var(--muted); }
+
+/* favorite composers and artists (Music page) and their panel */
+.fav-people { list-style: none; margin: 0; padding: 0; }
+.fav-people li { border-bottom: 1px solid var(--line); }
+.fp { display: grid; grid-template-columns: 26px 52px minmax(0, 1fr) auto; gap: 12px; align-items: center; width: 100%; padding: 10px 6px 10px 0; border: 0; background: none; color: inherit; text-align: left; cursor: pointer; border-radius: 6px; transition: background .15s; }
+.fp:hover, .fp:focus-visible { background: var(--bg-raised); }
+.fp-n { font: 400 20px/1 var(--body); font-style: normal; color: var(--accent); font-variant-numeric: tabular-nums; text-align: right; }
+.fp-face, .pp-face { position: relative; width: 52px; height: 52px; border-radius: 50%; overflow: hidden; background: var(--surface); box-shadow: 0 0 0 1px var(--line-strong); display: grid; place-items: center; flex: none; }
+.fp-face img, .pp-face img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; filter: grayscale(.15); }
+.fp-init { font: var(--dw, 700) 20px/1 var(--display); color: var(--muted); }
+.fp-text { min-width: 0; display: grid; gap: 2px; }
+.fp-text b { font: var(--dw, 700) 17px/1.3 var(--display); color: var(--heading); }
+.fp-text span { font-size: 13px; color: var(--muted); }
+.fp-more { color: var(--muted); transition: transform .2s var(--ease), color .2s; }
+.fp:hover .fp-more { color: var(--accent); transform: translateX(3px); }
+dialog.person-dlg { width: min(560px, 94vw); max-width: none; padding: 22px 22px 18px; }
+.pp-head { display: flex; gap: 16px; align-items: center; margin-bottom: 12px; }
+.pp-head .pp-face { width: 88px; height: 88px; }
+.pp-head h3 { margin: 2px 0 2px; font: var(--dw, 700) 24px/1.2 var(--display); color: var(--heading); }
+.pp-rank { margin: 0; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.person-dlg .by { margin: 0; color: var(--muted); }
+.pp-wiki { color: var(--text); font-size: 14.5px; line-height: 1.55; }
+.person-dlg h4 { margin: 16px 0 6px; font: 400 11px/1 var(--body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.pp-tracks { margin: 0; padding-left: 1.3em; }
+.pp-tracks li { padding: 4px 0; color: var(--text-strong); }
+.pp-tracks li span { display: block; font-size: 12px; color: var(--muted); }
+ul.pp-tracks { list-style: none; padding-left: 0; }

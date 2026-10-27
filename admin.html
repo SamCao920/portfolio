@@ -10,7 +10,7 @@
 <link rel="icon" href="assets/website/my-notion-face-transparent.ico" type="image/x-icon">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="assets/style.css?v=d94e592b">
+<link rel="stylesheet" href="assets/style.css?v=a44619ae">
 <style>
   /* Editor layout: sticky toolbar, section list on the left, form on the right. */
   body { min-height: 100vh; }
@@ -31,6 +31,11 @@
   .play-row [data-p=when] { grid-area: wh; } .play-row [data-p=rec] { grid-area: rec; } .rows .row.play-row [data-p=note] { grid-area: note; } .play-row .row-btns { grid-area: btns; display: flex; gap: 6px; justify-content: flex-end; }
   .play-row select { border: 1px solid var(--line-strong); border-radius: 6px; background: var(--bg-glow); color: var(--text-strong); font: 14px var(--body); padding: 7px 6px; min-width: 0; }
   .rows .row.rank-row.mu-item { grid-template-columns: 28px minmax(0, 2fr) minmax(0, 1.2fr) minmax(0, 1.6fr) auto auto auto !important; }
+  .rows .row.rank-row.fav-row, .rows .row.fav-row { grid-template-columns: 28px minmax(0, 1.4fr) minmax(0, 1.6fr) minmax(0, 1.4fr) auto !important; counter-increment: rk; }
+  .fav-row .filerow { display: flex; gap: 6px; align-items: center; min-width: 0; }
+  .fav-row .filerow input { flex: 1; }
+  .fv-thumb { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; object-position: 50% 20%; flex: none; background: var(--surface); }
+  .fav-row .row-btns { display: flex; gap: 6px; }
   .mu-listcard { margin-bottom: 14px; } .mu-listcard .logbtns { align-items: center; }
   .artist-row { grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1.4fr) auto auto auto !important; }
   .btn[disabled] { opacity: .45; cursor: not-allowed; transform: none !important; }
@@ -204,6 +209,9 @@
     .rows .row.artist-row [data-rowdel] { grid-column: 5; grid-row: 1; }
     .rows .row.artist-row input[data-a=note] { grid-column: 2 / -1; grid-row: 2; }
     .suggest { left: 8px !important; width: calc(100vw - 16px) !important; }
+    .rows .row.fav-row { grid-template-columns: 24px minmax(0, 1fr) !important; }
+    .rows .row.fav-row > :not(.rank-n) { grid-column: 2 !important; }
+    .rows .row.fav-row .rank-n { grid-row: 1; }
     .rows .row.play-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "t t" "a st" "w wh" "rec rec" "note note" "btns btns"; }
     .rows .row.play-row input { grid-column: auto; }
     .rows .row.rank-row.mu-item { grid-template-columns: 24px minmax(0, 1fr) auto auto auto !important; }
@@ -232,13 +240,13 @@
   <nav class="ed-nav" id="nav" aria-label="Sections"></nav>
   <main class="ed-main" id="main"></main>
 </div>
-<script src="data/content.js?v=f5d29a72"></script>
+<script src="data/content.js?v=8f731a10"></script>
 <script src="data/books.js?v=d3d0a3c3"></script>
 <script src="data/films.js?v=ce3423c8"></script>
 <script src="data/music.js?v=8e55ff1d"></script>
 <script src="data/listening.js?v=0adc9951"></script>
 <script src="data/art.js?v=3343d752"></script>
 <script src="assets/covers.js?v=99fec6eb"></script>
-<script src="assets/admin.js?v=a2d1baaa"></script>
+<script src="assets/admin.js?v=4f600c61"></script>
 </body>
 </html>
