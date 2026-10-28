@@ -1,6 +1,6 @@
 /* Music: albums I've listened to, a dated diary, ranked lists and a to-listen list.
    Edit it with admin.html. It must stay valid JavaScript. */
-window.LISTENING = {"updated":"2026-10-25","bio":"The music I love, classical and otherwise.","favorites":[7,10,11,12],"lists":[],"items":[
+window.LISTENING = {"updated":"2026-10-28","bio":"The music I love, classical and otherwise.","favorites":[7,10,11,12],"lists":[{"name":"Non-Classical Music Top 10","desc":"A ranking of my top 10 non-classical artists.","items":[]}],"items":[
   {"t":"Fantasy No. 1 with Fugue","a":"Wolfgang Amadeus Mozart","y":1782,"form":"work","side":"classical","r":4,"liked":false,"added":"2026-10-13","sp":null,"cover":null},
   {"t":"Piano Quintet in C minor","a":"Ralph Vaughan Williams","y":1905,"form":"work","side":"classical","r":3,"liked":false,"added":"2026-10-13","sp":null,"cover":null},
   {"t":"String Quartet in G minor","a":"Claude Debussy","y":1893,"form":"work","side":"classical","r":4.5,"liked":true,"added":"2026-10-13","sp":"track/0iPxJsFS4cLUGb4gwHuOqq","cover":null},

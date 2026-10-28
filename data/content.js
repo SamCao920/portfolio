@@ -23,7 +23,7 @@ window.SITE = {
   },
   "about": [
     "Hi, I’m Sam. My given name is Fangyuan (曹方源), but you can call me Sam. I’m currently a freshman planning on double majoring in Moral and Political Economy and Applied Mathematics and Statistics at the Johns Hopkins University, and my interests lie most prominently at the intersection of economics, philosophy, and history.",
-    "I grew up in China and finished high school in California. This website has my <a href=\"work.html\">essays, projects and art</a>, what I’m <a href=\"books.html\">reading</a>, <a href=\"films.html\">watching</a>, <a href=\"art.html\">looking at</a>, or <a href=\"music.html\">listening to</a> is all here. In case you are also wondering what I'm thinking about, visit <a href=\"vault.html\">the vault</a>."
+    "I grew up in China and finished high school in California. This website has my <a href=\"writings.html\">essays and research</a>, what I’m <a href=\"books.html\">reading</a>, <a href=\"films.html\">watching</a>, <a href=\"art.html\">looking at</a>, or <a href=\"music.html\">listening to</a> is all here. In case you are also wondering what I'm thinking about, visit <a href=\"vault.html\">the vault</a>."
   ],
   "facts": [
     [
@@ -162,26 +162,67 @@ window.SITE = {
       "body": "A podcast script for the New York Fed’s competition, tracing the line from concentrated animal feeding operations and agricultural monopolization through volatility in food-service employment to consumer prices, then proposing tax incentives for food deserts and community nutrition education."
     },
     {
-      "title": "Open Margins",
-      "type": "project",
-      "venue": "Open-source website · 2026",
-      "featured": false,
-      "claim": "Free, open annotated editions of classic books: a short note in the margin wherever a high school or college reader is likely to get stuck.",
-      "body": "It starts with Joseph Conrad’s *Lord Jim*. Notes come in layers you can turn on and off (vocabulary, allusions, history, places), so a 10th grader can see everything and a college reader can hide the vocabulary. Each note is drafted with AI, then checked by a person against a cited source before it is marked verified, and a random sample of verified notes is rechecked so the error rate can be published. Every note is released under an open license.\n\n[Source on GitHub](https://github.com/SamCao920/scholia)",
-      "link": "https://scholia.dpdns.org/",
-      "linkText": "Visit Open Margins",
-      "cover": "assets/plates/open-margins-cover.jpg"
+      "title": "The Meritocracy Dilemma",
+      "type": "essay",
+      "venue": "CCIR Re:Think Competition, 2026",
+      "award": "Honorable Mention",
+      "link": "assets/The Meritocracy Dilemma.pdf",
+      "linkText": "Read the paper",
+      "claim": "Meritocracy cannot satisfy its own justificatory conditions. Desert-based meritocracy is incompatible with the liberal societies that are the only place desert makes sense as a fairness criterion.",
+      "body": "Not a myth in the sense that it disguises structural inequality, but in the stricter sense that it fails on its own terms. The essay takes on the claim that allocations are intrinsically justified because people deserve outcomes according to their merits. Set out the conditions that would justify it, and they turn out to be ones liberalism cannot meet.",
+      "featured": false
     },
     {
-      "title": "Connections Map",
+      "title": "Evaluating Governmental Controls on Social Media Speech",
+      "type": "essay",
+      "venue": "Horizon Academic Essay Prize, 2025",
+      "award": "Honorable Mention",
+      "result": "Top 50 of 1,952 entries",
+      "link": "assets/Evaluating Governmental Controls on Social Media Speech.pdf",
+      "linkText": "Read the essay",
+      "claim": "State regulation of disinformation fails on its own terms. Independent fact-checking and media literacy are the more durable alternative, because they do not require the state to decide what is true.",
+      "body": "A competition judged by faculty from Yale, Harvard, Oxford, and Cambridge. Germany’s 2017 Network Enforcement Act pushed platforms to over-block rather than adjudicate, and cut disinformation very little; AI takedowns produce enormous numbers of false positives and have almost no multilingual training data; and compliance-driven moderation moves slower than the misinformation it chases.",
+      "featured": false
+    },
+    {
+      "title": "Against Moral Intuitionism",
+      "type": "essay",
+      "venue": "John Locke Essay Competition, 2024; The Sidgwick Prize, Cambridge, 2026",
+      "award": "High Commendation · Shortlist",
+      "link": "assets/Against Moral Intuitionism.pdf",
+      "linkText": "Read the essay",
+      "claim": "We have no reason to trust our moral intuitions.",
+      "body": "Taking intuition in the foundationalist sense, a self-evident “intellectual seeming,” the essay argues they are epistemically unreliable, subject to persistent disagreement, and resting on a questionable metaphysics. The central asymmetry is with perception: a perceptual seeming can be checked against contextual cues, so we know to distrust it in fog or when impaired. An intellectual seeming admits no such feedback. And because moral intuitionism presupposes moral realism, every argument against the latter counts against it too.",
+      "featured": false
+    },
+    {
+      "title": "The Zhejiang-Jiangxi Campaign",
+      "type": "research",
+      "venue": "Independent research",
+      "link": "assets/The Zhejiang-Jiangxi Campaign.pdf",
+      "linkText": "Read the paper",
+      "claim": "The Doolittle raid’s consequences have to be reassessed against the devastation that followed it.",
+      "body": "The raid of April 1942 did little physical damage and a great deal for American morale, and that is where the story usually stops. It leaves out the retaliatory campaign through Zhejiang and Jiangxi in which roughly 250,000 civilians were killed, property was destroyed wholesale, and biological weapons were used indiscriminately. The paper traces Sino-American cooperation from the isolationism of the mid-1930s through the shift in public opinion after the Marco Polo Bridge Incident.",
+      "featured": false
+    },
+    {
+      "title": "US Patent Reform",
       "type": "project",
-      "venue": "Web app · 2026",
-      "featured": false,
-      "claim": "A private map of the people I know, so that when I visit a city I remember who lives there and can reach out for coffee.",
-      "body": "Each person is pinned to a city with how we met and how to reach them. It lists who lives near an upcoming trip, greys out people whose time in a place has probably ended and asks before that happens, and keeps a log of each coffee or call. The page itself is static and anyone can use it with their own data: contacts stay in the browser or in a private GitHub repo, never in the site.",
-      "link": "https://github.com/SamCao920/connections-map",
-      "linkText": "View on GitHub",
-      "cover": "assets/plates/connections-map-cover.jpg"
+      "venue": "Institute for Youth in Policy, Public Policy Fellowship",
+      "award": "Outstanding Capstone",
+      "link": "assets/Patent Reform Video (YIP Capstone).mp4",
+      "linkText": "Watch the video",
+      "claim": "Capstone presentation on reforming the US patent system.",
+      "featured": false
+    },
+    {
+      "title": "The Vault",
+      "type": "project",
+      "venue": "A live map of my reading notes",
+      "link": "vault.html",
+      "linkText": "Open the map",
+      "claim": "Every idea I have written down, and the links between them: the same Obsidian graph I read and write in, rendered as an interactive map.",
+      "featured": false
     },
     {
       "title": "Making Progress",
@@ -535,12 +576,10 @@ window.SITE = {
     "top": [
       "Ludwig van Beethoven",
       "Johann Sebastian Bach",
-      "Wolfgang Amadeus Mozart",
       "Gustav Mahler",
-      "Maurice Ravel"
-    ],
-    "play": [],
-    "lists": []
+      "Neutral Milk Hotel",
+      "Sun Kil Moon"
+    ]
   },
   "artists": [
     {
