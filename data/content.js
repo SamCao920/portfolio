@@ -279,6 +279,9 @@ window.SITE = {
           "src": "assets/appearances/10th-madrid-annual-conference-on-austria/365ee5ac-cc37-4f06-af52-0cfb7ae77721.jpg"
         },
         {
+          "src": "assets/appearances/10th-madrid-annual-conference-on-austria/105c8585-31ce-4fff-bf16-cff8f8ad7838.jpg"
+        },
+        {
           "src": "https://www.youtube.com/watch?v=QcIhRec_yTU"
         }
       ]
