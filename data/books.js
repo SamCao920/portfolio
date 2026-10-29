@@ -1,6 +1,7 @@
 /* Books: what I have read, am reading and want to read.
    Edit it with admin.html. It must stay valid JavaScript. */
-window.BOOKS = {"updated":"2026-10-27","items":[
+window.BOOKS = {"updated":"2026-10-28","items":[
+  {"t":"Beethoven","full":"Beethoven","a":"Jan Swafford","isbn":"9788416748686","r":null,"read":null,"added":"2026-10-28","shelf":"to-read","fav":false,"review":null,"pages":1077,"year":"2014","cover":"https://covers.openlibrary.org/b/id/7374662-M.jpg"},
   {"t":"The ethics of liberty","full":"The ethics of liberty","a":"Murray Newton Rothbard","isbn":"9780814775592","r":null,"read":null,"added":"2026-10-27","shelf":"to-read","fav":false,"review":null,"pages":308,"year":"2002","cover":"https://covers.openlibrary.org/b/id/6893762-M.jpg"},
   {"t":"The Complacent Class","full":"The Complacent Class","a":"Tyler Cowen","isbn":"9781250153777","r":null,"read":null,"added":"2026-10-26","shelf":"to-read","fav":false,"review":null,"pages":267,"year":"2017","cover":"https://covers.openlibrary.org/b/id/8133667-M.jpg"},
   {"t":"The cult of statistical significance","full":"The cult of statistical significance","a":"Stephen Thomas Ziliak","isbn":"9780472070077","r":null,"read":null,"added":"2026-10-26","shelf":"to-read","fav":false,"review":null,"pages":321,"year":"2008","cover":"https://covers.openlibrary.org/b/id/5426153-M.jpg"},
