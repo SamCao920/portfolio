@@ -1,6 +1,7 @@
 /* Books: what I have read, am reading and want to read.
    Edit it with admin.html. It must stay valid JavaScript. */
-window.BOOKS = {"updated":"2026-10-28","items":[
+window.BOOKS = {"updated":"2026-10-29","items":[
+  {"t":"Machinery of Government","full":"Machinery of Government","a":"Joseph Heath","isbn":"9780197509616","r":null,"read":null,"added":"2026-10-29","shelf":"to-read","fav":false,"review":null,"pages":442,"year":"2020","cover":"https://covers.openlibrary.org/b/id/13947781-M.jpg"},
   {"t":"Beethoven","full":"Beethoven","a":"Jan Swafford","isbn":"9788416748686","r":null,"read":null,"added":"2026-10-28","shelf":"to-read","fav":false,"review":null,"pages":1077,"year":"2014","cover":"https://covers.openlibrary.org/b/id/7374662-M.jpg"},
   {"t":"The ethics of liberty","full":"The ethics of liberty","a":"Murray Newton Rothbard","isbn":"9780814775592","r":null,"read":null,"added":"2026-10-27","shelf":"to-read","fav":false,"review":null,"pages":308,"year":"2002","cover":"https://covers.openlibrary.org/b/id/6893762-M.jpg"},
   {"t":"The Complacent Class","full":"The Complacent Class","a":"Tyler Cowen","isbn":"9781250153777","r":null,"read":null,"added":"2026-10-26","shelf":"to-read","fav":false,"review":null,"pages":267,"year":"2017","cover":"https://covers.openlibrary.org/b/id/8133667-M.jpg"},
