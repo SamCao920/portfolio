@@ -1,7 +1,6 @@
 /* Books: what I have read, am reading and want to read.
    Edit it with admin.html. It must stay valid JavaScript. */
-window.BOOKS = {"updated":"2026-10-29","items":[
-  {"t":"The Design of Everyday Things","full":"The Design of Everyday Things","a":"Don Norman","isbn":null,"r":5,"read":"2026-10-29","added":"2026-10-29","shelf":"read","fav":true,"review":null,"pages":368,"year":"2013","cover":"https://is1-ssl.mzstatic.com/image/thumb/Publication122/v4/c3/e2/a3/c3e2a3ac-a308-18ad-4895-6ce058b56952/9780465072996.jpg/400x600bb.jpg"},
+window.BOOKS = {"updated":"2026-10-31","items":[
   {"t":"The Prime of Miss Jean Brodie","full":"The Prime of Miss Jean Brodie","a":"Muriel Spark","isbn":"9780397002320","r":null,"read":null,"added":"2026-10-29","shelf":"to-read","fav":false,"review":null,"pages":164,"year":"1961","cover":"https://covers.openlibrary.org/b/id/40054-M.jpg"},
   {"t":"Plunkitt of Tammany Hall","full":"Plunkitt of Tammany Hall","a":"George Washington Plunkitt","isbn":"9781466403420","r":null,"read":null,"added":"2026-10-29","shelf":"to-read","fav":false,"review":null,"pages":98,"year":"1963","cover":"https://covers.openlibrary.org/b/id/2780402-M.jpg"},
   {"t":"Machinery of Government","full":"Machinery of Government","a":"Joseph Heath","isbn":"9780197509616","r":null,"read":null,"added":"2026-10-29","shelf":"to-read","fav":false,"review":null,"pages":442,"year":"2020","cover":"https://covers.openlibrary.org/b/id/13947781-M.jpg"},
