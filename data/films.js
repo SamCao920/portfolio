@@ -1,6 +1,6 @@
 /* Films: everything I have seen, a dated diary, ranked lists and a watchlist.
    Edit it with admin.html. It must stay valid JavaScript. */
-window.FILMS = {"updated":"2026-10-31","user":"TrueRoman","bio":"I don't watch enough movies:(","favorites":[140,254,22,229],"items":[
+window.FILMS = {"updated":"2026-10-31","user":"TrueRoman","bio":"I don't watch enough movies:(","favorites":[140,254,22,125],"items":[
   {"t":"Taxi Driver","y":1976,"uri":"https://boxd.it/2b8y","r":4,"liked":false,"added":"2022-09-07","cover":"assets/films/taxi-driver.webp"},
   {"t":"Fight Club","y":1999,"uri":"https://boxd.it/2a9q","r":3.5,"liked":false,"added":"2022-09-07","cover":"assets/films/fight-club.webp"},
   {"t":"Inception","y":2010,"uri":"https://boxd.it/1skk","r":4.5,"liked":false,"added":"2022-09-07","cover":"assets/films/inception.webp"},
