@@ -1,6 +1,6 @@
 /* Films: everything I have seen, a dated diary, ranked lists and a watchlist.
    Edit it with admin.html. It must stay valid JavaScript. */
-window.FILMS = {"updated":"2026-10-29","user":"TrueRoman","bio":"I don't watch enough movies:(","favorites":[140,72,22,229],"items":[
+window.FILMS = {"updated":"2026-10-31","user":"TrueRoman","bio":"I don't watch enough movies:(","favorites":[140,254,22,229],"items":[
   {"t":"Taxi Driver","y":1976,"uri":"https://boxd.it/2b8y","r":4,"liked":false,"added":"2022-09-07","cover":"assets/films/taxi-driver.webp"},
   {"t":"Fight Club","y":1999,"uri":"https://boxd.it/2a9q","r":3.5,"liked":false,"added":"2022-09-07","cover":"assets/films/fight-club.webp"},
   {"t":"Inception","y":2010,"uri":"https://boxd.it/1skk","r":4.5,"liked":false,"added":"2022-09-07","cover":"assets/films/inception.webp"},
@@ -254,8 +254,10 @@ window.FILMS = {"updated":"2026-10-29","user":"TrueRoman","bio":"I don't watch e
   {"t":"Wild Strawberries","y":1957,"uri":"https://boxd.it/29ZU","r":5,"liked":true,"added":"2026-09-27","cover":"assets/films/wild-strawberries.webp"},
   {"t":"Tampopo","y":1985,"uri":"https://boxd.it/1SZe","r":4.5,"liked":true,"added":"2026-09-30","cover":"assets/films/tampopo.webp"},
   {"t":"Paris, Texas","y":1984,"uri":"https://boxd.it/29Ts","r":4,"liked":false,"added":"2026-10-08","cover":"assets/films/paris-texas.webp"},
-  {"t":"Tetsuo: The Iron Man","y":1989,"uri":"https://boxd.it/ZoM","r":3.5,"liked":false,"added":"2026-10-09","cover":"assets/films/tetsuo-the-iron-man.webp"}
+  {"t":"Tetsuo: The Iron Man","y":1989,"uri":"https://boxd.it/ZoM","r":3.5,"liked":false,"added":"2026-10-09","cover":"assets/films/tetsuo-the-iron-man.webp"},
+  {"t":"A Brighter Summer Day","y":1991,"r":5,"liked":true,"added":"2026-10-31","cover":"assets/films/a-brighter-summer-day.webp"}
 ],"diary":[
+  {"f":254,"date":"2026-10-31","r":5,"rewatch":false,"review":null},
   {"f":253,"date":"2026-10-08","r":3.5,"rewatch":false,"review":"Maybe a bit too much... Though very experimental, and when it works, it really does work."},
   {"f":252,"date":"2026-10-07","r":4,"rewatch":false,"review":"Excellent film about the nature of family, loneliness, and love. The pacing of the first half of the film was unnecessarily slow? I still don't understand exactly why Travis refused to talk at the beginning."},
   {"f":251,"date":"2026-09-29","r":4.5,"rewatch":false,"review":"Never has a film made me hungrier! Delightful!"},
@@ -447,7 +449,6 @@ window.FILMS = {"updated":"2026-10-29","user":"TrueRoman","bio":"I don't watch e
   {"t":"Mishima: A Life in Four Chapters","y":1985,"uri":"https://boxd.it/1sBA","added":"2023-08-02","cover":"assets/films/mishima-a-life-in-four-chapters.webp"},
   {"t":"I'm Thinking of Ending Things","y":2020,"uri":"https://boxd.it/i4IQ","added":"2023-08-02","cover":"assets/films/im-thinking-of-ending-things.webp"},
   {"t":"Silence","y":2016,"uri":"https://boxd.it/2cAo","added":"2023-07-24","cover":"assets/films/silence.webp"},
-  {"t":"A Brighter Summer Day","y":1991,"uri":"https://boxd.it/1Luy","added":"2023-07-24","cover":"assets/films/a-brighter-summer-day.webp"},
   {"t":"The Searchers","y":1956,"uri":"https://boxd.it/25HC","added":"2023-07-24","cover":"assets/films/the-searchers.webp"},
   {"t":"Sunrise: A Song of Two Humans","y":1927,"uri":"https://boxd.it/29Xk","added":"2023-07-24","cover":"assets/films/sunrise-a-song-of-two-humans.webp"},
   {"t":"Anomalisa","y":2015,"uri":"https://boxd.it/97TE","added":"2023-04-23","cover":"assets/films/anomalisa.webp"},
