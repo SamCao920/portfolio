@@ -14,7 +14,7 @@ window.SITE = {
     "initials": "SC",
     "tagline": "Moral and Political Economy & Applied Mathematics and Statistics at Johns Hopkins University. Interested in political economy, history, philosophy, and more.",
     "location": "Baltimore, Maryland",
-    "updated": "October 2026",
+    "updated": "November 2026",
     "now": [
       "Listening to all of Beethoven's String Quartets",
       "Hopkins Symphony Orchestra & Hopkins Chamber Music Seminar"
@@ -337,6 +337,33 @@ window.SITE = {
     "intro": "Drawings, paintings and photographs from 2024 to 2026. I studied in the Visual Arts program at the California State Summer School for the Arts (CSSSA), and my work was recognized in my congressional district’s Congressional Art Competition.",
     "items": [
       {
+        "title": "Flamingos I",
+        "year": "2026",
+        "kind": "Drawing",
+        "img": "assets/studio/DSC01730.jpg"
+      },
+      {
+        "title": "Bird III",
+        "year": "2026",
+        "kind": "Photography",
+        "medium": "Sony a6000",
+        "img": "assets/studio/DSC01762.jpg"
+      },
+      {
+        "title": "Bird II",
+        "year": "2026",
+        "kind": "Photography",
+        "medium": "Sony a6000",
+        "img": "assets/studio/DSC01766.jpg"
+      },
+      {
+        "title": "Bird I",
+        "year": "2026",
+        "kind": "Photography",
+        "medium": "Sony a6000",
+        "img": "assets/studio/DSC01770.jpg"
+      },
+      {
         "title": "Mauvaise Foi",
         "year": "2025",
         "kind": "Drawing",
@@ -418,73 +445,38 @@ window.SITE = {
         "img": "assets/studio/scarcity.jpg"
       },
       {
-        "title": "Forbidden City",
-        "year": "2026",
-        "kind": "Photography",
-        "medium": "Sony a6000 · 35mm · f/5 · 1/1000s · ISO 100",
-        "img": "assets/studio/photo-dsc01200.jpg"
-      },
-      {
-        "title": "Garden Pond",
-        "year": "2026",
-        "kind": "Photography",
-        "medium": "Sony a6000 · 50mm · f/6.3 · 1/80s · ISO 100",
-        "img": "assets/studio/photo-dsc01350.jpg"
-      },
-      {
         "title": "Koi Pond",
         "year": "2026",
         "kind": "Photography",
-        "medium": "Sony a6000 · 50mm · f/5.6 · 1/80s · ISO 125",
+        "medium": "Sony a6000",
         "img": "assets/studio/photo-dsc01452.jpg"
-      },
-      {
-        "title": "Moss Garden",
-        "year": "2026",
-        "kind": "Photography",
-        "medium": "Sony a6000 · 50mm · f/5.6 · 1/80s · ISO 200",
-        "img": "assets/studio/photo-dsc01627.jpg"
       },
       {
         "title": "Lake in the Mist",
         "year": "2026",
         "kind": "Photography",
-        "medium": "Sony a6000 · 45mm · f/5.6 · 1/80s · ISO 200",
+        "medium": "Sony a6000",
         "img": "assets/studio/photo-dsc01644.jpg"
-      },
-      {
-        "title": "Manhattan, Sunset",
-        "year": "2025",
-        "kind": "Photography",
-        "medium": "Sony a6000 · 21mm · f/4.5 · 1/250s · ISO 100",
-        "img": "assets/studio/photo-20250718-dsc09775.jpg"
-      },
-      {
-        "title": "Tower at Dusk",
-        "year": "2025",
-        "kind": "Photography",
-        "medium": "Sony a6000 · 42mm · f/4.5 · 1/30s · ISO 3200",
-        "img": "assets/studio/photo-20250718-dsc09815.jpg"
       },
       {
         "title": "Geothermal Pool I",
         "year": "2024",
         "kind": "Photography",
-        "medium": "Sony a6000 · 55mm · f/7.1 · 1/640s · ISO 100",
+        "medium": "Sony a6000",
         "img": "assets/studio/photo-dsc07882.jpg"
       },
       {
         "title": "Geothermal Pool II",
         "year": "2024",
         "kind": "Photography",
-        "medium": "Sony a6000 · 48mm · f/5 · 1/1600s · ISO 100",
+        "medium": "Sony a6000",
         "img": "assets/studio/photo-dsc08742.jpg"
       },
       {
         "title": "Geothermal Pool III",
         "year": "2024",
         "kind": "Photography",
-        "medium": "Digital photograph",
+        "medium": "Sony a6000",
         "img": "assets/studio/photo-dsc08688.jpg"
       }
     ]
@@ -582,7 +574,9 @@ window.SITE = {
       "Gustav Mahler",
       "Neutral Milk Hotel",
       "Sun Kil Moon"
-    ]
+    ],
+    "play": [],
+    "lists": []
   },
   "artists": [
     {
