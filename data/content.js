@@ -337,9 +337,11 @@ window.SITE = {
     "intro": "Drawings, paintings and photographs from 2024 to 2026. I studied in the Visual Arts program at the California State Summer School for the Arts (CSSSA), and my work was recognized in my congressional district’s Congressional Art Competition.",
     "items": [
       {
-        "title": "New work",
+        "title": "Crane",
         "year": "2026",
-        "kind": "Drawing"
+        "kind": "Photography",
+        "medium": "Sony a6000",
+        "img": "assets/studio/DSC01778.jpg"
       },
       {
         "title": "Flamingos II",
