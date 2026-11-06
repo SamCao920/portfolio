@@ -1,6 +1,7 @@
 /* Books: what I have read, am reading and want to read.
    Edit it with admin.html. It must stay valid JavaScript. */
-window.BOOKS = {"updated":"2026-11-04","items":[
+window.BOOKS = {"updated":"2026-11-06","items":[
+  {"t":"Napoleón","full":"Napoleón","a":"Andrew Roberts","isbn":"9780670025329","r":null,"read":null,"added":"2026-11-06","shelf":"to-read","fav":false,"review":null,"pages":926,"year":"2014","cover":"https://covers.openlibrary.org/b/id/9133218-M.jpg"},
   {"t":"Elements","full":"Elements","a":"Euclid","isbn":"9788702395808","r":null,"read":null,"added":"2026-11-04","shelf":"to-read","fav":false,"review":null,"pages":350,"year":"1482","cover":"https://covers.openlibrary.org/b/id/1736063-M.jpg"},
   {"t":"Music in India","full":"Music in India","a":"Bonnie C. Wade","isbn":"9780136070368","r":null,"read":null,"added":"2026-11-01","shelf":"to-read","fav":false,"review":null,"pages":252,"year":"1979","cover":"https://covers.openlibrary.org/b/id/9614023-M.jpg"},
   {"t":"The Prime of Miss Jean Brodie","full":"The Prime of Miss Jean Brodie","a":"Muriel Spark","isbn":"9780397002320","r":null,"read":null,"added":"2026-10-29","shelf":"to-read","fav":false,"review":null,"pages":164,"year":"1961","cover":"https://covers.openlibrary.org/b/id/40054-M.jpg"},
