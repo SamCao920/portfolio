@@ -140,12 +140,20 @@ def main():
         'l': links,
         'built': datetime.now(timezone.utc).isoformat(timespec='minutes'),   # shown as "Last synced" on the page
     }
-    blob = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
-
     html = open(page, encoding='utf-8').read()
     open_tag = '<script id="vault-data" type="application/json">'
     a = html.index(open_tag) + len(open_tag)
     b = html.index('</script>', a)
+    # Same graph as the page already has: keep its "built" stamp. A fresh stamp on every run would make every hourly
+    # run a change, so the site would redeploy 24 times a day for nothing.
+    try:
+        old = json.loads(html[a:b])
+        if all(old.get(k) == data[k] for k in ('folders', 'n', 'l')) and old.get('built'):
+            data['built'] = old['built']
+    except ValueError:
+        pass
+    blob = json.dumps(data, ensure_ascii=False, separators=(',', ':'))
+
     open(page, 'w', encoding='utf-8').write(html[:a] + blob + html[b:])
     print(f'wrote {len(blob)} bytes into {page}')
     # small title index so site search can find notes on every page (loaded on demand)
