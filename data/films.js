@@ -255,8 +255,10 @@ window.FILMS = {"updated":"2026-11-07","user":"TrueRoman","bio":"I don't watch e
   {"t":"Tampopo","y":1985,"uri":"https://boxd.it/1SZe","r":4.5,"liked":true,"added":"2026-09-30","cover":"assets/films/tampopo.webp"},
   {"t":"Paris, Texas","y":1984,"uri":"https://boxd.it/29Ts","r":4,"liked":false,"added":"2026-10-08","cover":"assets/films/paris-texas.webp"},
   {"t":"Tetsuo: The Iron Man","y":1989,"uri":"https://boxd.it/ZoM","r":3.5,"liked":false,"added":"2026-10-09","cover":"assets/films/tetsuo-the-iron-man.webp"},
-  {"t":"A Brighter Summer Day","y":1991,"r":5,"liked":true,"added":"2026-10-31","cover":"assets/films/a-brighter-summer-day.webp"}
+  {"t":"A Brighter Summer Day","y":1991,"r":5,"liked":true,"added":"2026-10-31","cover":"assets/films/a-brighter-summer-day.webp"},
+  {"t":"Godzilla Minus Zero","y":2026,"r":2,"liked":false,"added":"2026-11-07","cover":"https://upload.wikimedia.org/wikipedia/en/0/09/Godzilla_Minus_Zero_poster.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"}
 ],"diary":[
+  {"f":255,"date":"2026-11-07","r":2,"rewatch":false,"review":null},
   {"f":254,"date":"2026-10-31","r":5,"rewatch":false,"review":null},
   {"f":253,"date":"2026-10-08","r":3.5,"rewatch":false,"review":"Maybe a bit too much... Though very experimental, and when it works, it really does work."},
   {"f":252,"date":"2026-10-07","r":4,"rewatch":false,"review":"Excellent film about the nature of family, loneliness, and love. The pacing of the first half of the film was unnecessarily slow? I still don't understand exactly why Travis refused to talk at the beginning."},
