@@ -282,7 +282,7 @@ window.SITE = {
     }
   ],
   "studio": {
-    "intro": "Drawings, paintings and photographs from 2024 to 2026. I studied in the Visual Arts program at the California State Summer School for the Arts (CSSSA), and my work was recognized in my congressional district’s Congressional Art Competition.",
+    "intro": "Drawings, paintings and photographs. I studied in the Visual Arts program at the California State Summer School for the Arts (CSSSA), and my work was recognized in my congressional district’s Congressional Art Competition.",
     "items": [
       {
         "title": "Crane",
