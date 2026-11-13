@@ -10,7 +10,7 @@ window.SITE = {
     "legalName": "Fangyuan Cao",
     "cjk": "曹方源",
     "nickname": "Sam",
-    "avatar": "assets/plates/fqs 2026-09-05 2204297EB87367C564 - Copy.JPG",
+    "avatar": "assets/plates/IMG_1256 (1).jpg",
     "initials": "SC",
     "tagline": "Moral and Political Economy & Applied Mathematics and Statistics at Johns Hopkins University. Interested in political economy, history, philosophy, and more.",
     "location": "Baltimore, Maryland",
