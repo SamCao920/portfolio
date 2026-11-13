@@ -531,6 +531,7 @@ window.SITE = {
     "goatcounter": "samcao"
   },
   "music": {
+    "bio": "Mostly listen to classical music, though a healthy amount of 1960s rock, turn-of-the-century indie, and J/Mandopop is added for variety.",
     "top": [
       "Ludwig van Beethoven",
       "Johann Sebastian Bach",
@@ -538,7 +539,13 @@ window.SITE = {
       "Neutral Milk Hotel",
       "Sun Kil Moon"
     ],
-    "play": [],
+    "play": [
+      {
+        "t": "Adagio from Sonata No.1 for Solo Violin",
+        "a": "Johann Sebastian Bach",
+        "status": "now"
+      }
+    ],
     "lists": []
   },
   "artists": [
