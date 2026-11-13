@@ -54,8 +54,8 @@ button { font: inherit; color: inherit; }
 .top h1 { margin: 0 0 6px; font: 700 30px/1.1 var(--cm); }
 .top h1 span { font-weight: 400; font-size: 17px; color: var(--grey); margin-left: 8px; }
 .top p { margin: 0; }
-.pr { margin: 0 -.16em 0 .02em; }
-.top .how { color: var(--grey); font-size: 16px; font-style: italic; }
+.top .how { color: var(--grey); font-size: 16px; font-style: italic; margin-left: .6em; }
+.deco { max-width: none; }
 .eqn-inline { white-space: nowrap; }
 /* sound: the slider sits under the toggle and only shows when the pointer is near */
 .snd { position: relative; text-align: right; padding-bottom: 26px; }
@@ -236,7 +236,7 @@ body[data-page="vault"] #graph-wrap { flex: 1 1 auto; min-height: 0; height: aut
   body { font-size: 17px; }
   .face { width: 44px; height: 44px; }
   .top h1 { font-size: 25px; } .top h1 span { display: block; margin: 3px 0 0; font-size: 15px; }
-  .top .how { font-size: 15px; }
+  .top .how { font-size: 15px; display: block; margin-left: 0; }
   #strings g[data-i] text { font-size: 16px; }
   .poem blockquote { font-size: 13.5px; } .poem figcaption { font-size: 12px; } #vol { width: 60px; } .deco { width: 112px; } #sea { width: 132px; } .deco figcaption { font-size: 12px; }
   .aside.eqn { font-size: 15px; } .aside.eqn .no { display: none; } .aside.rem { font-size: 15px; }

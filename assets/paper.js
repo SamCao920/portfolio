@@ -200,8 +200,7 @@
         <div class="who">
           ${P.avatar ? `<a class="face" href="#about" aria-label="About ${esc(P.name || "me")}"><img alt="" src="${esc(encodeURI(P.avatar))}"></a>` : ""}
           <div><h1>${esc(P.name || "")} Cao <span>${esc(P.legalName || "")} ${esc(P.cjk || "")}</span></h1>
-            <p><b>Problem.</b> Find every solution of <span class="eqn-inline"><i>y</i><span class="pr">′</span> + <i>y</i> = sin <i>x</i>.</span></p>
-            <p class="how">Four are drawn below. Click one to open it, or pull it sideways and let go.</p>
+            <p><b>Problem.</b> Find every solution of <span class="eqn-inline"><i>y</i>' + <i>y</i> = sin <i>x</i>.</span> <span class="how">Four are drawn below: click one to open it, or pull it sideways and let go.</span></p>
 </div>
         </div>
         <div class="snd"><button type="button" id="sound" aria-pressed="false">sound off</button><input type="range" id="vol" min="0" max="100" value="60" aria-label="Volume"></div>
@@ -254,7 +253,7 @@
   }
   function layout() {
     W = stage.clientWidth; const narrow = W < 700;
-    TOP = Math.round($(".top").getBoundingClientRect().height + (narrow ? 30 : 16));
+    TOP = Math.round($(".top").getBoundingClientRect().height + (narrow ? 40 : 44));
     x0 = -Math.log((0.40 * W) / (SY * 1.5));           /* the outer solutions start 40% of the width from the middle */
     ORG = W / 2 - steady(x0) * SY;                      /* shift the axis so the four starting points are centred */
     const xEnd = 3.5 + Math.PI * (narrow ? 2.85 : 1.75);   /* a phone needs another swing of the curve to fit the stanzas */
@@ -272,9 +271,9 @@
     const gust = $("#gust"), gx = narrow ? 10.45 : 7.2;
     gust.style.top = pyAt(gx) + "px"; gust.style.left = Math.min(W - gust.offsetWidth - 10, ORG + (narrow ? steady(11) : 0.72) * SY + (narrow ? 26 : 70)) + "px";
     /* three more of Hood's drawings: the leap beside "My heart leaps up", the dream on the left under Shelley, the sea under Byron */
-    $("#spring").hidden = narrow;
-    if (narrow) { put("dream", 2.45, -1, 20); put("sea", 6.3, 1, 18); }
-    else { put("spring", 0.0, -1, 200); put("dream", 3.3, -1, 130); put("sea", 6.0, 1, 84); }
+    /* each stanza has a drawing across the strings from it */
+    if (narrow) { put("spring", 1.25, 1, 10); put("dream", 4.6, -1, 22); put("sea", 7.35, 1, 12); }
+    else { put("spring", 0.0, -1, 200); put("dream", 1.85, 1, 150); put("sea", 4.75, -1, 150); }
     labels = true; field();
     /* the x axis, down the left edge */
     const ax = $("#axis"), ax0 = 9; ax.innerHTML = "";
@@ -349,7 +348,7 @@
   const aim = (q, x) => { q.xcTo = x; if (Math.abs(q.cur) < 0.01 && Math.abs(q.vel) < 0.05) q.xc = x; };
   const letGo = i => { const q = st[i]; if (!q.held) return; q.held = false; kick(); ping(i, Math.min(1, Math.abs(q.cur) * 2.5)); };
   /* a flick: push the string sideways with some speed and let the spring do the rest */
-  const flick = (i, x, v) => { const q = st[i]; if (still.matches) return; aim(q, x); q.vel += Math.max(-3, Math.min(3, v)); q.hit = performance.now(); kick(); ping(i, Math.min(1, Math.abs(v) / 3)); };
+  const flick = (i, x, v) => { const q = st[i]; aim(q, x); q.vel += Math.max(-3, Math.min(3, v)); q.hit = performance.now(); kick(); ping(i, Math.min(1, Math.abs(v) / 3)); };
 
   /* ---------- opening a section ---------- */
   function toggle(i, keepHash) {
@@ -430,7 +429,7 @@
   stage.addEventListener("click", e => { const pic = e.target.closest("[data-set]"); if (pic) light(pic.dataset.set, +pic.dataset.n); });
   let last = null, grabbed = -1;
   stage.addEventListener("pointermove", e => {
-    if (e.pointerType === "touch" || still.matches) return;
+    if (e.pointerType === "touch") return;   /* the strings move even under "reduce motion": it is a small movement the visitor makes themselves */
     const r = stage.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top, now = performance.now(), lim = 26;
     if (open >= 0 || py < TOP + QUIET) { if (grabbed >= 0) { letGo(grabbed); grabbed = -1; } last = null; return; }
     const recent = last && now - last.t < 120, speed = recent ? (px - last.px) / Math.max(4, now - last.t) * 1000 : 0;   /* sideways, pixels a second */
