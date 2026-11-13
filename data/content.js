@@ -537,7 +537,8 @@ window.SITE = {
       "Johann Sebastian Bach",
       "Gustav Mahler",
       "Neutral Milk Hotel",
-      "Sun Kil Moon"
+      "Sun Kil Moon",
+      "Acetone"
     ],
     "play": [
       {
