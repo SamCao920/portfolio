@@ -22,8 +22,8 @@ window.SITE = {
     "aboutPhoto": "assets/plates/68.jpg"
   },
   "about": [
-    "Hi, I’m Sam. My given name is Fangyuan (曹方源), but you can call me Sam. I’m currently a freshman planning on double majoring in Moral and Political Economy and Applied Mathematics and Statistics at the Johns Hopkins University, and my interests lie most prominently at the intersection of economics, philosophy, and history.",
-    "I grew up in China and finished high school in California. I play the violin in the Hopkins Symphony Orchestra, and I draw and take photographs when I can."
+    "Hi, I’m Sam. My given name is Fangyuan (曹方源), but you can call me Sam. I grew up in China and finished high school in California. I’m currently a freshman planning on double majoring in Moral and Political Economy and Applied Mathematics and Statistics at the Johns Hopkins University.",
+    "Reach out if you want to chat!"
   ],
   "facts": [
     [
