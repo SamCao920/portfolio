@@ -91,6 +91,8 @@
       <p><i>Solution.</i> ${all.length ? `${all.length} of them so far, ${claims} of which are single claims, each linked to the others it depends on.` : "Every idea I write down while reading, each linked to the others it depends on."} Three, stated without proof:</p>
       <div id="lemmas">${lemmas()}</div>
       <p>The proofs are in <a href="vault.html">the vault</a>, drawn as a map you can drag around. <button type="button" class="linkish" data-act="lemmas">Three more.</button></p>
+      <figure class="fig"><img alt="A tangle of faces sharing their features." loading="lazy" src="assets/website/hood-dream.png">
+        <figcaption><b>Figure 1.</b> “A Dream.” Thomas Hood, <i>Whims and Oddities</i>, 1826. Faces that share their features, his picture of how ideas tangle.</figcaption></figure>
       ${recent.length ? `<h3><b>(a)</b> Most recent</h3><ul class="rows">${recent.map(n => `<li><div class="row"><a class="t" href="${vaultLink(n[0])}">${esc(n[0])}</a><span class="r">${esc(fmtDate(n[3]).replace(/, \d{4}$/, ""))}</span></div></li>`).join("")}</ul>` : ""}
       ${src.length ? `<h3><b>(b)</b> Sources <small>books and films I have taken notes on</small></h3><ul class="rows">${src.map(n => `<li><div class="row"><span><a class="t" href="${vaultLink(n.note)}"><i>${esc(n.title)}</i></a>${n.author ? `<span class="by">, ${esc(String(n.author).trim())}</span>` : ""}</span><span class="r">${plural(n.ideas.length, "idea")}</span></div></li>`).join("")}</ul>` : ""}
       ${(window.QUOTES || {}).items ? `<h3><b>(c)</b> Copied out</h3><div id="quote">${quote()}</div><p style="margin-top:8px"><button type="button" class="linkish" data-act="quote">Another.</button></p>` : ""}`;
@@ -132,8 +134,10 @@
       ${(M.top || []).length ? `<p><i>Favorites.</i> ${M.top.map(esc).join(", ")}.</p>` : ""}
       ${play.length ? `<h4>At the violin</h4><ul class="rows">${play.map(p => `<li><div class="row"><span><span class="t"><i>${esc(p.t)}</i></span>${p.a ? `<span class="by">, ${esc(p.a)}</span>` : ""}</span><span class="r">${p.status === "now" ? "playing now" : p.status === "learn" ? "want to learn" : "played"}</span></div></li>`).join("")}</ul>` : ""}
       ${lists.map(l => `<details><summary>${esc(l.name)}</summary><ol class="rank">${l.items.filter(x => x.t).map(x => `<li><i>${esc(x.t)}</i>${x.a ? `, ${esc(x.a)}` : ""}</li>`).join("")}</ol></details>`).join("")}
+      <figure class="fig"><img alt="A face in the clouds blowing a set of pan pipes." loading="lazy" src="assets/website/hood-pandeans.png">
+        <figcaption><b>Figure 1.</b> “Pandeans.” Thomas Hood, <i>Whims and Oddities</i>, 1826.</figcaption></figure>
       <figure class="fig"><img alt="A girl on a clifftop blown along by a gust of wind, her umbrella turned inside out." loading="lazy" src="assets/website/gust-full.png">
-        <figcaption><b>Figure 1.</b> “De Gustibus non est disputandum.” Thomas Hood, <i>Whims and Oddities</i>, 1826. There is no arguing with a gust.</figcaption></figure>`;
+        <figcaption><b>Figure 2.</b> “De Gustibus non est disputandum.” Thomas Hood, <i>Whims and Oddities</i>, 1826. There is no arguing with a gust.</figcaption></figure>`;
   }
   function detail(kind, i) {
     if (kind === "book") { const b = BOOKS[i];
@@ -154,6 +158,8 @@
       ${(S.about || []).map((p, k) => `<p>${k ? "" : "<i>Solution.</i> "}${inline(p)}</p>`).join("")}
       <h3>Contact <small>left as an exercise for the reader</small></h3>
       <table class="cv">${(S.socials || []).filter(s => s.url).map(s => `<tr><td>${esc(s.name)}</td><td>${/^mailto:/.test(s.url) ? esc(s.handle) : `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.handle || s.name)}</a>`}</td></tr>`).join("")}</table>
+      <figure class="fig"><img alt="A mermaid combing her hair beside a well." loading="lazy" src="assets/website/hood-well.png">
+        <figcaption>“All’s well that ends well.” Thomas Hood, <i>Whims and Oddities</i>, 1826.</figcaption></figure>
       <p style="text-align:right;max-width:none;margin-top:14px">${qed}</p>`;
   }
 
@@ -199,6 +205,12 @@
       </div>
       <figure id="gust"><button type="button" aria-label="A matter of taste"><img alt="A girl blown along by a gust of wind, her umbrella turned inside out. Thomas Hood, 1826." src="assets/website/gust-girl.png"></button>
         <figcaption>De gustibus non est disputandum.</figcaption></figure>
+      <figure class="deco" id="dream"><button type="button" aria-label="Take notes"><img alt="A tangle of faces sharing their features: an eyebrow of one is the mouth of another. Thomas Hood, 1826." src="assets/website/hood-dream.png"></button>
+        <figcaption>A Dream.</figcaption></figure>
+      <figure class="deco" id="spring"><img alt="A man vaulting a fence lands on a bull. Thomas Hood, 1826." src="assets/website/hood-spring.png">
+        <figcaption>Spring and Fall.</figcaption></figure>
+      <figure class="deco" id="sea"><img alt="A skeleton rowing a coffin across the sea. Thomas Hood, 1826." src="assets/website/hood-sea.png">
+        <figcaption>“Come o’er the sea!”</figcaption></figure>
       ${P.updated ? `<p class="colophon">Updated ${esc(P.updated)}</p>` : ""}
     </div>
     <aside class="panel" id="panel" aria-label="Section" tabindex="-1"></aside>`;
@@ -206,7 +218,8 @@
   const stage = $("#stage"), svg = $("#strings"), panel = $("#panel"), keys = $("#keys");
   const NS = "http://www.w3.org/2000/svg";
   const SY = 70, PX = 220;           /* pixels per unit of y (sideways) and of x (down the page) */
-  const BEND = 0.6;                  /* width of a bend, in units of x */
+  const BEND = 1.15;                 /* width of a bend, in units of x: wide, so the string leans rather than kinks */
+  const QUIET = 150;                 /* pixels below the starting point where the string does not move at all (its label sits there) */
   let TOP = 190, W = 0, H = 0, x0 = 0, ORG = 0, open = -1;   /* ORG: where y = 0 sits, sideways */
   /* per string: how far it is straightened; and its bend: where (xc), how far now (cur), and either held by the pointer (to) or let go (amp, t0) */
   const st = [];
@@ -251,6 +264,10 @@
     /* the girl in the gust: bottom right, across the curve from the name. On a phone there is only room where the curve swings left. */
     const gust = $("#gust"), gx = narrow ? 10.45 : 7.2;
     gust.style.top = pyAt(gx) + "px"; gust.style.left = Math.min(W - gust.offsetWidth - 10, ORG + (narrow ? steady(11) : 0.72) * SY + (narrow ? 26 : 70)) + "px";
+    /* three more of Hood's drawings: the leap beside "My heart leaps up", the dream low on the left, the sea under Byron */
+    $("#spring").hidden = narrow;
+    if (narrow) { put("dream", 5.45, -1, 20); put("sea", 6.3, 1, 18); }
+    else { put("spring", 0.0, -1, 200); put("dream", 5.65, -1, 110); put("sea", 6.0, 1, 84); }
     field();
     /* the x axis, down the left edge */
     const ax = $("#axis"), ax0 = 9; ax.innerHTML = "";
@@ -269,7 +286,7 @@
     cv.width = W * dpr; cv.height = H * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
     g.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim() || "#121315"; g.lineWidth = 0.9; g.lineCap = "round";
     const step = W < 700 ? 30 : 36, half = 6, sr = stage.getBoundingClientRect();
-    const boxes = $$(".poem, .aside, .end, #gust", stage).map(el => { const r = el.getBoundingClientRect(); return [r.left - sr.left, r.top - sr.top, r.right - sr.left, r.bottom - sr.top]; });
+    const boxes = $$(".poem, .aside, .end, #gust, .deco:not([hidden])", stage).map(el => { const r = el.getBoundingClientRect(); return [r.left - sr.left, r.top - sr.top, r.right - sr.left, r.bottom - sr.top]; });
     const near = (px, py) => { let d = 1e9; for (const [l, t, r, b] of boxes) d = Math.min(d, Math.hypot(Math.max(l - px, 0, px - r), Math.max(t - py, 0, py - b))); return d; };
     for (let py = TOP + 40, row = 0; py < H - 10; py += step, row++) {
       const x = xAt(py), a = Math.min(0.3, Math.max(0, (x - (x0 + 1)) / 5.5) * 0.3); if (a < 0.01) continue;
@@ -285,7 +302,7 @@
   function pos(i, py) {
     const q = st[i], x = xAt(py);
     let y = steady(x) + SECTIONS[i].C * Math.exp(-x);
-    if (q.cur) { const u = (x - q.xc) / BEND, t = Math.min(1, (py - TOP) / 110); y += q.cur * Math.exp(-u * u) * t * t * (3 - 2 * t); }   /* fades to nothing at the top, so the starting point never moves */   /* a soft, rounded bend centred where it was pulled */
+    if (q.cur) { const u = (x - q.xc) / BEND, t = Math.min(1, Math.max(0, (py - TOP - QUIET) / 240)); y += q.cur * Math.exp(-u * u) * t * t * (3 - 2 * t); }   /* fades to nothing at the top, so the starting point never moves */   /* a soft, rounded bend centred where it was pulled */
     const natural = ORG + y * SY;
     return natural + (railX() - natural) * q.flat;
   }
@@ -293,7 +310,7 @@
     const step = 6, span = W < 700 ? 230 : 300;
     $$("g[data-i]", svg).forEach((g, i) => {
       let d = "", pts = [];
-      for (let py = TOP; py <= H; py += step) { const px = pos(i, py); d += (d ? "L" : "M") + px.toFixed(1) + " " + py; if (py <= TOP + span) pts.push([px, py]); }
+      for (let py = TOP; py <= H; py += step) { const px = pos(i, py); d += (d ? "L" : "M") + px.toFixed(1) + " " + py; if (py <= TOP + span) { const r0 = rest(i, py); pts.push([r0 + (railX() - r0) * st[i].flat, py]); } }   /* the label follows the string at rest, so it never wobbles */
       g.children[0].setAttribute("d", d); g.children[1].setAttribute("d", d);
       /* the label rides its own stretch of the curve; on the right-hand side the stretch runs upward so the words stay upright */
       const right = SECTIONS[i].C > 0; if (right) pts.reverse();
@@ -309,9 +326,9 @@
     let busy = false;
     st.forEach(q => {
       if (Math.abs(q.flatTo - q.flat) > 0.002) { q.flat += (q.flatTo - q.flat) * 0.14; busy = true; } else q.flat = q.flatTo;
-      if (q.held) { q.cur += (q.to - q.cur) * 0.3; busy = true; }
+      if (q.held) { q.cur += (q.to - q.cur) * 0.16; busy = true; }
       else { const age = (now - q.t0) / 1000;
-        if (age < 3) { q.cur = q.amp * Math.exp(-2.1 * age) * Math.cos(age * 15); busy = true; } else q.cur = 0; }
+        if (age < 3) { q.cur = q.amp * Math.exp(-2.6 * age) * Math.cos(age * 8.5); busy = true; } else q.cur = 0; }
     });
     draw(); raf = busy ? requestAnimationFrame(tick) : 0;
   }
@@ -329,7 +346,7 @@
       const s = SECTIONS[open];
       panel.innerHTML = `<div class="bar"><button class="close" type="button" data-act="close">close</button></div><div class="sheet">${s.render()}</div>`;
       panel.classList.add("show"); panel.scrollTop = 0; if (s.after) s.after();
-      st[open].xc = xAt(scrollY + innerHeight / 2); letGo(open, 0.45);
+      st[open].xc = xAt(scrollY + innerHeight / 2); letGo(open, 0.22);
       setTimeout(() => panel.focus({ preventScroll: true }), 60);
     } else panel.classList.remove("show");
     if (!keepHash) history.replaceState(null, "", open >= 0 ? "#" + SECTIONS[open].key : location.pathname + location.search);
@@ -370,9 +387,10 @@
     show(); if (!dlg.open) dlg.showModal();
     dlg.onclick = e => { if (e.target.closest(".x") || e.target === dlg || e.target.classList.contains("in")) return dlg.close();
       const n = e.target.closest(".nav"); if (n) { lk = (lk + (n.classList.contains("next") ? 1 : -1) + lset.length) % lset.length; show(); } };
-    dlg.onkeydown = e => { if (lset.length < 2) return; if (e.key === "ArrowRight") { lk = (lk + 1) % lset.length; show(); } if (e.key === "ArrowLeft") { lk = (lk - 1 + lset.length) % lset.length; show(); } };
+    dlg.onkeydown = e => { if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); dlg.close(); return; } if (lset.length < 2) return; if (e.key === "ArrowRight") { lk = (lk + 1) % lset.length; show(); } if (e.key === "ArrowLeft") { lk = (lk - 1 + lset.length) % lset.length; show(); } };
   }
-  dlg.addEventListener("close", () => { dlg.innerHTML = ""; });
+  let lightShut = -1e9;
+  dlg.addEventListener("close", () => { dlg.innerHTML = ""; lightShut = performance.now(); });
 
   /* ---------- sound: the four strings of a violin, G D A E ---------- */
   let ctx = null, soundOn = false, volume = 0.6;
@@ -394,23 +412,24 @@
   /* ---------- pointer: click a string to open it; pull one sideways and it bends, then lets go ---------- */
   svg.addEventListener("click", e => { const g = e.target.closest("g[data-i]"); if (g) toggle(+g.dataset.i); });
   $("#gust button").addEventListener("click", () => toggle(2));
+  $("#dream button").addEventListener("click", () => toggle(1));
   let last = null, grabbed = -1;
   stage.addEventListener("pointermove", e => {
     if (e.pointerType === "touch") return;
     const r = stage.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top, now = performance.now();
-    if (open >= 0 || py < TOP + 10) { if (grabbed >= 0) { letGo(grabbed); grabbed = -1; } last = null; return; }
+    if (open >= 0 || py < TOP + QUIET) { if (grabbed >= 0) { letGo(grabbed); grabbed = -1; } last = null; return; }
     if (grabbed < 0) SECTIONS.forEach((s, i) => {
       if (grabbed >= 0) return;
       const b = px - rest(i, py), a = last && now - last.t < 120 ? last.px - rest(i, last.py) : b;
       if (Math.abs(b) < 9 || a * b < 0) grabbed = i;
     });
-    if (grabbed >= 0) { const q = st[grabbed], off = px - rest(grabbed, py), lim = 46;
+    if (grabbed >= 0) { const q = st[grabbed], off = px - rest(grabbed, py), lim = 26;
       q.held = true; q.xc = xAt(py); q.to = Math.max(-lim, Math.min(lim, off)) / SY; kick();
       if (Math.abs(off) > lim) { q.cur = q.to; letGo(grabbed); grabbed = -1; } }
     last = { px, py, t: now };
   });
   stage.addEventListener("pointerleave", () => { if (grabbed >= 0) { letGo(grabbed); grabbed = -1; } last = null; });
-  document.addEventListener("keydown", e => { if (e.key === "Escape" && open >= 0 && !dlg.open) toggle(open); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && open >= 0 && !dlg.open && performance.now() - lightShut > 400) toggle(open); });
 
   build(); layout(); route();
   addEventListener("resize", layout); addEventListener("hashchange", route);

@@ -93,6 +93,13 @@ button { font: inherit; color: inherit; }
 #gust img { display: block; width: 100%; height: auto; transform-origin: 33% 98%; transition: transform .6s cubic-bezier(.3,1.6,.5,1); }
 #gust button:hover img, #gust button:focus-visible img { transform: rotate(-5deg); }
 #gust figcaption { margin-top: 4px; font-size: 14px; font-style: italic; color: var(--grey); }
+.deco { position: absolute; z-index: 2; width: 170px; margin: 0; text-align: center !important; transition: opacity .35s; }
+.deco button { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; }
+.deco img { display: block; width: 100%; height: auto; transition: transform .6s cubic-bezier(.3,1.6,.5,1); }
+.deco button:hover img, .deco button:focus-visible img { transform: rotate(-3deg); }
+.deco figcaption { margin-top: 4px; font-size: 14px; font-style: italic; color: var(--grey); }
+#sea { width: 200px; } #spring { width: 180px; }
+#stage.open .deco { opacity: .12; }
 
 .end { position: absolute; z-index: 2; width: min(320px, 44%); text-align: right; }
 .end h2 { margin: 0 0 4px; font: 700 30px/1.1 var(--cm); }
@@ -193,6 +200,10 @@ dialog.light .x:hover, dialog.light .nav:hover { color: var(--pen); }
 .page .back { font-style: italic; color: var(--grey); }
 .page h1 { margin: 14px 0 6px; font: 700 30px/1.1 var(--cm); }
 .page .lede { margin: 0; max-width: 70ch; }
+/* the vault page is one screen: the map takes whatever height is left, and the page itself does not scroll */
+body[data-page="vault"] { height: 100svh; overflow: hidden; }
+body[data-page="vault"] .page { height: 100svh; display: flex; flex-direction: column; padding-bottom: 14px; }
+body[data-page="vault"] #graph-wrap { flex: 1 1 auto; min-height: 0; height: auto; }
 #graph-wrap { position: relative; height: max(400px, calc(100svh - 270px)); margin-top: 20px; border: 1px solid var(--hair); overflow: hidden; }
 #graph { width: 100%; height: 100%; display: block; cursor: grab; touch-action: pan-y; }
 #graph.dragging { cursor: grabbing; } #graph.on-node { cursor: pointer; }
@@ -230,7 +241,7 @@ dialog.light .x:hover, dialog.light .nav:hover { color: var(--pen); }
   .top h1 { font-size: 25px; } .top h1 span { display: block; margin: 3px 0 0; font-size: 15px; }
   .top .how { font-size: 15px; }
   #strings g[data-i] text { font-size: 16px; }
-  .poem blockquote { font-size: 13.5px; } .poem figcaption { font-size: 12px; } #vol { width: 60px; } #gust { width: 120px; } #gust figcaption { font-size: 12px; }
+  .poem blockquote { font-size: 13.5px; } .poem figcaption { font-size: 12px; } #vol { width: 60px; } .deco { width: 112px; } #sea { width: 132px; } .deco figcaption { font-size: 12px; } #gust { width: 120px; } #gust figcaption { font-size: 12px; }
   .aside.eqn { font-size: 15px; } .aside.eqn .no { display: none; } .aside.rem { font-size: 15px; }
   .end h2 { font-size: 24px; } .end ul, .end p { font-size: 15px; } .end .see { font-size: 21px; }
   .colophon { left: 30px; font-size: 12px; }
@@ -241,6 +252,6 @@ dialog.light .x:hover, dialog.light .nav:hover { color: var(--pen); }
   .portrait { width: 104px; margin-left: 14px; }
   .detail { grid-template-columns: 70px minmax(0, 1fr); gap: 12px; } .detail img { width: 70px; }
   .note-panel { top: auto; left: 0; width: auto; height: 64%; border-left: 0; border-top: 1px solid var(--ink); transform: translateY(104%); }
-  #graph-wrap { height: max(380px, calc(100svh - 300px)); }
+
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .panel, .note-panel, #gust img { transition: none; } ol.refs li.flash { animation: none; } }
