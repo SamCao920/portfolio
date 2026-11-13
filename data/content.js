@@ -516,32 +516,14 @@ window.SITE = {
     "goatcounter": "samcao"
   },
   "music": {
-    "bio": "Mostly listen to classical music, though a healthy amount of 1960s rock, turn-of-the-century indie, and J/Mandopop is added for variety.",
+    "bio": "Mostly classical, though I'm not dogmatic about it.",
     "top": [
-      {
-        "name": "Ludwig van Beethoven",
-        "img": "https://cdn.prod.website-files.com/681547e3437aeddeba7a0020/68190a76c66e852e4e824e3d_Beethoven-M%C3%A4hler_1804_hires.jpg"
-      },
-      {
-        "name": "Johann Sebastian Bach",
-        "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6a/Johann_Sebastian_Bach.jpg/250px-Johann_Sebastian_Bach.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail"
-      },
-      {
-        "name": "Gustav Mahler",
-        "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/03/Emil_Orlik_Gustav_Mahler_1902.jpg/250px-Emil_Orlik_Gustav_Mahler_1902.jpg?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail"
-      },
-      {
-        "name": "Neutral Milk Hotel",
-        "img": "https://i.guim.co.uk/img/media/2969348d257ce4751accbf6b3f1409cbd2cc5033/0_35_1582_949/master/1582.jpg?width=1200&height=1200&quality=85&auto=format&fit=crop&s=6b6954a0bf300de4b145e585de7dac59"
-      },
-      {
-        "name": "Sun Kil Moon",
-        "img": "https://www.heymanchester.com/wp/files/sun-kil-moon-manchester.jpg"
-      },
-      {
-        "name": "Acetone",
-        "img": "https://i.scdn.co/image/ab6772690000dd22d9efa45351a6dae9a7be98cb"
-      }
+      "Ludwig van Beethoven",
+      "Johann Sebastian Bach",
+      "Gustav Mahler",
+      "Neutral Milk Hotel",
+      "Sun Kil Moon",
+      "Acetone"
     ],
     "play": [
       {
