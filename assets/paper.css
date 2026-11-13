@@ -85,20 +85,16 @@ button { font: inherit; color: inherit; }
 .poem blockquote span { display: block; padding-left: 1.6em; text-indent: -1.6em; } .poem blockquote span.in { padding-left: 3em; }
 .poem figcaption { margin-top: 8px; font-size: 14px; color: var(--grey); }
 #stage.open .poem { opacity: .12; }
-#stage.open .aside, #stage.open .note, #stage.open #gust { opacity: .12; }
+#stage.open .aside, #stage.open .note { opacity: .12; }
 .top { transition: opacity .3s; } #stage.open .top { opacity: 0; pointer-events: none; }
 .frac { display: inline-grid; vertical-align: middle; text-align: center; font-size: .74em; line-height: 1.05; margin: 0 1px; } .frac span:first-child { border-bottom: 1px solid currentColor; padding: 0 2px; }
-#gust { position: absolute; z-index: 2; width: 170px; margin: 0; text-align: center; transition: opacity .35s; }
-#gust button { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; }
-#gust img { display: block; width: 100%; height: auto; transform-origin: 33% 98%; transition: transform .6s cubic-bezier(.3,1.6,.5,1); }
-#gust button:hover img, #gust button:focus-visible img { transform: rotate(-5deg); }
-#gust figcaption { margin-top: 4px; font-size: 14px; font-style: italic; color: var(--grey); }
 .deco { position: absolute; z-index: 2; width: 170px; margin: 0; text-align: center !important; transition: opacity .35s; }
 .deco button { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; }
 .deco img { display: block; width: 100%; height: auto; transition: transform .6s cubic-bezier(.3,1.6,.5,1); }
-.deco button:hover img, .deco button:focus-visible img { transform: rotate(-3deg); }
+.deco button, .panel figure.fig button { cursor: zoom-in; }
+.deco button:hover img, .deco button:focus-visible img, .panel figure.fig button:hover img, .panel figure.fig button:focus-visible img { transform: rotate(-3deg); }
 .deco figcaption { margin-top: 4px; font-size: 14px; font-style: italic; color: var(--grey); }
-#sea { width: 200px; } #spring { width: 180px; }
+#sea { width: 200px; } #spring { width: 180px; } #gust img { transform-origin: 33% 98%; }
 #stage.open .deco { opacity: .12; }
 
 .end { position: absolute; z-index: 2; width: min(320px, 44%); text-align: right; }
@@ -181,7 +177,8 @@ blockquote.epi { margin: 6px 0 4px; padding: 0 0 0 18px; border-left: 1px solid 
 blockquote.epi footer { margin-top: 6px; font-style: normal; font-size: 16px; color: var(--grey); }
 .linkish { background: none; border: 0; padding: 0; cursor: pointer; font-style: italic; color: var(--grey); }
 .linkish:hover, .linkish:focus-visible { color: var(--pen); }
-.panel figure.fig { margin: 30px 0 0; text-align: center; clear: both; } .panel figure.fig img { width: min(250px, 70%); height: auto; }
+.panel figure.fig { margin: 30px 0 0; text-align: center; clear: both; } .panel figure.fig button { display: inline-block; width: min(250px, 70%); padding: 0; border: 0; background: none; }
+.panel figure.fig img { display: block; width: 100%; height: auto; transition: transform .6s cubic-bezier(.3,1.6,.5,1); }
 .panel figure.fig figcaption { margin-top: 8px; font-size: 16px; color: var(--grey); }
 
 /* ---------- full-size pictures ---------- */
@@ -241,7 +238,7 @@ body[data-page="vault"] #graph-wrap { flex: 1 1 auto; min-height: 0; height: aut
   .top h1 { font-size: 25px; } .top h1 span { display: block; margin: 3px 0 0; font-size: 15px; }
   .top .how { font-size: 15px; }
   #strings g[data-i] text { font-size: 16px; }
-  .poem blockquote { font-size: 13.5px; } .poem figcaption { font-size: 12px; } #vol { width: 60px; } .deco { width: 112px; } #sea { width: 132px; } .deco figcaption { font-size: 12px; } #gust { width: 120px; } #gust figcaption { font-size: 12px; }
+  .poem blockquote { font-size: 13.5px; } .poem figcaption { font-size: 12px; } #vol { width: 60px; } .deco { width: 112px; } #sea { width: 132px; } .deco figcaption { font-size: 12px; }
   .aside.eqn { font-size: 15px; } .aside.eqn .no { display: none; } .aside.rem { font-size: 15px; }
   .end h2 { font-size: 24px; } .end ul, .end p { font-size: 15px; } .end .see { font-size: 21px; }
   .colophon { left: 30px; font-size: 12px; }
@@ -254,4 +251,4 @@ body[data-page="vault"] #graph-wrap { flex: 1 1 auto; min-height: 0; height: aut
   .note-panel { top: auto; left: 0; width: auto; height: 64%; border-left: 0; border-top: 1px solid var(--ink); transform: translateY(104%); }
 
 }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .panel, .note-panel, #gust img { transition: none; } ol.refs li.flash { animation: none; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .panel, .note-panel, .deco img, .panel figure.fig img { transition: none; } ol.refs li.flash { animation: none; } }

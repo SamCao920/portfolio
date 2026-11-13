@@ -67,7 +67,7 @@
     const set = ws => ws.map(w => ({ src: w.img, cap: `<i>${esc(w.title)}</i>, ${esc(w.year)}<small>${esc(w.medium || "")}</small>` }));
     SETS.studio = set(STUDIO); SETS.photos = set(PHOTOS);
     const figs = (ws, name, word) => `<div class="figs">${ws.map((w, k) => `<figure><button type="button" data-set="${name}" data-n="${k}" aria-label="${esc(w.title)}"><img alt="" loading="lazy" src="${esc(thumbOf(w.img))}" data-full="${esc(w.img)}" onerror="this.onerror=null;this.src=this.dataset.full"></button>
-      <figcaption><b>${word} ${k + 1}.</b> <i>${esc(w.title)}</i>, ${esc(w.year)}. ${esc((w.medium || "").replace(/\.$/, ""))}.</figcaption></figure>`).join("")}</div>`;
+      <figcaption><b>${word} ${k + 1 + (name === "studio" ? HOME_FIGS : 0)}.</b> <i>${esc(w.title)}</i>, ${esc(w.year)}. ${esc((w.medium || "").replace(/\.$/, ""))}.</figcaption></figure>`).join("")}</div>`;
     const parts = "abcdef"; let part = 2 + (APPEAR.length ? 1 : 0);
     return `<p class="q"><b>Problem 1.</b> Show your work.</p>
       <h3><b>(a)</b> Papers <small>essays written for prize competitions, and independent research</small></h3>
@@ -91,8 +91,7 @@
       <p><i>Solution.</i> ${all.length ? `${all.length} of them so far, ${claims} of which are single claims, each linked to the others it depends on.` : "Every idea I write down while reading, each linked to the others it depends on."} Three, stated without proof:</p>
       <div id="lemmas">${lemmas()}</div>
       <p>The proofs are in <a href="vault.html">the vault</a>, drawn as a map you can drag around. <button type="button" class="linkish" data-act="lemmas">Three more.</button></p>
-      <figure class="fig"><img alt="A tangle of faces sharing their features." loading="lazy" src="assets/website/hood-dream.png">
-        <figcaption><b>Figure 1.</b> “A Dream.” Thomas Hood, <i>Whims and Oddities</i>, 1826. Faces that share their features, his picture of how ideas tangle.</figcaption></figure>
+      ${hoodFig("dream", "Faces that share their features, his picture of how ideas tangle.")}
       ${recent.length ? `<h3><b>(a)</b> Most recent</h3><ul class="rows">${recent.map(n => `<li><div class="row"><a class="t" href="${vaultLink(n[0])}">${esc(n[0])}</a><span class="r">${esc(fmtDate(n[3]).replace(/, \d{4}$/, ""))}</span></div></li>`).join("")}</ul>` : ""}
       ${src.length ? `<h3><b>(b)</b> Sources <small>books and films I have taken notes on</small></h3><ul class="rows">${src.map(n => `<li><div class="row"><span><a class="t" href="${vaultLink(n.note)}"><i>${esc(n.title)}</i></a>${n.author ? `<span class="by">, ${esc(String(n.author).trim())}</span>` : ""}</span><span class="r">${plural(n.ideas.length, "idea")}</span></div></li>`).join("")}</ul>` : ""}
       ${(window.QUOTES || {}).items ? `<h3><b>(c)</b> Copied out</h3><div id="quote">${quote()}</div><p style="margin-top:8px"><button type="button" class="linkish" data-act="quote">Another.</button></p>` : ""}`;
@@ -134,10 +133,7 @@
       ${(M.top || []).length ? `<p><i>Favorites.</i> ${M.top.map(esc).join(", ")}.</p>` : ""}
       ${play.length ? `<h4>At the violin</h4><ul class="rows">${play.map(p => `<li><div class="row"><span><span class="t"><i>${esc(p.t)}</i></span>${p.a ? `<span class="by">, ${esc(p.a)}</span>` : ""}</span><span class="r">${p.status === "now" ? "playing now" : p.status === "learn" ? "want to learn" : "played"}</span></div></li>`).join("")}</ul>` : ""}
       ${lists.map(l => `<details><summary>${esc(l.name)}</summary><ol class="rank">${l.items.filter(x => x.t).map(x => `<li><i>${esc(x.t)}</i>${x.a ? `, ${esc(x.a)}` : ""}</li>`).join("")}</ol></details>`).join("")}
-      <figure class="fig"><img alt="A face in the clouds blowing a set of pan pipes." loading="lazy" src="assets/website/hood-pandeans.png">
-        <figcaption><b>Figure 1.</b> “Pandeans.” Thomas Hood, <i>Whims and Oddities</i>, 1826.</figcaption></figure>
-      <figure class="fig"><img alt="A girl on a clifftop blown along by a gust of wind, her umbrella turned inside out." loading="lazy" src="assets/website/gust-full.png">
-        <figcaption><b>Figure 2.</b> “De Gustibus non est disputandum.” Thomas Hood, <i>Whims and Oddities</i>, 1826. There is no arguing with a gust.</figcaption></figure>`;
+      ${hoodFig("pandeans")}`;
   }
   function detail(kind, i) {
     if (kind === "book") { const b = BOOKS[i];
@@ -158,8 +154,7 @@
       ${(S.about || []).map((p, k) => `<p>${k ? "" : "<i>Solution.</i> "}${inline(p)}</p>`).join("")}
       <h3>Contact <small>left as an exercise for the reader</small></h3>
       <table class="cv">${(S.socials || []).filter(s => s.url).map(s => `<tr><td>${esc(s.name)}</td><td>${/^mailto:/.test(s.url) ? esc(s.handle) : `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.handle || s.name)}</a>`}</td></tr>`).join("")}</table>
-      <figure class="fig"><img alt="A mermaid combing her hair beside a well." loading="lazy" src="assets/website/hood-well.png">
-        <figcaption>“All’s well that ends well.” Thomas Hood, <i>Whims and Oddities</i>, 1826.</figcaption></figure>
+      ${hoodFig("well")}
       <p style="text-align:right;max-width:none;margin-top:14px">${qed}</p>`;
   }
 
@@ -169,6 +164,23 @@
     { key: "taste", tag: "A matter of taste", C: 0.5, hz: 440.0, render: taste },
     { key: "about", tag: "Who is this?", C: 1.5, hz: 659.25, render: about }
   ];
+
+  /* Thomas Hood's drawings (Whims and Oddities, 1826). Each is a figure, numbered once for the whole site:
+     the four on the home page first, then the drawings and paintings in Show your work, then the rest. */
+  const HOODS = [
+    { k: "spring", src: "assets/website/hood-spring.png", cap: "Spring and Fall.", alt: "A man vaulting a fence lands on a bull." },
+    { k: "dream", src: "assets/website/hood-dream.png", cap: "A Dream.", alt: "A tangle of faces sharing their features: an eyebrow of one is the mouth of another." },
+    { k: "sea", src: "assets/website/hood-sea.png", cap: "“Come o’er the sea!”", alt: "A skeleton rowing a coffin across the sea." },
+    { k: "gust", src: "assets/website/gust-girl.png", cap: "De gustibus non est disputandum.", alt: "A girl blown along by a gust of wind, her umbrella turned inside out." },
+    { k: "pandeans", src: "assets/website/hood-pandeans.png", cap: "Pandeans.", alt: "A face in the clouds blowing a set of pan pipes." },
+    { k: "well", src: "assets/website/hood-well.png", cap: "“All’s well that ends well.”", alt: "A mermaid combing her hair beside a well." }
+  ];
+  const HOME_FIGS = 4;
+  const figNo = k => { const i = HOODS.findIndex(h => h.k === k); return i < HOME_FIGS ? i + 1 : i + 1 + STUDIO.length; };
+  SETS.hood = HOODS.map(h => ({ src: h.src, cap: `<b>Fig. ${figNo(h.k)}.</b> ${h.cap}<small>Thomas Hood, <i>Whims and Oddities</i>, 1826</small>` }));
+  const hoodBtn = k => { const i = HOODS.findIndex(h => h.k === k), h = HOODS[i]; return `<button type="button" data-set="hood" data-n="${i}" aria-label="${esc(h.alt)} Open full size."><img alt="${esc(h.alt)}" loading="lazy" src="${h.src}"></button>`; };
+  const hoodFig = (k, more = "") => `<figure class="fig">${hoodBtn(k)}<figcaption><b>Fig. ${figNo(k)}.</b> ${HOODS.find(h => h.k === k).cap} Thomas Hood, <i>Whims and Oddities</i>, 1826.${more ? " " + more : ""}</figcaption></figure>`;
+  const hoodDeco = k => `<figure class="deco" id="${k}">${hoodBtn(k)}<figcaption>Fig. ${figNo(k)}. ${HOODS.find(h => h.k === k).cap}</figcaption></figure>`;
 
   /* three stanzas set beside the strings */
   const POEMS = [
@@ -203,14 +215,7 @@
         <ul>${mail ? `<li>${esc(mail.handle)}</li>` : ""}<li>${links.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a>`).join(", ")}</li></ul>
         <span class="see" aria-hidden="true">see me</span>
       </div>
-      <figure id="gust"><button type="button" aria-label="A matter of taste"><img alt="A girl blown along by a gust of wind, her umbrella turned inside out. Thomas Hood, 1826." src="assets/website/gust-girl.png"></button>
-        <figcaption>De gustibus non est disputandum.</figcaption></figure>
-      <figure class="deco" id="dream"><button type="button" aria-label="Take notes"><img alt="A tangle of faces sharing their features: an eyebrow of one is the mouth of another. Thomas Hood, 1826." src="assets/website/hood-dream.png"></button>
-        <figcaption>A Dream.</figcaption></figure>
-      <figure class="deco" id="spring"><img alt="A man vaulting a fence lands on a bull. Thomas Hood, 1826." src="assets/website/hood-spring.png">
-        <figcaption>Spring and Fall.</figcaption></figure>
-      <figure class="deco" id="sea"><img alt="A skeleton rowing a coffin across the sea. Thomas Hood, 1826." src="assets/website/hood-sea.png">
-        <figcaption>“Come o’er the sea!”</figcaption></figure>
+      ${["spring", "dream", "sea", "gust"].map(hoodDeco).join("")}
       ${P.updated ? `<p class="colophon">Updated ${esc(P.updated)}</p>` : ""}
     </div>
     <aside class="panel" id="panel" aria-label="Section" tabindex="-1"></aside>`;
@@ -223,7 +228,9 @@
   let TOP = 190, W = 0, H = 0, x0 = 0, ORG = 0, open = -1;   /* ORG: where y = 0 sits, sideways */
   /* per string: how far it is straightened; and its bend: where (xc), how far now (cur), and either held by the pointer (to) or let go (amp, t0) */
   const st = [];
-  const fresh = () => ({ flat: 0, flatTo: 0, xc: 0, cur: 0, held: false, to: 0, amp: 0, t0: -1e9 });
+  /* per string: flat = how far it is straightened (0..1). The bend is a spring: cur = how far it leans now, vel = how fast that is changing,
+     to = where the pointer holds it while held, xc = where along the string the bend sits (it glides to xcTo), hit = when it was last flicked */
+  const fresh = () => ({ flat: 0, flatTo: 0, xc: 0, xcTo: 0, cur: 0, vel: 0, held: false, to: 0, hit: -1e9 });
   const steady = x => 0.5 * (Math.sin(x) - Math.cos(x));
   const xAt = py => x0 + (py - TOP) / PX, pyAt = x => TOP + (x - x0) * PX;
   const railX = () => Math.max(22, Math.min(64, W * 0.07));
@@ -264,11 +271,11 @@
     /* the girl in the gust: bottom right, across the curve from the name. On a phone there is only room where the curve swings left. */
     const gust = $("#gust"), gx = narrow ? 10.45 : 7.2;
     gust.style.top = pyAt(gx) + "px"; gust.style.left = Math.min(W - gust.offsetWidth - 10, ORG + (narrow ? steady(11) : 0.72) * SY + (narrow ? 26 : 70)) + "px";
-    /* three more of Hood's drawings: the leap beside "My heart leaps up", the dream low on the left, the sea under Byron */
+    /* three more of Hood's drawings: the leap beside "My heart leaps up", the dream on the left under Shelley, the sea under Byron */
     $("#spring").hidden = narrow;
-    if (narrow) { put("dream", 5.45, -1, 20); put("sea", 6.3, 1, 18); }
-    else { put("spring", 0.0, -1, 200); put("dream", 5.65, -1, 110); put("sea", 6.0, 1, 84); }
-    field();
+    if (narrow) { put("dream", 2.45, -1, 20); put("sea", 6.3, 1, 18); }
+    else { put("spring", 0.0, -1, 200); put("dream", 3.3, -1, 130); put("sea", 6.0, 1, 84); }
+    labels = true; field();
     /* the x axis, down the left edge */
     const ax = $("#axis"), ax0 = 9; ax.innerHTML = "";
     ax.appendChild(mk("line", { x1: ax0, y1: TOP - 6, x2: ax0, y2: H - 34 }));
@@ -286,7 +293,7 @@
     cv.width = W * dpr; cv.height = H * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
     g.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim() || "#121315"; g.lineWidth = 0.9; g.lineCap = "round";
     const step = W < 700 ? 30 : 36, half = 6, sr = stage.getBoundingClientRect();
-    const boxes = $$(".poem, .aside, .end, #gust, .deco:not([hidden])", stage).map(el => { const r = el.getBoundingClientRect(); return [r.left - sr.left, r.top - sr.top, r.right - sr.left, r.bottom - sr.top]; });
+    const boxes = $$(".poem, .aside, .end, .deco:not([hidden])", stage).map(el => { const r = el.getBoundingClientRect(); return [r.left - sr.left, r.top - sr.top, r.right - sr.left, r.bottom - sr.top]; });
     const near = (px, py) => { let d = 1e9; for (const [l, t, r, b] of boxes) d = Math.min(d, Math.hypot(Math.max(l - px, 0, px - r), Math.max(t - py, 0, py - b))); return d; };
     for (let py = TOP + 40, row = 0; py < H - 10; py += step, row++) {
       const x = xAt(py), a = Math.min(0.3, Math.max(0, (x - (x0 + 1)) / 5.5) * 0.3); if (a < 0.01) continue;
@@ -307,11 +314,12 @@
     return natural + (railX() - natural) * q.flat;
   }
   function draw() {
-    const step = 6, span = W < 700 ? 230 : 300;
+    const step = 6, span = W < 700 ? 230 : 300, doLabels = labels; labels = false;
     $$("g[data-i]", svg).forEach((g, i) => {
       let d = "", pts = [];
-      for (let py = TOP; py <= H; py += step) { const px = pos(i, py); d += (d ? "L" : "M") + px.toFixed(1) + " " + py; if (py <= TOP + span) { const r0 = rest(i, py); pts.push([r0 + (railX() - r0) * st[i].flat, py]); } }   /* the label follows the string at rest, so it never wobbles */
+      for (let py = TOP; py <= H; py += step) { const px = pos(i, py); d += (d ? "L" : "M") + px.toFixed(1) + " " + py; if (doLabels && py <= TOP + span) { const r0 = rest(i, py); pts.push([r0 + (railX() - r0) * st[i].flat, py]); } }   /* the label follows the string at rest, so it never wobbles */
       g.children[0].setAttribute("d", d); g.children[1].setAttribute("d", d);
+      if (!doLabels) return;
       /* the label rides its own stretch of the curve; on the right-hand side the stretch runs upward so the words stay upright */
       const right = SECTIONS[i].C > 0; if (right) pts.reverse();
       g.children[2].setAttribute("d", pts.map((p, k) => (k ? "L" : "M") + p[0].toFixed(1) + " " + p[1]).join(""));
@@ -321,19 +329,27 @@
       g.children[4].setAttribute("cx", pos(i, TOP).toFixed(1)); g.children[4].setAttribute("cy", TOP);
     });
   }
-  let raf = 0;
+  let raf = 0, lastT = 0, labels = true;   /* labels: the label paths need redrawing (only on layout and while a string straightens) */
   function tick(now) {
+    const dt = Math.min(0.034, lastT ? (now - lastT) / 1000 : 0.016); lastT = now;
     let busy = false;
     st.forEach(q => {
-      if (Math.abs(q.flatTo - q.flat) > 0.002) { q.flat += (q.flatTo - q.flat) * 0.14; busy = true; } else q.flat = q.flatTo;
-      if (q.held) { q.cur += (q.to - q.cur) * 0.16; busy = true; }
-      else { const age = (now - q.t0) / 1000;
-        if (age < 3) { q.cur = q.amp * Math.exp(-2.6 * age) * Math.cos(age * 8.5); busy = true; } else q.cur = 0; }
+      if (Math.abs(q.flatTo - q.flat) > 0.002) { q.flat += (q.flatTo - q.flat) * (1 - Math.exp(-dt * 9)); busy = true; labels = true; } else if (q.flat !== q.flatTo) { q.flat = q.flatTo; labels = true; }
+      q.xc += (q.xcTo - q.xc) * (1 - Math.exp(-dt * 14));
+      /* held: follows the pointer without overshoot. Let go: swings back and settles. Two half-steps keep it steady on slow frames. */
+      const target = q.held ? q.to : 0, w = q.held ? 18 : 8, z = q.held ? 1 : 0.2;
+      for (let k = 0; k < 2; k++) { const h = dt / 2; q.vel += (-w * w * (q.cur - target) - 2 * z * w * q.vel) * h; q.cur += q.vel * h; }
+      if (q.held || Math.abs(q.cur) > 0.0012 || Math.abs(q.vel) > 0.008) busy = true; else { q.cur = 0; q.vel = 0; }
     });
-    draw(); raf = busy ? requestAnimationFrame(tick) : 0;
+    draw();
+    if (busy) raf = requestAnimationFrame(tick); else { raf = 0; lastT = 0; }
   }
   const kick = () => { if (!raf) raf = requestAnimationFrame(tick); };
-  function letGo(i, amp) { const q = st[i]; q.held = false; q.amp = still.matches ? 0 : amp === undefined ? q.cur : amp; q.t0 = performance.now(); kick(); ping(i, Math.abs(amp === undefined ? q.cur : amp)); }
+  /* where along the string a bend sits: set straight away if the string is at rest, otherwise glide there */
+  const aim = (q, x) => { q.xcTo = x; if (Math.abs(q.cur) < 0.01 && Math.abs(q.vel) < 0.05) q.xc = x; };
+  const letGo = i => { const q = st[i]; if (!q.held) return; q.held = false; kick(); ping(i, Math.min(1, Math.abs(q.cur) * 2.5)); };
+  /* a flick: push the string sideways with some speed and let the spring do the rest */
+  const flick = (i, x, v) => { const q = st[i]; if (still.matches) return; aim(q, x); q.vel += Math.max(-3, Math.min(3, v)); q.hit = performance.now(); kick(); ping(i, Math.min(1, Math.abs(v) / 3)); };
 
   /* ---------- opening a section ---------- */
   function toggle(i, keepHash) {
@@ -346,7 +362,7 @@
       const s = SECTIONS[open];
       panel.innerHTML = `<div class="bar"><button class="close" type="button" data-act="close">close</button></div><div class="sheet">${s.render()}</div>`;
       panel.classList.add("show"); panel.scrollTop = 0; if (s.after) s.after();
-      st[open].xc = xAt(scrollY + innerHeight / 2); letGo(open, 0.22);
+      flick(open, xAt(scrollY + innerHeight / 2), 1.5);
       setTimeout(() => panel.focus({ preventScroll: true }), 60);
     } else panel.classList.remove("show");
     if (!keepHash) history.replaceState(null, "", open >= 0 ? "#" + SECTIONS[open].key : location.pathname + location.search);
@@ -411,21 +427,24 @@
 
   /* ---------- pointer: click a string to open it; pull one sideways and it bends, then lets go ---------- */
   svg.addEventListener("click", e => { const g = e.target.closest("g[data-i]"); if (g) toggle(+g.dataset.i); });
-  $("#gust button").addEventListener("click", () => toggle(2));
-  $("#dream button").addEventListener("click", () => toggle(1));
+  stage.addEventListener("click", e => { const pic = e.target.closest("[data-set]"); if (pic) light(pic.dataset.set, +pic.dataset.n); });
   let last = null, grabbed = -1;
   stage.addEventListener("pointermove", e => {
-    if (e.pointerType === "touch") return;
-    const r = stage.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top, now = performance.now();
+    if (e.pointerType === "touch" || still.matches) return;
+    const r = stage.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top, now = performance.now(), lim = 26;
     if (open >= 0 || py < TOP + QUIET) { if (grabbed >= 0) { letGo(grabbed); grabbed = -1; } last = null; return; }
+    const recent = last && now - last.t < 120, speed = recent ? (px - last.px) / Math.max(4, now - last.t) * 1000 : 0;   /* sideways, pixels a second */
     if (grabbed < 0) SECTIONS.forEach((s, i) => {
       if (grabbed >= 0) return;
-      const b = px - rest(i, py), a = last && now - last.t < 120 ? last.px - rest(i, last.py) : b;
-      if (Math.abs(b) < 9 || a * b < 0) grabbed = i;
+      const b = px - rest(i, py), a = recent ? last.px - rest(i, last.py) : b, crossed = a * b < 0;
+      if (!crossed && Math.abs(b) >= 9) return;
+      /* crossed too fast to hold: flick it. Otherwise take hold and let it follow the pointer. */
+      if (crossed && (Math.abs(b) > lim || Math.abs(speed) > 900)) { if (now - st[i].hit > 140) flick(i, xAt(py), speed / SY * 0.11); }
+      else grabbed = i;
     });
-    if (grabbed >= 0) { const q = st[grabbed], off = px - rest(grabbed, py), lim = 26;
-      q.held = true; q.xc = xAt(py); q.to = Math.max(-lim, Math.min(lim, off)) / SY; kick();
-      if (Math.abs(off) > lim) { q.cur = q.to; letGo(grabbed); grabbed = -1; } }
+    if (grabbed >= 0) { const q = st[grabbed], off = px - rest(grabbed, py);
+      if (Math.abs(off) > lim) { const v = speed / SY * 0.11; letGo(grabbed); if (Math.abs(v) > 0.5) flick(grabbed, xAt(py), v); grabbed = -1; }   /* pulled past its reach: let go, carrying the pointer's speed */
+      else { q.held = true; aim(q, xAt(py)); q.to = off / SY; kick(); } }
     last = { px, py, t: now };
   });
   stage.addEventListener("pointerleave", () => { if (grabbed >= 0) { letGo(grabbed); grabbed = -1; } last = null; });
