@@ -91,6 +91,7 @@
       <p><i>Solution.</i> ${all.length ? `${all.length} of them so far, ${claims} of which are single claims, each linked to the others it depends on.` : "Every idea I write down while reading, each linked to the others it depends on."} Three, stated without proof:</p>
       <div id="lemmas">${lemmas()}</div>
       <p>The proofs are in <a href="vault.html">the vault</a>, drawn as a map you can drag around. <button type="button" class="linkish" data-act="lemmas">Three more.</button></p>
+      ${hoodFig("tree", "A mystery.")}
       ${recent.length ? `<h3><b>(a)</b> Most recent</h3><ul class="rows">${recent.map(n => `<li><div class="row"><a class="t" href="${vaultLink(n[0])}">${esc(n[0])}</a><span class="r">${esc(fmtDate(n[3]).replace(/, \d{4}$/, ""))}</span></div></li>`).join("")}</ul>` : ""}
       ${src.length ? `<h3><b>(b)</b> Sources <small>books and films I have taken notes on</small></h3><ul class="rows">${src.map(n => `<li><div class="row"><span><a class="t" href="${vaultLink(n.note)}"><i>${esc(n.title)}</i></a>${n.author ? `<span class="by">, ${esc(String(n.author).trim())}</span>` : ""}</span><span class="r">${plural(n.ideas.length, "idea")}</span></div></li>`).join("")}</ul>` : ""}
       ${(window.QUOTES || {}).items ? `<h3><b>(c)</b> Copied out</h3><div id="quote">${quote()}</div><p style="margin-top:8px"><button type="button" class="linkish" data-act="quote">Another.</button></p>` : ""}`;
@@ -125,7 +126,7 @@
       <details><summary>All ${films.length} seen, most recent first</summary><ul class="rows" style="margin-top:8px">${byRecent.map(f => filmRow(f)).join("")}</ul></details>
       ${ART.length ? `<h3>${tag()} Paintings <small>${ART.length} works by ${plural(artists.length, "artist")}, seen in person or studied</small></h3>
         ${(S.artists || []).length ? `<p><i>Favorite painters.</i> ${(S.artists || []).map(a => esc(a.name)).join(", ")}.</p>` : ""}
-        <h4>Most recent</h4><ul class="plates">${ART.slice(0, 6).map((a, k) => `<li><button type="button" data-set="art" data-n="${k}" aria-label="${esc(a.t)} by ${esc(a.artist)}"><img alt="" loading="lazy" referrerpolicy="no-referrer" src="${esc(a.img || "")}" onerror="this.style.visibility='hidden'"></button><span class="cap"><i>${esc(a.t)}</i>, ${esc(a.artist)}</span></li>`).join("")}</ul>
+        <h4>Most recent</h4><ul class="plates eight">${ART.slice(0, 24).map((a, k) => `<li><button type="button" data-set="art" data-n="${k}" aria-label="${esc(a.t)} by ${esc(a.artist)}"><img alt="" loading="lazy" referrerpolicy="no-referrer" src="${esc(a.img || "")}" onerror="this.closest('li').remove()"></button><span class="cap"><i>${esc(a.t)}</i>, ${esc(a.artist)}</span></li>`).join("")}</ul>
         <details><summary>All ${ART.length}, by artist</summary>${artists.sort((a, b) => a.localeCompare(b)).map(name => `<p class="year">${esc(name)}</p><ul class="rows">${ART.map((a, k) => [a, k]).filter(([a]) => a.artist === name).map(([a, k]) =>
           `<li><button type="button" class="row" data-set="art" data-n="${k}"><span class="t"><i>${esc(a.t)}</i></span><span class="r">${esc(a.year || "")}</span></button></li>`).join("")}</ul>`).join("")}</details>` : ""}
       <h3>${tag()} Music</h3>
@@ -171,6 +172,7 @@
     { k: "dream", src: "assets/website/hood-dream.png", cap: "A Dream.", alt: "A tangle of faces sharing their features: an eyebrow of one is the mouth of another." },
     { k: "sea", src: "assets/website/hood-sea.png", cap: "“Come o’er the sea!”", alt: "A skeleton rowing a coffin across the sea." },
     { k: "gust", src: "assets/website/gust-girl.png", cap: "De gustibus non est disputandum.", alt: "A girl blown along by a gust of wind, her umbrella turned inside out." },
+    { k: "tree", src: "assets/website/hood-tree.png", cap: "Miss Tree.", alt: "A man starts back from a tree that has the shape of a woman." },
     { k: "pandeans", src: "assets/website/hood-pandeans.png", cap: "Pandeans.", alt: "A face in the clouds blowing a set of pan pipes." },
     { k: "well", src: "assets/website/hood-well.png", cap: "“All’s well that ends well.”", alt: "A mermaid combing her hair beside a well." }
   ];
@@ -352,7 +354,6 @@
   function toggle(i, keepHash) {
     open = open === i ? -1 : i;
     st.forEach((q, k) => q.flatTo = k === open ? 1 : 0);
-    if (still.matches) st.forEach(q => q.flat = q.flatTo);
     svg.classList.toggle("open", open >= 0); stage.classList.toggle("open", open >= 0);
     $$("g[data-i]", svg).forEach((g, k) => g.classList.toggle("on", k === open));
     if (open >= 0) {
@@ -377,6 +378,8 @@
     if (!h && open >= 0) toggle(open, true);
   }
   panel.addEventListener("click", e => {
+    const sum = e.target.closest("summary"), det = sum && sum.parentNode;
+    if (det && det.open && !det.classList.contains("shut")) { e.preventDefault(); det.classList.add("shut"); setTimeout(() => { det.open = false; det.classList.remove("shut"); }, 220); return; }
     const act = e.target.closest("[data-act]");
     if (act) { const a = act.dataset.act;
       if (a === "close") toggle(open);
@@ -386,7 +389,7 @@
     const pic = e.target.closest("[data-set]"); if (pic) return light(pic.dataset.set, +pic.dataset.n);
     const row = e.target.closest(".row[data-k]"); if (!row) return;
     const li = row.parentNode, had = $(".detail", li);
-    if (had) had.remove(); else li.insertAdjacentHTML("beforeend", detail(row.dataset.k, +row.dataset.i));
+    if (had) { had.classList.add("out"); setTimeout(() => had.remove(), 220); } else li.insertAdjacentHTML("beforeend", detail(row.dataset.k, +row.dataset.i));
   });
 
   /* ---------- full-size pictures ---------- */

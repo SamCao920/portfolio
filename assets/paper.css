@@ -251,4 +251,33 @@ body[data-page="vault"] #graph-wrap { flex: 1 1 auto; min-height: 0; height: aut
   .note-panel { top: auto; left: 0; width: auto; height: 64%; border-left: 0; border-top: 1px solid var(--ink); transform: translateY(104%); }
 
 }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .panel, .note-panel, .deco img, .panel figure.fig img { transition: none; } ol.refs li.flash { animation: none; } }
+/* ---------- small movements ---------- */
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes unfold { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+@keyframes fold { to { opacity: 0; transform: translateY(-6px); } }
+@keyframes bloom { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes veil { from { opacity: 0; } to { opacity: 1; } }
+/* a section's contents rise in, one after another, as it slides open */
+.panel.show .sheet > * { animation: rise .5s cubic-bezier(.2,.8,.2,1) both; }
+.panel.show .sheet > :nth-child(1) { animation-delay: .12s; } .panel.show .sheet > :nth-child(2) { animation-delay: .17s; } .panel.show .sheet > :nth-child(3) { animation-delay: .22s; }
+.panel.show .sheet > :nth-child(4) { animation-delay: .27s; } .panel.show .sheet > :nth-child(5) { animation-delay: .32s; } .panel.show .sheet > :nth-child(n+6) { animation-delay: .37s; }
+/* anything that opens unfolds; anything that closes folds away */
+details[open] > :not(summary) { animation: unfold .28s cubic-bezier(.2,.8,.2,1) both; }
+details.shut > :not(summary) { animation: fold .2s ease-in both; }
+details > summary::after { display: inline-block; transition: transform .25s cubic-bezier(.2,.8,.2,1); }
+details[open] > summary::after { content: " ▸"; transform: rotate(90deg) translateX(2px); } details.shut > summary::after { transform: none; }
+.detail { animation: unfold .28s cubic-bezier(.2,.8,.2,1) both; } .detail.out { animation: fold .2s ease-in both; }
+#lemmas > *, #quote > * { animation: unfold .35s cubic-bezier(.2,.8,.2,1) both; } #lemmas > :nth-child(2) { animation-delay: .06s; } #lemmas > :nth-child(3) { animation-delay: .12s; }
+/* pictures open from slightly small; the page behind fades */
+dialog.light[open] .in > :first-child { animation: bloom .3s cubic-bezier(.2,.8,.2,1) both; } dialog.light[open] .cap { animation: rise .35s .08s cubic-bezier(.2,.8,.2,1) both; }
+dialog.light[open]::backdrop { animation: veil .25s ease-out both; }
+/* the home page draws itself in on arrival */
+.poem, .deco, .aside, .end { animation: rise .7s cubic-bezier(.2,.8,.2,1) backwards; animation-delay: .25s; } .top { animation: veil .6s ease-out backwards; }
+#field { animation: veil 1.4s .3s ease-out backwards; }
+/* rows and links answer the pointer */
+.row .t, a, .figs img, .plates img { transition: color .18s, text-decoration-color .18s, transform .35s cubic-bezier(.2,.8,.2,1), filter .4s; }
+.row:hover .t { transform: translateX(3px); display: inline-block; }
+.figs button:hover img, .figs button:focus-visible img { transform: scale(1.02); }
+.go { transition: transform .25s cubic-bezier(.2,.8,.2,1); } .go:hover { transform: translateX(3px); }
+.plates.eight > li:nth-child(n+9) { display: none; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
