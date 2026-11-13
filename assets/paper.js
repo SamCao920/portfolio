@@ -66,16 +66,16 @@
     let n = 0;
     const set = ws => ws.map(w => ({ src: w.img, cap: `<i>${esc(w.title)}</i>, ${esc(w.year)}<small>${esc(w.medium || "")}</small>` }));
     SETS.studio = set(STUDIO); SETS.photos = set(PHOTOS);
-    const figs = (ws, name, word) => `<div class="figs">${ws.map((w, k) => `<figure><button type="button" data-set="${name}" data-n="${k}" aria-label="${esc(w.title)}"><img alt="" loading="lazy" src="${esc(thumbOf(w.img))}" data-full="${esc(w.img)}" onerror="this.onerror=null;this.src=this.dataset.full"></button>
-      <figcaption><b>${word} ${k + 1 + (name === "studio" ? HOME_FIGS : 0)}.</b> <i>${esc(w.title)}</i>, ${esc(w.year)}. ${esc((w.medium || "").replace(/\.$/, ""))}.</figcaption></figure>`).join("")}</div>`;
+    const figs = (ws, name, from) => `<div class="figs">${ws.map((w, k) => `<figure><button type="button" data-set="${name}" data-n="${k}" aria-label="${esc(w.title)}"><img alt="" loading="lazy" src="${esc(thumbOf(w.img))}" data-full="${esc(w.img)}" onerror="this.onerror=null;this.src=this.dataset.full"></button>
+      <figcaption><b>Plate ${k + 1 + from}.</b> <i>${esc(w.title)}</i>, ${esc(w.year)}. ${esc((w.medium || "").replace(/\.$/, ""))}.</figcaption></figure>`).join("")}</div>`;
     const parts = "abcdef"; let part = 2 + (APPEAR.length ? 1 : 0);
     return `<p class="q"><b>Problem 1.</b> Show your work.</p>
       <h3><b>(a)</b> Papers <small>essays written for prize competitions, and independent research</small></h3>
       <ol class="refs">${PAPERS.map((w, k) => ref(w, ++n)).join("")}</ol>
       ${PROJECTS.length ? `<h3><b>(b)</b> Projects <small>things I’ve built</small></h3><ol class="refs">${PROJECTS.map(w => ref(w, ++n)).join("")}</ol>` : ""}
       ${APPEAR.length ? `<h3><b>(c)</b> Appearances <small>conferences, talks and events</small></h3><ol class="refs">${APPEAR.map(w => ref(w, ++n)).join("")}</ol>` : ""}
-      ${STUDIO.length ? `<h3><b>(${parts[part++]})</b> Drawings and paintings</h3>${figs(STUDIO, "studio", "Fig.")}` : ""}
-      ${PHOTOS.length ? `<h3><b>(${parts[part++]})</b> Photographs</h3>${figs(PHOTOS, "photos", "Plate")}` : ""}`;
+      ${STUDIO.length ? `<h3><b>(${parts[part++]})</b> Drawings and paintings</h3>${figs(STUDIO, "studio", 0)}` : ""}
+      ${PHOTOS.length ? `<h3><b>(${parts[part++]})</b> Photographs</h3>${figs(PHOTOS, "photos", STUDIO.length)}` : ""}`;
   }
 
   const VI = () => (window.VAULT_INDEX || {}).notes || [];
@@ -91,7 +91,6 @@
       <p><i>Solution.</i> ${all.length ? `${all.length} of them so far, ${claims} of which are single claims, each linked to the others it depends on.` : "Every idea I write down while reading, each linked to the others it depends on."} Three, stated without proof:</p>
       <div id="lemmas">${lemmas()}</div>
       <p>The proofs are in <a href="vault.html">the vault</a>, drawn as a map you can drag around. <button type="button" class="linkish" data-act="lemmas">Three more.</button></p>
-      ${hoodFig("dream", "Faces that share their features, his picture of how ideas tangle.")}
       ${recent.length ? `<h3><b>(a)</b> Most recent</h3><ul class="rows">${recent.map(n => `<li><div class="row"><a class="t" href="${vaultLink(n[0])}">${esc(n[0])}</a><span class="r">${esc(fmtDate(n[3]).replace(/, \d{4}$/, ""))}</span></div></li>`).join("")}</ul>` : ""}
       ${src.length ? `<h3><b>(b)</b> Sources <small>books and films I have taken notes on</small></h3><ul class="rows">${src.map(n => `<li><div class="row"><span><a class="t" href="${vaultLink(n.note)}"><i>${esc(n.title)}</i></a>${n.author ? `<span class="by">, ${esc(String(n.author).trim())}</span>` : ""}</span><span class="r">${plural(n.ideas.length, "idea")}</span></div></li>`).join("")}</ul>` : ""}
       ${(window.QUOTES || {}).items ? `<h3><b>(c)</b> Copied out</h3><div id="quote">${quote()}</div><p style="margin-top:8px"><button type="button" class="linkish" data-act="quote">Another.</button></p>` : ""}`;
@@ -166,7 +165,7 @@
   ];
 
   /* Thomas Hood's drawings (Whims and Oddities, 1826). Each is a figure, numbered once for the whole site:
-     the four on the home page first, then the drawings and paintings in Show your work, then the rest. */
+     the four on the home page first, then the ones inside the sections. My own work is numbered separately, as plates. */
   const HOODS = [
     { k: "spring", src: "assets/website/hood-spring.png", cap: "Spring and Fall.", alt: "A man vaulting a fence lands on a bull." },
     { k: "dream", src: "assets/website/hood-dream.png", cap: "A Dream.", alt: "A tangle of faces sharing their features: an eyebrow of one is the mouth of another." },
@@ -175,8 +174,7 @@
     { k: "pandeans", src: "assets/website/hood-pandeans.png", cap: "Pandeans.", alt: "A face in the clouds blowing a set of pan pipes." },
     { k: "well", src: "assets/website/hood-well.png", cap: "“All’s well that ends well.”", alt: "A mermaid combing her hair beside a well." }
   ];
-  const HOME_FIGS = 4;
-  const figNo = k => { const i = HOODS.findIndex(h => h.k === k); return i < HOME_FIGS ? i + 1 : i + 1 + STUDIO.length; };
+  const figNo = k => HOODS.findIndex(h => h.k === k) + 1;
   SETS.hood = HOODS.map(h => ({ src: h.src, cap: `<b>Fig. ${figNo(h.k)}.</b> ${h.cap}<small>Thomas Hood, <i>Whims and Oddities</i>, 1826</small>` }));
   const hoodBtn = k => { const i = HOODS.findIndex(h => h.k === k), h = HOODS[i]; return `<button type="button" data-set="hood" data-n="${i}" aria-label="${esc(h.alt)} Open full size."><img alt="${esc(h.alt)}" loading="lazy" src="${h.src}"></button>`; };
   const hoodFig = (k, more = "") => `<figure class="fig">${hoodBtn(k)}<figcaption><b>Fig. ${figNo(k)}.</b> ${HOODS.find(h => h.k === k).cap} Thomas Hood, <i>Whims and Oddities</i>, 1826.${more ? " " + more : ""}</figcaption></figure>`;
