@@ -29,7 +29,9 @@
   const when = w => String(w.start || w.end || "");
   const isUpcoming = w => (w.end || w.start) ? (w.end || w.start) >= TODAY : !!w.upcoming;
   const APPEAR = W_ALL.filter(w => w.type === "appearance").sort((a, b) => when(b).localeCompare(when(a)));
-  const STUDIO = (S.studio || {}).items || [];
+  const HUNT = window.HUNT || { photos: [], html: () => "", tally: () => "", done: () => false, count: () => 0, on: () => {} };
+  const pin = k => HUNT.html(k) ? `<span class="pin">${HUNT.html(k)}</span>` : "";   /* a hidden print, out in the margin of a section */
+  const STUDIO = ((S.studio || {}).items || []).filter(w => w.kind !== "Photography");   /* photographs are hidden around the site instead: assets/hunt.js */
   const thumbOf = src => /^assets\/studio\/[^/]+\.(jpe?g|png|webp)$/i.test(src || "") ? src.replace(/^assets\/studio\/([^/]+)\.\w+$/, "assets/studio/thumbs/$1.webp") : src;
   const NOTES = window.NOTES || {};
   const BOOKS = ((window.BOOKS || {}).items || []).map((b, i) => ({ ...b, i, notes: (NOTES.books || []).filter(n => n.book === `${b.t}|${b.a}`) }));
@@ -56,7 +58,7 @@
     }).join("")}</ul>` : "";
     const live = w.type === "appearance" && isUpcoming(w) ? ' <span class="pill">upcoming</span>' : "";
     return `<li data-n="${n}" id="${slug(w.title)}"><div>
-      <span class="cite"><i>${w.link ? `<a href="${esc(w.link)}"${/\.html$/.test(w.link) ? "" : ' target="_blank" rel="noopener"'}>${esc(w.title)}.</a>` : esc(w.title) + "."}</i> ${esc(w.venue || "")}${w.venue && !/[.?!]$/.test(w.venue) ? "." : ""}${w.award ? ` ${esc(w.award)}.` : ""}${w.result ? ` ${inline(w.result)}.` : ""}${live}</span>
+      <span class="cite"><i>${w.link ? `<a href="${esc(w.link)}"${/\.html$/.test(w.link) ? "" : ' target="_blank" rel="noopener"'}>${esc(w.title)}${/[.?!]$/.test(w.title) ? "" : "."}</a>` : esc(w.title) + (/[.?!]$/.test(w.title) ? "" : ".")}</i> ${esc(w.venue || "")}${w.venue && !/[.?!]$/.test(w.venue) ? "." : ""}${w.award ? ` ${esc(w.award)}.` : ""}${w.result ? ` ${inline(w.result)}.` : ""}${live}</span>
       ${w.claim ? `<span class="claim">${inline(w.claim)}</span>` : ""}
       ${w.body ? `<details class="more"><summary>Proof</summary><div class="proof">${paras(w.body)}</div></details>` : ""}
       ${link}${thumbs}</div></li>`;
@@ -67,11 +69,10 @@
     return `<p class="q"><b>Problem 1.</b> Show your work.</p>
       <h3><b>(a)</b> Papers <small>essays written for prize competitions, and independent research</small></h3>
       <ol class="refs">${PAPERS.map(w => ref(w, ++n)).join("")}</ol>
-      ${PROJECTS.length ? `<h3><b>(b)</b> Projects <small>things I’ve built</small></h3><ol class="refs">${PROJECTS.map(w => ref(w, ++n)).join("")}</ol>` : ""}
-      ${STUDIO.length ? `<h3><b>(c)</b> Art <small>${plural(STUDIO.length, "drawing")}, paintings and photographs</small></h3>
-        ${(S.studio || {}).intro ? `<p>${inline(S.studio.intro)}</p>` : ""}
-        <ul class="plates">${STUDIO.map((w, k) => `<li><button type="button" data-set="studio" data-n="${k}" aria-label="${esc(w.title)}"><img alt="" loading="lazy" src="${esc(thumbOf(w.img))}" data-full="${esc(w.img)}" onerror="this.onerror=null;this.src=this.dataset.full"></button>
-          <span class="cap"><i>${esc(w.title)}</i>, ${esc(w.year)}</span></li>`).join("")}</ul>` : ""}
+      ${PROJECTS.length ? `<h3><b>(b)</b> Projects <small>things I’ve built</small></h3>${pin(6)}<ol class="refs">${PROJECTS.map(w => ref(w, ++n)).join("")}</ol>` : ""}
+      ${STUDIO.length ? `<h3><b>(c)</b> Drawings and paintings</h3>
+        <div class="figs">${STUDIO.map((w, k) => `<figure><button type="button" data-set="studio" data-n="${k}" aria-label="${esc(w.title)}"><img alt="" loading="lazy" src="${esc(thumbOf(w.img))}" data-full="${esc(w.img)}" onerror="this.onerror=null;this.src=this.dataset.full"></button>
+          <figcaption><b>Fig. ${k + 1}.</b> <i>${esc(w.title)}</i>, ${esc(w.year)}. ${esc((w.medium || "").replace(/\.$/, ""))}.</figcaption></figure>`).join("")}</div>` : ""}
       ${APPEAR.length ? `<h3><b>(d)</b> Appearances <small>conferences, talks and events</small></h3><ol class="refs">${APPEAR.map(w => ref(w, ++n)).join("")}</ol>` : ""}`;
   }
 
@@ -89,7 +90,7 @@
       <div id="lemmas">${lemmas()}</div>
       <p>The proofs are in <a href="vault.html">the vault</a>, drawn as a map you can drag around. <button type="button" class="linkish" data-act="lemmas">Three more.</button></p>
       ${recent.length ? `<h3><b>(a)</b> Most recent</h3><ul class="rows">${recent.map(n => `<li><div class="row"><a class="t" href="${vaultLink(n[0])}">${esc(n[0])}</a><span class="r">${esc(fmtDate(n[3]).replace(/, \d{4}$/, ""))}</span></div></li>`).join("")}</ul>` : ""}
-      ${src.length ? `<h3><b>(b)</b> Sources <small>books and films I have taken notes on</small></h3><ul class="rows">${src.map(n => `<li><div class="row"><span><a class="t" href="${vaultLink(n.note)}"><i>${esc(n.title)}</i></a>${n.author ? `<span class="by">, ${esc(String(n.author).trim())}</span>` : ""}</span><span class="r">${plural(n.ideas.length, "idea")}</span></div></li>`).join("")}</ul>` : ""}
+      ${pin(7)}${src.length ? `<h3><b>(b)</b> Sources <small>books and films I have taken notes on</small></h3><ul class="rows">${src.map(n => `<li><div class="row"><span><a class="t" href="${vaultLink(n.note)}"><i>${esc(n.title)}</i></a>${n.author ? `<span class="by">, ${esc(String(n.author).trim())}</span>` : ""}</span><span class="r">${plural(n.ideas.length, "idea")}</span></div></li>`).join("")}</ul>` : ""}
       ${(window.QUOTES || {}).items ? `<h3><b>(c)</b> Copied out</h3><div id="quote">${quote()}</div><p style="margin-top:8px"><button type="button" class="linkish" data-act="quote">Another.</button></p>` : ""}`;
   }
 
@@ -119,7 +120,7 @@
       ${toRead.length ? `<details><summary>${toRead.length} I want to read</summary><ul class="rows" style="margin-top:8px">${toRead.map(bookRow).join("")}</ul></details>` : ""}
       ${dnf.length ? `<details><summary>${dnf.length} I did not finish</summary><ul class="rows" style="margin-top:8px">${dnf.map(bookRow).join("")}</ul></details>` : ""}
       <h3>${tag()} Films <small>${films.length} seen</small></h3>
-      ${(FD.bio || "").trim() ? `<p>${esc(FD.bio)}</p>` : ""}
+      ${pin(8)}${(FD.bio || "").trim() ? `<p>${esc(FD.bio)}</p>` : ""}
       ${favF.length ? `<h4>Favorites</h4><ul class="rows">${favF.map(f => filmRow(f)).join("")}</ul>` : ""}
       ${(FD.lists || []).map(l => `<details><summary>${esc(l.name)}</summary>${l.desc ? `<p>${esc(l.desc)}</p>` : ""}<ol class="rank">${(l.items || []).map(x => `<li><i>${esc(x.t)}</i>${x.y ? ` (${esc(x.y)})` : ""}</li>`).join("")}</ol></details>`).join("")}
       <details><summary>All ${films.length} seen, most recent first</summary><ul class="rows" style="margin-top:8px">${byRecent.map(f => filmRow(f)).join("")}</ul></details>
@@ -133,7 +134,6 @@
       ${(M.top || []).length ? `<p><i>Favorites.</i> ${M.top.map(esc).join(", ")}.</p>` : ""}
       ${play.length ? `<h4>At the violin</h4><ul class="rows">${play.map(p => `<li><div class="row"><span><span class="t"><i>${esc(p.t)}</i></span>${p.a ? `<span class="by">, ${esc(p.a)}</span>` : ""}</span><span class="r">${p.status === "now" ? "playing now" : p.status === "learn" ? "want to learn" : "played"}</span></div></li>`).join("")}</ul>` : ""}
       ${lists.map(l => `<details><summary>${esc(l.name)}</summary><ol class="rank">${l.items.filter(x => x.t).map(x => `<li><i>${esc(x.t)}</i>${x.a ? `, ${esc(x.a)}` : ""}</li>`).join("")}</ol></details>`).join("")}
-      <div id="fm"></div>
       <figure class="fig"><img alt="A girl on a clifftop blown along by a gust of wind, her umbrella turned inside out." loading="lazy" src="assets/website/gust-full.png">
         <figcaption><b>Figure 1.</b> “De Gustibus non est disputandum.” Thomas Hood, <i>Whims and Oddities</i>, 1826. There is no arguing with a gust.</figcaption></figure>`;
   }
@@ -149,40 +149,30 @@
       ${logs.length ? logs.map(d => `<p class="meta">${d.rewatch ? "Rewatched" : "Watched"} ${fmtDate(d.date)}${d.r != null ? " · " + rating(d.r).replace(/<\/?b>/g, "") + " of 5" : ""}</p>${d.review ? paras(d.review) : ""}`).join("") : `<p class="meta">${f.added ? "Logged " + fmtDate(f.added) : ""}</p>`}
       ${f.notes.map(n => `<p><a href="${vaultLink(n.note)}">${(n.ideas || []).length ? plural(n.ideas.length, "idea") + " from it" : "My notes on it"} in the vault →</a></p>`).join("")}</div></div>`;
   }
-  /* music heard lately, from Last.fm (content.js "lastfm": { user, key }), grouped by album */
-  function lastfm() {
-    const fm = S.lastfm || {}, box = $("#fm"); if (!box || !fm.user || !fm.key) return;
-    fetch(`https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${encodeURIComponent(fm.user)}&api_key=${encodeURIComponent(fm.key)}&format=json&limit=80`)
-      .then(r => r.ok ? r.json() : null).then(j => {
-        const seen = new Set(), rows = [];
-        (((j || {}).recenttracks || {}).track || []).forEach(t => {
-          const artist = (t.artist || {})["#text"] || "", album = (t.album || {})["#text"] || t.name, key = album + "|" + artist;
-          if (seen.has(key)) return; seen.add(key);
-          const now = (t["@attr"] || {}).nowplaying === "true";
-          rows.push(`<li><div class="row"><span><span class="t"><i>${esc(album)}</i></span><span class="by">, ${esc(artist)}</span></span><span class="r">${now ? "playing now" : t.date ? esc(fmtDate(isoOf(new Date(+t.date.uts * 1000))).replace(/, \d{4}$/, "")) : ""}</span></div></li>`);
-        });
-        if (rows.length && $("#fm")) $("#fm").innerHTML = `<h4>Heard lately</h4><ul class="rows">${rows.slice(0, 10).join("")}</ul>`;
-      }).catch(() => {});
-  }
-
   function about() {
     const photo = P.aboutPhoto || P.avatar;
     return `<p class="q"><b>Problem 4.</b> Who is this?</p>
       ${photo ? `<img class="portrait" alt="${esc(P.name || "")}" src="${esc(encodeURI(photo))}">` : ""}
       ${(S.about || []).map((p, k) => `<p>${k ? "" : "<i>Solution.</i> "}${inline(p)}</p>`).join("")}
-      ${(P.now || []).length ? `<h3><b>(a)</b> Now</h3><table class="cv">${P.now.map(n => `<tr><td>at present</td><td>${esc(n)}</td></tr>`).join("")}</table>` : ""}
-      ${(S.facts || []).length ? `<h3><b>(b)</b> Givens</h3><table class="cv">${S.facts.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join("")}
-        ${(S.interests || []).length ? `<tr><td>Interests</td><td>${S.interests.map(esc).join(", ")}</td></tr>` : ""}</table>` : ""}
-      ${(S.record || []).length ? `<h3><b>(c)</b> Record</h3><table class="cv">${S.record.map(([y, t]) => `<tr><td>${esc(y)}</td><td>${esc(t)}</td></tr>`).join("")}</table>` : ""}
-      <h3><b>(d)</b> Contact <small>left as an exercise for the reader</small></h3>
+      ${(S.record || []).length ? `<h3><b>(a)</b> Record</h3>${pin(9)}<table class="cv">${S.record.map(([y, t]) => `<tr><td>${esc(y)}</td><td>${esc(t)}</td></tr>`).join("")}</table>` : ""}
+      <h3><b>(b)</b> Contact <small>left as an exercise for the reader</small></h3>
       <table class="cv">${(S.socials || []).filter(s => s.url).map(s => `<tr><td>${esc(s.name)}</td><td>${/^mailto:/.test(s.url) ? esc(s.handle) : `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.handle || s.name)}</a>`}</td></tr>`).join("")}</table>
       <p style="text-align:right;max-width:none;margin-top:14px">${qed}</p>`;
   }
 
+  function extra() {
+    SETS.photos = HUNT.photos.map(w => ({ src: w.img, cap: `<i>${esc(w.title)}</i>, ${esc(w.year)}<small>${esc(w.medium || "")}</small>` }));
+    return `<p class="q"><b>Problem 5</b> (extra credit). Find every photograph hidden on this site.</p>
+      <p><i>Solution.</i> You did. Here they are at full size. <span class="grade" aria-hidden="true">${HUNT.photos.length}/${HUNT.photos.length}</span></p>
+      <div class="figs">${HUNT.photos.map((w, k) => `<figure><button type="button" data-set="photos" data-n="${k}" aria-label="${esc(w.title)}"><img alt="" loading="lazy" src="${esc(thumbOf(w.img))}" data-full="${esc(w.img)}" onerror="this.onerror=null;this.src=this.dataset.full"></button>
+        <figcaption><b>Plate ${k + 1}.</b> <i>${esc(w.title)}</i>, ${esc(w.year)}. ${esc(w.medium || "")}.</figcaption></figure>`).join("")}</div>
+      <p style="text-align:right;max-width:none;margin-top:14px">${qed}</p>`;
+  }
+  const EXTRA = { key: "extra", tag: "Extra credit", C: 0, hz: 523.25, render: extra, extra: true };
   const SECTIONS = [
     { key: "work", tag: "Show your work", C: -1.5, hz: 196.0, render: work },
     { key: "notes", tag: "Take notes", C: -0.5, hz: 293.66, render: notes },
-    { key: "taste", tag: "A matter of taste", C: 0.5, hz: 440.0, render: taste, after: lastfm },
+    { key: "taste", tag: "A matter of taste", C: 0.5, hz: 440.0, render: taste },
     { key: "about", tag: "Who is this?", C: 1.5, hz: 659.25, render: about }
   ];
 
@@ -215,7 +205,8 @@
       </div>
       <figure id="gust"><button type="button" aria-label="A matter of taste"><img alt="A girl blown along by a gust of wind, her umbrella turned inside out. Thomas Hood, 1826." src="assets/website/gust-girl.png"></button>
         <figcaption>De gustibus non est disputandum.</figcaption></figure>
-      ${P.updated ? `<p class="colophon">Updated ${esc(P.updated)}</p>` : ""}
+      ${[0, 1, 2, 3, 4, 5].map(k => HUNT.html(k, "out")).join("")}
+      <p class="colophon"><span id="tally">${esc(HUNT.tally())}</span>${P.updated ? `${HUNT.tally() ? " · " : ""}Updated ${esc(P.updated)}` : ""}</p>
     </div>
     <aside class="panel" id="panel" aria-label="Section" tabindex="-1"></aside>`;
 
@@ -225,26 +216,37 @@
   const BEND = 0.6;                  /* width of a bend, in units of x */
   let TOP = 190, W = 0, H = 0, x0 = 0, ORG = 0, open = -1;   /* ORG: where y = 0 sits, sideways */
   /* per string: how far it is straightened; and its bend: where (xc), how far now (cur), and either held by the pointer (to) or let go (amp, t0) */
-  const st = SECTIONS.map(() => ({ flat: 0, flatTo: 0, xc: 0, cur: 0, held: false, to: 0, amp: 0, t0: -1e9 }));
+  const st = [];
+  const fresh = () => ({ flat: 0, flatTo: 0, xc: 0, cur: 0, held: false, to: 0, amp: 0, t0: -1e9 });
   const steady = x => 0.5 * (Math.sin(x) - Math.cos(x));
   const xAt = py => x0 + (py - TOP) / PX, pyAt = x => TOP + (x - x0) * PX;
   const railX = () => Math.max(22, Math.min(64, W * 0.07));
   const mk = (n, a) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
   const still = matchMedia("(prefers-reduced-motion: reduce)");
 
+  function addString(i) {
+    const s = SECTIONS[i], g = mk("g", {}); g.dataset.i = i; if (s.extra) g.classList.add("extra");
+    st[i] = fresh();
+    const text = mk("text", { dy: -7 }), tp = mk("textPath", { href: "#guide" + i });
+    tp.innerHTML = `<tspan class="n">${i + 1}.</tspan> ${s.tag}`; text.appendChild(tp);
+    g.append(mk("path", { class: "s" }), mk("path", { class: "hit" }), mk("path", { class: "guide", id: "guide" + i }), text, mk("circle", { r: 4.5 }));
+    svg.appendChild(g);
+    const b = document.createElement("button"); b.type = "button"; b.className = "sr"; b.textContent = `Problem ${i + 1}. ${s.tag}`;
+    b.addEventListener("click", () => toggle(i)); b.addEventListener("focus", () => g.classList.add("kb")); b.addEventListener("blur", () => g.classList.remove("kb"));
+    keys.appendChild(b);
+  }
   function build() {
     svg.appendChild(mk("g", { id: "axis" }));
-    SECTIONS.forEach((s, i) => {
-      const g = mk("g", {}); g.dataset.i = i;
-      const text = mk("text", { dy: -7 }), tp = mk("textPath", { href: "#guide" + i });
-      tp.innerHTML = `<tspan class="n">${i + 1}.</tspan> ${s.tag}`; text.appendChild(tp);
-      g.append(mk("path", { class: "s" }), mk("path", { class: "hit" }), mk("path", { class: "guide", id: "guide" + i }), text, mk("circle", { r: 4.5 }));
-      svg.appendChild(g);
-      const b = document.createElement("button"); b.type = "button"; b.className = "sr"; b.textContent = `Problem ${i + 1}. ${s.tag}`;
-      b.addEventListener("click", () => toggle(i)); b.addEventListener("focus", () => g.classList.add("kb")); b.addEventListener("blur", () => g.classList.remove("kb"));
-      keys.appendChild(b);
-    });
+    if (HUNT.done()) SECTIONS.push(EXTRA);
+    SECTIONS.forEach((s, i) => addString(i));
   }
+  /* every photograph found: the fifth string, C = 0, the steady state itself */
+  HUNT.on((first, justDone) => {
+    const t = $("#tally"); if (t) t.textContent = HUNT.tally();
+    if (!justDone || SECTIONS.includes(EXTRA)) return;
+    SECTIONS.push(EXTRA); addString(SECTIONS.length - 1); draw();
+    SECTIONS.forEach((s, i) => setTimeout(() => { st[i].xc = xAt(scrollY + innerHeight / 2); letGo(i, 0.5); }, 160 * i));
+  });
   function layout() {
     W = stage.clientWidth; const narrow = W < 700;
     TOP = Math.round($(".top").getBoundingClientRect().height + (narrow ? 30 : 16));
@@ -263,6 +265,12 @@
     /* the girl in the gust: bottom right, across the curve from the name. On a phone there is only room where the curve swings left. */
     const gust = $("#gust"), gx = narrow ? 5.05 : 7.2;
     gust.style.top = pyAt(gx) + "px"; gust.style.left = Math.min(W - gust.offsetWidth - 10, ORG + (narrow ? steady(5.6) : 0.72) * SY + (narrow ? 26 : 70)) + "px";
+    /* six prints in the margins, each a set distance out from the curves */
+    [[1.25, 1, 150], [2.3, -1, 190], [4.5, 1, 130], [4.6, -1, 170], [6.25, 1, 110], [6.55, -1, 210]].forEach(([x, side, gap], k) => {
+      const el = $(`.print.out[data-hunt="${k}"]`); if (!el) return;
+      const w = el.offsetWidth, edge = ORG + (steady(x) + 1.5 * side * Math.exp(-x)) * SY, g = narrow ? gap * 0.22 : gap;
+      el.style.top = pyAt(x) + "px"; el.style.left = Math.max(30, Math.min(W - w - 8, side < 0 ? edge - g - w : edge + g)) + "px";
+    });
     /* the x axis, down the left edge */
     const ax = $("#axis"), ax0 = 9; ax.innerHTML = "";
     ax.appendChild(mk("line", { x1: ax0, y1: TOP - 6, x2: ax0, y2: H - 34 }));
@@ -318,7 +326,7 @@
     $$("g[data-i]", svg).forEach((g, k) => g.classList.toggle("on", k === open));
     if (open >= 0) {
       const s = SECTIONS[open];
-      panel.innerHTML = `<button class="close" type="button" data-act="close">close</button>${s.render()}`;
+      panel.innerHTML = `<div class="bar"><button class="close" type="button" data-act="close">close</button></div><div class="sheet">${s.render()}</div>`;
       panel.classList.add("show"); panel.scrollTop = 0; if (s.after) s.after();
       st[open].xc = xAt(scrollY + innerHeight / 2); letGo(open, 0.45);
       setTimeout(() => panel.focus({ preventScroll: true }), 60);
