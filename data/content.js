@@ -540,7 +540,7 @@ window.SITE = {
       "Sun Kil Moon",
       {
         "name": "Acetone",
-        "img": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ0Bf-_rG3grhtCIPVZEIlFgBAN7aDfqhXzKZCtNUil9A_SSTwdIZWz2yUZ-q1pbM3Aqy-mV-WnUa7kPewuRMcx6G_lW_sSGkn96ND4ag&s=10"
+        "img": "https://i.scdn.co/image/ab6772690000dd22d9efa45351a6dae9a7be98cb"
       }
     ],
     "play": [
