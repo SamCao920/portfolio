@@ -251,11 +251,6 @@ window.SITE = {
       "copy": "samcao920@gmail.com"
     },
     {
-      "name": "LinkedIn",
-      "handle": "fangyuansam-cao",
-      "url": "https://www.linkedin.com/in/fangyuansam-cao/"
-    },
-    {
       "name": "Curius",
       "handle": "What I’m reading online",
       "url": "https://curius.app/sam-cao"
@@ -269,11 +264,6 @@ window.SITE = {
       "name": "X",
       "handle": "@fangyuansamcao",
       "url": "https://x.com/fangyuansamcao"
-    },
-    {
-      "name": "Spotify",
-      "handle": "My playlists",
-      "url": "https://open.spotify.com/user/g98hr5cchv85ym9vx3oh08dy2"
     },
     {
       "name": "Musescore",
