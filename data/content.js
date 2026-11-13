@@ -535,7 +535,10 @@ window.SITE = {
     "top": [
       "Ludwig van Beethoven",
       "Johann Sebastian Bach",
-      "Gustav Mahler",
+      {
+        "name": "Gustav Mahler",
+        "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/03/Emil_Orlik_Gustav_Mahler_1902.jpg/250px-Emil_Orlik_Gustav_Mahler_1902.jpg?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail"
+      },
       {
         "name": "Neutral Milk Hotel",
         "img": "https://i.guim.co.uk/img/media/2969348d257ce4751accbf6b3f1409cbd2cc5033/0_35_1582_949/master/1582.jpg?width=1200&height=1200&quality=85&auto=format&fit=crop&s=6b6954a0bf300de4b145e585de7dac59"
