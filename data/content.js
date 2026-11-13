@@ -533,7 +533,10 @@ window.SITE = {
   "music": {
     "bio": "Mostly listen to classical music, though a healthy amount of 1960s rock, turn-of-the-century indie, and J/Mandopop is added for variety.",
     "top": [
-      "Ludwig van Beethoven",
+      {
+        "name": "Ludwig van Beethoven",
+        "img": "https://cdn.prod.website-files.com/681547e3437aeddeba7a0020/68190a76c66e852e4e824e3d_Beethoven-M%C3%A4hler_1804_hires.jpg"
+      },
       {
         "name": "Johann Sebastian Bach",
         "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6a/Johann_Sebastian_Bach.jpg/250px-Johann_Sebastian_Bach.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail"
@@ -559,7 +562,8 @@ window.SITE = {
       {
         "t": "Adagio from Sonata No.1 for Solo Violin",
         "a": "Johann Sebastian Bach",
-        "status": "now"
+        "status": "now",
+        "with": "Solo"
       }
     ],
     "lists": []
