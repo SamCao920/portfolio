@@ -534,7 +534,10 @@ window.SITE = {
     "bio": "Mostly listen to classical music, though a healthy amount of 1960s rock, turn-of-the-century indie, and J/Mandopop is added for variety.",
     "top": [
       "Ludwig van Beethoven",
-      "Johann Sebastian Bach",
+      {
+        "name": "Johann Sebastian Bach",
+        "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6a/Johann_Sebastian_Bach.jpg/250px-Johann_Sebastian_Bach.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail"
+      },
       {
         "name": "Gustav Mahler",
         "img": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/03/Emil_Orlik_Gustav_Mahler_1902.jpg/250px-Emil_Orlik_Gustav_Mahler_1902.jpg?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail"
