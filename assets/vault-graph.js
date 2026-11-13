@@ -363,7 +363,7 @@
                 }
 
                 if (cand && cand.length && labelAlpha > 0.01) {
-                    ctx.font = '600 12px "Hanken Grotesk", Arial, sans-serif';
+                    ctx.font = '400 14px "NewCM", "Times New Roman", serif';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     cand.sort(function (p, q) { return DEG[q] - DEG[p]; });

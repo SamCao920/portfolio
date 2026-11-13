@@ -3,12 +3,12 @@
 Plain HTML, CSS and JS, served by GitHub Pages. No build step.
 
 ## Structure
-- `index.html`, `work.html`, `books.html`, `films.html`, `art.html`, `vault.html`, `about.html`, `socials.html`: page shells; each sets `data-page` on `<body>`.
+- `index.html`: the home page (four strings; Work, Notes, Taste and About open from it). `vault.html`: the notes map. Every other `*.html` except `admin.html` and `404.html` only redirects an old address to `index.html`.
 - `data/content.js`: bio, writing, socials and settings. Edit by hand.
 - `data/books.js`, `data/films.js`: my reading and watching log, edited in `admin.html` (Reading, Watching).
 - `data/art.js`, `assets/gallery/`: generated from the Visual Art notes in the Obsidian vault.
-- `assets/site.js`: renders the header, footer and each page from the data.
-- `assets/style.css`: the theme. Colours and fonts are tokens at the top.
+- `assets/paper.js`: draws the home page and fills each section from the data. `assets/vault-graph.js`: the map on `vault.html`. (`assets/site.js` is the previous design and is no longer loaded.)
+- `assets/paper.css`: the look of the public pages; colours and fonts are tokens at the top. Type is New Computer Modern (`assets/fonts/newcm`, GUST licence). `assets/style.css` now only styles `admin.html`.
 - `assets/vault-graph.js`: the interactive notes graph on the Vault page.
 - `tools/build-graph.py`: rebuilds the graph data inside `vault.html` from the Obsidian vault.
 

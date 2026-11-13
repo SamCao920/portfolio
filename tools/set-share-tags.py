@@ -3,13 +3,7 @@ import glob, re, sys, os
 root = sys.argv[1]
 META = {
  'home':     ('Sam Cao · Fangyuan Cao 曹方源', 'Sam (Fangyuan) Cao, Johns Hopkins. Essays on political economy, philosophy and history, notes, and the books, films and art I love.', 'home'),
- 'work':     ('Work · Sam Cao', 'Papers, projects, art and appearances by Sam (Fangyuan) Cao: prize essays on political economy and philosophy, things built, drawings and paintings.', 'writings'),
- 'books':    ('Books · Sam Cao', 'What Sam Cao has read: ratings, a reading diary, favorites and notes from his vault.', 'books'),
- 'films':    ('Films · Sam Cao', 'Favorite films, a viewing diary and ranked lists.', 'films'),
- 'art':      ('Art · Sam Cao', 'Artworks Sam Cao has seen in museums, from Rembrandt etchings to Chinese ink scrolls.', 'art'),
  'vault':    ('The Vault · Sam Cao', 'A live, interactive map of Sam Cao’s reading notes and the links between them.', 'vault'),
- 'about':    ('About · Sam Cao', 'About Sam (Fangyuan) Cao: Johns Hopkins, political economy, philosophy, violin and painting.', 'about'),
- 'socials':  ('Socials · Sam Cao', 'How to reach Sam Cao: email, LinkedIn, Curius, Substack, X and more.', 'socials'),
 }
 esc = lambda s: s.replace('&', '&amp;').replace('"', '&quot;')
 for f in glob.glob(os.path.join(root, '*.html')):

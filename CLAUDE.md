@@ -1,6 +1,6 @@
 # fangyuancao.me
 
-Static site on GitHub Pages (repo SamCao920/portfolio, branch master). Pages render from data/*.js via assets/site.js; admin.html edits the data files.
+Static site on GitHub Pages (repo SamCao920/portfolio, branch master). Two real pages: index.html (assets/paper.js + assets/paper.css) draws four solutions of y' + y = sin x as strings and opens Work, Notes, Taste and About from data/*.js; vault.html is the notes map (assets/vault-graph.js). admin.html edits the data files. The other *.html files only redirect old addresses to index.html. assets/site.js and assets/style.css are the previous design: admin.html still uses style.css; nothing public loads site.js.
 
 ## Machines
 - The Mac mini is the main machine: repo at ~/Desktop/Portfolio, set up by tools/mac/install.sh. launchd publishes admin saves (tools/mac/publish-admin.sh) and rebuilds the vault pages every hour (tools/mac/update-site.sh). Logs: tools/mac/*.log.
