@@ -538,7 +538,10 @@ window.SITE = {
       "Gustav Mahler",
       "Neutral Milk Hotel",
       "Sun Kil Moon",
-      "Acetone"
+      {
+        "name": "Acetone",
+        "img": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ0Bf-_rG3grhtCIPVZEIlFgBAN7aDfqhXzKZCtNUil9A_SSTwdIZWz2yUZ-q1pbM3Aqy-mV-WnUa7kPewuRMcx6G_lW_sSGkn96ND4ag&s=10"
+      }
     ],
     "play": [
       {
