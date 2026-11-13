@@ -537,7 +537,10 @@ window.SITE = {
       "Johann Sebastian Bach",
       "Gustav Mahler",
       "Neutral Milk Hotel",
-      "Sun Kil Moon",
+      {
+        "name": "Sun Kil Moon",
+        "img": "https://www.heymanchester.com/wp/files/sun-kil-moon-manchester.jpg"
+      },
       {
         "name": "Acetone",
         "img": "https://i.scdn.co/image/ab6772690000dd22d9efa45351a6dae9a7be98cb"
