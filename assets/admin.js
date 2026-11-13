@@ -10,7 +10,7 @@
   const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
   let data = clone(window.SITE || {});
-  let dir = null, dirty = false, section = "theme";
+  let dir = null, dirty = false, section = "profile";
   let loadedStamp = 0, staleArmed = false;
   /* top-level keys this editor edits; everything else in content.js (studio, hiddenFilms, …) is kept from disk on save */
   const MANAGED = ["theme", "analytics", "studio", "profile", "about", "interests", "facts", "record", "writings", "socials", "homeBooks", "showDidNotFinish", "posterOverrides", "music", "artists"];
@@ -278,7 +278,6 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       const wrote = LOGS.filter(n => logState[n].dirty);
       for (const p of pendingFiles.splice(0)) await writeFile(p.path, p.file);
       await writeFile("data/content.js", new Blob([serialise()], { type: "text/javascript" }));
-      await writeFile("data/theme.js", new Blob([themeJs(data.theme || {})], { type: "text/javascript" }));
       if (logState.books.dirty) await writeFile("data/books.js", new Blob([booksJs()], { type: "text/javascript" }));
       if (logState.films.dirty) await writeFile("data/films.js", new Blob([filmsJs()], { type: "text/javascript" }));
       if (logState.listening.dirty) await writeFile("data/listening.js", new Blob([listeningJs()], { type: "text/javascript" }));
@@ -375,15 +374,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
   const DEFAULT_FONTS = { display: "Hanken Grotesk", body: "Hanken Grotesk", cjk: "Noto Serif SC" };
   const fontRow = (role, name) => FONTS[role].find(f => f[0] === name) || FONTS[role][0];
   const fontSpec = fonts => { const o = {}; ["display", "body", "cjk"].forEach(r => { const f = fontRow(r, (fonts || {})[r] || DEFAULT_FONTS[r]); o[r] = { q: f[1], s: f[2], w: f[3] }; }); return o; };
-  function applyFonts(fonts) {
-    const f = fontSpec(fonts), d = document.documentElement;
-    const fam = [f.display.q, f.body.q, f.cjk.q, "Source+Serif+4:ital,opsz,wght@0,8..60,700;1,8..60,400"].filter((v, i, a) => a.indexOf(v) === i);
-    let l = document.getElementById("site-fonts");
-    if (!l) { l = document.createElement("link"); l.rel = "stylesheet"; l.id = "site-fonts"; document.head.appendChild(l); }
-    l.href = "https://fonts.googleapis.com/css2?family=" + fam.join("&family=") + "&display=swap";
-    d.style.setProperty("--display", f.display.s); d.style.setProperty("--dw", f.display.w);
-    d.style.setProperty("--body", f.body.s); d.style.setProperty("--cjk", f.cjk.s); d.style.setProperty("--cjkw", f.cjk.w);
-  }
+  function applyFonts() {}   /* the site has one look now (assets/paper.css); the old theme settings are ignored */
   function themeJs(th) {
     const f = fontSpec(th.fonts);
     return `/* Site theme: colours and fonts. Written by admin.html (Theme). Loaded in <head> so nothing flashes. */
@@ -402,49 +393,23 @@ window.SITE = ${JSON.stringify(data, null, 2)};
 })();
 `;
   }
-  const applyTheme = () => { const t = data.theme || {}; document.documentElement.dataset.palette = t.palette || "slate"; document.documentElement.dataset.accent = t.accent || "red"; };
+  const applyTheme = () => {};
 
   /* ---------- sections ---------- */
   const TYPES = [["essay", "Essay"], ["research", "Research"], ["project", "Project"], ["appearance", "Appearance"]];
   const SECTIONS = {
-    theme: {
-      label: "Theme",
-      help: "Colours for the whole site. Visitors still get the sun/moon button, which switches your chosen theme between its dark and light versions. Click to preview here; Save to publish.",
-      render: () => { const t = data.theme || (data.theme = { palette: "slate", accent: "red" }); return `
-        <div class="section-head"><h2>Background</h2></div>
-        <div class="swatches">${PALETTES.map(([k, l, db, ds, lb, ls]) => `<button type="button" class="pal-card" data-palette="${k}" aria-pressed="${(t.palette || "slate") === k}">
-          <span class="pal-prev"><span style="background:${db}"><i style="background:${ds}"></i><i style="background:${ds}"></i></span><span style="background:${lb}"><i style="background:${ls}"></i><i style="background:${ls}"></i></span></span>
-          <b>${l}</b></button>`).join("")}</div>
-        <div class="section-head" style="margin-top:28px"><h2>Accent</h2></div>
-        <div class="accents">${ACCENTS.map(([k, l, c]) => `<button type="button" class="acc" data-accent="${k}" aria-pressed="${(t.accent || "red") === k}"><i style="background:${c}"></i>${l}</button>`).join("")}</div>
-        <div class="section-head" style="margin-top:28px"><h2>Fonts</h2></div>
-        <div class="grid3">${[["display", "Titles and your name"], ["body", "Body text"], ["cjk", "Chinese"]].map(([r, l]) => `<label class="f" for="font-${r}"><span>${l}</span>
-          <select id="font-${r}" data-font="${r}">${FONTS[r].map(f => `<option value="${esc(f[0])}" ${((t.fonts || {})[r] || DEFAULT_FONTS[r]) === f[0] ? "selected" : ""}>${esc(f[0])}: ${esc(f[4])}</option>`).join("")}</select></label>`).join("")}</div>
-        <div class="font-demo"><p class="fd-name">Sam Cao <span class="fd-cjk">曹方源</span></p><p class="fd-title">Programmable Money and the Abolition of Visible Failure</p>
-          <p class="fd-body">Interventions have always failed in public, and that is what forced governments to retreat. Money that blocks the act before it happens leaves no failure to see.</p></div>
-        <div class="theme-demo"><span class="pill award">Award</span><span class="pill live">Live</span><a class="read-link" href="#" onclick="return false">Read the essay <span class="arr">→</span></a>
-          <span class="hm-legend">Activity <i class="hm-c l1"></i><i class="hm-c l2"></i><i class="hm-c l3"></i><i class="hm-c l4"></i></span></div>`; },
-      collect: () => {}
-    },
     profile: {
       label: "Profile",
-      help: "Your name, photo and the line under it on the home page.",
+      help: "Your name and the two photos. The small round one sits beside your name on the home page; the other is in Who is this?",
       render: () => { const p = data.profile || (data.profile = {}); return `<div data-scope="profile">
-        <div class="grid3">${field(p, "name", "Name shown")}${field(p, "legalName", "Legal name")}${field(p, "cjk", "Chinese name")}</div>
-        <div class="grid3">${field(p, "badge", "Badge", { hint: "Small orange tag, e.g. JHU ’30" })}${field(p, "location", "Location")}${field(p, "initials", "Initials")}</div>
-        ${field(p, "tagline", "Tagline", { type: "textarea", rows: 2 })}
-        <div class="grid2">${field(p, "avatar", "Home page photo", { type: "file", dir: "assets/plates", accept: "image/*" })}${field(p, "aboutPhoto", "About page photo", { type: "file", dir: "assets/plates", accept: "image/*", hint: "Empty uses the home page photo." })}</div></div>`; },
+        <div class="grid3">${field(p, "name", "First name shown")}${field(p, "legalName", "Legal name")}${field(p, "cjk", "Chinese name")}</div>
+        <div class="grid2">${field(p, "avatar", "Home page photo", { type: "file", dir: "assets/plates", accept: "image/*" })}${field(p, "aboutPhoto", "About photo", { type: "file", dir: "assets/plates", accept: "image/*", hint: "Empty uses the home page photo." })}</div>
+        ${field(p, "updated", "Updated", { hint: "Shown at the foot of the home page, e.g. November 2026" })}</div>`; },
       collect: el => readInto($("[data-scope=profile]", el), data.profile)
     },
-    now: {
-      label: "Now",
-      help: "The “Now” list on the home page. One item per line.",
-      render: () => `<label class="f" for="now-lines"><span>Items</span><textarea id="now-lines" rows="8">${esc((data.profile.now || []).join("\n"))}</textarea></label>`,
-      collect: el => { data.profile.now = $("#now-lines", el).value.split("\n").map(s => s.trim()).filter(Boolean); }
-    },
     writings: {
-      label: "Writing & events",
-      help: "Everything here shows on the Work page, under Papers (essays and research), Projects or Appearances. Appearances are listed newest first, with an optional photo gallery. Appearances with dates drive the “Next:” line and drop off Upcoming after the end date. Simple HTML like <em>italic</em> works in text boxes.",
+      label: "Work",
+      help: "Papers (essays and research), projects and appearances, all under Show your work, in this order within each kind. Appearances are listed newest first, with an optional photo gallery. Simple HTML like <em>italic</em> works in text boxes.",
       render: () => `<button class="btn go add" type="button" data-add="writings">+ Add entry</button>
         <div id="w-cards">${(data.writings || []).map((w, i) => card(w, i)).join("")}</div>`,
       collect: el => {
@@ -456,8 +421,8 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       }
     },
     studio: {
-      label: "Studio",
-      help: "Your own artwork, in the Art section of the Work page, in this order. Type sets the filter (Drawing, Painting or Photography) and the frame in the 3D view: gold for paintings, walnut and mat for drawings, black gallery frame for photographs. Attach an image with Choose file; it is copied into assets/studio/ on Save.",
+      label: "Art",
+      help: "Your own artwork. Drawings and paintings show as numbered figures at the end of Show your work, in this order. Works of type Photography are not shown there: the first eleven are hidden around the site as small prints for visitors to find. Attach an image with Choose file; it is copied into assets/studio/ on Save.",
       render: () => { const st = data.studio || (data.studio = { intro: "", items: [] }); return `
         <label class="f" for="studio-intro"><span>Intro</span><textarea id="studio-intro" rows="3">${esc(st.intro || "")}</textarea></label>
         <button class="btn go add" type="button" data-add="studio">+ Add work</button>
@@ -470,20 +435,13 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     },
     about: {
       label: "About",
-      help: "Paragraphs on the About page. Leave a blank line between paragraphs. Links: <a href=\"books.html\">Books</a>.",
-      render: () => `<label class="f" for="about-text"><span>Paragraphs</span><textarea id="about-text" rows="14">${esc((data.about || []).join("\n\n"))}</textarea></label>
-        <label class="f" for="interests"><span>Interests</span><textarea id="interests" rows="3">${esc((data.interests || []).join(", "))}</textarea><small>Comma separated</small></label>
-        <div class="section-head" style="margin-top:28px"><h2>Details</h2></div>${pairRows("facts", data.facts || [], ["Label", "Value"])}
-        <div class="section-head" style="margin-top:28px"><h2>Selected record</h2></div>${pairRows("record", data.record || [], ["Year", "Achievement"])}`,
-      collect: el => {
-        data.about = $("#about-text", el).value.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean);
-        data.interests = $("#interests", el).value.split(",").map(s => s.trim()).filter(Boolean);
-        data.facts = readPairs(el, "facts"); data.record = readPairs(el, "record");
-      }
+      help: "The paragraphs under Who is this? Leave a blank line between paragraphs. Simple HTML works.",
+      render: () => `<label class="f" for="about-text"><span>Paragraphs</span><textarea id="about-text" rows="14">${esc((data.about || []).join("\n\n"))}</textarea></label>`,
+      collect: el => { data.about = $("#about-text", el).value.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean); }
     },
     socials: {
-      label: "Socials",
-      help: "Shown on the Socials page in this order. Rows without a URL are hidden. Fill “Copy text” to show a Copy button instead of Visit (used for email).",
+      label: "Contact",
+      help: "Shown under Contact in Who is this?, in this order. The email and the first three links also appear at the foot of the home page. Rows without a URL are hidden.",
       render: () => `<div class="rows" data-rows="socials">${(data.socials || []).map(socialRow).join("")}</div>
         <button class="btn add" type="button" data-add="socials">+ Add link</button>`,
       collect: el => {
@@ -494,8 +452,8 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       }
     },
     art: {
-      label: "Art",
-      help: "Your favorite artists, best first. The Art page shows them as a ranked list with the works by each one you’ve logged in your vault. The works themselves still come from your vault.",
+      label: "Painters",
+      help: "Your favorite painters, best first, listed under Paintings in A matter of taste. The works themselves come from your vault.",
       render: () => {
         const list = (data.artists || []).length ? data.artists : [{ name: "", note: "" }];
         const known = [...new Set((window.ART && window.ART.items || []).map(a => a.artist).filter(a => a && a !== "Unknown"))].sort();
@@ -511,21 +469,14 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     },
     settings: {
       label: "Settings",
-      help: "Home page books, the Did-not-finish shelf, and cover fixes.",
+      help: "The Did-not-finish shelf and visitor counts.",
       render: () => `<div data-scope="settings">
-        ${field({ v: (data.homeBooks || []).join("\n") }, "v", "Home page books", { type: "textarea", rows: 4, prefix: "hb-", hint: "One title per line, up to four. Partial titles work (“Moby Dick”). Empty uses your four most recent favourites." })}
-        ${field(data, "showDidNotFinish", "Show the Did-not-finish shelf on Books", { type: "check" })}
-        ${field(data.analytics || {}, "goatcounter", "Visitor counts (GoatCounter code)", { prefix: "gc-", placeholder: "e.g. samcao", hint: "Sign up free at goatcounter.com, pick a code, and enter it here. Counts appear at https://YOURCODE.goatcounter.com. Leave empty to turn counting off." })}</div>
-        <div class="section-head" style="margin-top:28px"><h2>Cover fixes</h2></div>
-        <p class="ed-help">If a book, film or artwork shows the wrong cover, enter its exact title and an image URL or file.</p>
-        ${pairRows("overrides", Object.entries(data.posterOverrides || {}), ["Exact title", "Image URL or path"])}`,
+        ${field(data, "showDidNotFinish", "List books I did not finish", { type: "check" })}
+        ${field(data.analytics || {}, "goatcounter", "Visitor counts (GoatCounter code)", { prefix: "gc-", placeholder: "e.g. samcao", hint: "Counts appear at https://YOURCODE.goatcounter.com. Leave empty for none." })}</div>`,
       collect: el => {
-        const hb = $("#hb-v", el).value;
-        data.homeBooks = hb.split("\n").map(s => s.trim()).filter(Boolean);
         data.showDidNotFinish = $("[data-k=showDidNotFinish]", el).checked;
         const gc = $("#gc-goatcounter", el).value.trim();
         data.analytics = { ...(data.analytics || {}), goatcounter: gc.replace(/^https?:\/\//, "").replace(/\.goatcounter\.com.*$/, "") };
-        data.posterOverrides = Object.fromEntries(readPairs(el, "overrides"));
       }
     }
   };
@@ -1393,7 +1344,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
   document.addEventListener("change", e => { if (e.target.matches && e.target.matches("#al-form [data-k=t], #al-form [data-k=a], #al-form [data-k=form]")) fillComposedYear($("#al-form")); });
 
   Object.assign(SECTIONS, LOG_SECTIONS);
-  const ORDER = ["theme", "profile", "now", "writings", "studio", "reading", "watching", "music", "art", "about", "socials", "settings"];
+  const ORDER = ["profile", "writings", "studio", "reading", "watching", "music", "art", "about", "socials", "settings"];
   /* moving or removing a list entry changes that log */
   document.addEventListener("click", e => { const b = e.target.closest("[data-lists] [data-rowmove], [data-lists] [data-rowdel]"); if (b) markLog(b.closest("[data-lists]").dataset.lists); }, true);
 

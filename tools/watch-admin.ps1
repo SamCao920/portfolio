@@ -7,7 +7,7 @@ Set-Location $site
 $mutex = New-Object System.Threading.Mutex($false, "Local\SiteAdminAutoPush")
 if (-not $mutex.WaitOne(0)) { exit 0 }   # already running
 
-$files = "data\content.js", "data\books.js", "data\films.js", "data\theme.js", "data\listening.js"
+$files = "data\content.js", "data\books.js", "data\films.js"
 function Stamp { ($files | ForEach-Object { if (Test-Path $_) { (Get-Item $_).LastWriteTimeUtc.Ticks } }) -join "," }
 function Stop-Rebase { if ((Test-Path .git\rebase-merge) -or (Test-Path .git\rebase-apply)) { git rebase --abort 2>&1 | Out-Null } }
 function Publish {

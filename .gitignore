@@ -4,3 +4,4 @@ tools/watch-admin.log
 tools/mac/*.log
 tools/mac/vault-path
 .venv/
+.DS_Store

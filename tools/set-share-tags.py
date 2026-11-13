@@ -2,7 +2,7 @@
 import glob, re, sys, os
 root = sys.argv[1]
 META = {
- 'home':     ('Sam Cao · Fangyuan Cao 曹方源', 'Sam (Fangyuan) Cao, Johns Hopkins. Essays on political economy, philosophy and history, notes, and the books, films and art I love.', 'home'),
+ 'home':     ('Fangyuan Cao', 'Sam (Fangyuan) Cao, Johns Hopkins. Essays on political economy, philosophy and history, notes, and the books, films and art I love.', 'home'),
  'vault':    ('The Vault · Sam Cao', 'A live, interactive map of Sam Cao’s reading notes and the links between them.', 'vault'),
 }
 esc = lambda s: s.replace('&', '&amp;').replace('"', '&quot;')

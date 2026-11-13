@@ -27,6 +27,7 @@ button { font: inherit; color: inherit; }
 
 /* ---------- home: the strings ---------- */
 #stage { position: relative; overflow: hidden; padding: 0 20px; }
+#field { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; transition: opacity .35s; } #stage.open #field { opacity: .25; }
 #strings { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 #strings path.s { fill: none; stroke: var(--ink); stroke-width: 1.1; stroke-linecap: round; transition: stroke .2s, opacity .35s, stroke-width .2s; }
 #strings path.hit { fill: none; stroke: transparent; stroke-width: 26; cursor: pointer; pointer-events: stroke; }
@@ -52,7 +53,9 @@ button { font: inherit; color: inherit; }
 .face:hover img, .face:focus-visible img { filter: none; }
 .top h1 { margin: 0 0 6px; font: 700 30px/1.1 var(--cm); }
 .top h1 span { font-weight: 400; font-size: 17px; color: var(--grey); margin-left: 8px; }
-.top p { margin: 0; max-width: 34ch; }
+.top p { margin: 0; }
+.pr { margin: 0 -.16em 0 .02em; }
+.hunt-how { margin-top: 2px !important; max-width: 62ch; } .hunt-how b { font-style: normal; color: var(--pen); }
 .top .how { color: var(--grey); font-size: 16px; font-style: italic; }
 .eqn-inline { white-space: nowrap; }
 /* sound: the slider sits under the toggle and only shows when the pointer is near */
@@ -77,6 +80,7 @@ button { font: inherit; color: inherit; }
 .aside.rem { width: 250px; }
 .note { width: 240px; font-size: 16px; line-height: 1.4; color: var(--grey); }
 .note b { color: var(--ink); }
+.note, .aside, .end { background: var(--paper); box-shadow: 0 0 0 8px var(--paper); }
 #stage.open .aside, #stage.open .note, #stage.open #gust { opacity: .12; }
 .top { transition: opacity .3s; } #stage.open .top { opacity: 0; pointer-events: none; }
 .frac { display: inline-grid; vertical-align: middle; text-align: center; font-size: .74em; line-height: 1.05; margin: 0 1px; } .frac span:first-child { border-bottom: 1px solid currentColor; padding: 0 2px; }
@@ -235,7 +239,7 @@ dialog.light .x:hover, dialog.light .nav:hover { color: var(--pen); }
   body { font-size: 17px; }
   .face { width: 44px; height: 44px; }
   .top h1 { font-size: 25px; } .top h1 span { display: block; margin: 3px 0 0; font-size: 15px; }
-  .top p { max-width: 21ch; } .top .how { font-size: 15px; }
+  .top .how { font-size: 15px; }
   #strings g[data-i] text { font-size: 16px; }
   .note { font-size: 14px; } #vol { width: 60px; } #gust { width: 120px; } #gust figcaption { font-size: 12px; }
   .aside.eqn { font-size: 15px; } .aside.eqn .no { display: none; } .aside.rem { font-size: 15px; }

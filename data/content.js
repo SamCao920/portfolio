@@ -23,7 +23,7 @@ window.SITE = {
   },
   "about": [
     "Hi, I’m Sam. My given name is Fangyuan (曹方源), but you can call me Sam. I’m currently a freshman planning on double majoring in Moral and Political Economy and Applied Mathematics and Statistics at the Johns Hopkins University, and my interests lie most prominently at the intersection of economics, philosophy, and history.",
-    "I grew up in China and finished high school in California. This website has my <a href=\"writings.html\">essays and research</a>, what I’m <a href=\"books.html\">reading</a>, <a href=\"films.html\">watching</a>, <a href=\"art.html\">looking at</a>, or <a href=\"music.html\">listening to</a> is all here. In case you are also wondering what I'm thinking about, visit <a href=\"vault.html\">the vault</a>."
+    "I grew up in China and finished high school in California. I play the violin in the Hopkins Symphony Orchestra, and I draw and take photographs when I can."
   ],
   "facts": [
     [

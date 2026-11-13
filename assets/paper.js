@@ -44,7 +44,7 @@
   const SETS = {};      /* picture sets for the full-size viewer, by name */
 
   /* ---------- sections ---------- */
-  const ref = (w, n) => {
+  const ref = (w, n, tucked = "") => {
     const link = w.link ? `<a class="go" href="${esc(w.link)}"${/\.html$/.test(w.link) ? "" : ' target="_blank" rel="noopener"'}>${esc(w.linkText || "Open")} →</a>` : "";
     const g = (w.gallery || []).map(x => typeof x === "string" ? { src: x } : x).filter(x => x && x.src);
     const key = "g-" + slug(w.title); SETS[key] = g.filter(x => !/youtu\.?be|vimeo/.test(x.src)).map(x => ({ src: x.src, cap: esc(x.cap || w.title), video: /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(x.src) }));
@@ -60,7 +60,7 @@
     return `<li data-n="${n}" id="${slug(w.title)}"><div>
       <span class="cite"><i>${w.link ? `<a href="${esc(w.link)}"${/\.html$/.test(w.link) ? "" : ' target="_blank" rel="noopener"'}>${esc(w.title)}${/[.?!]$/.test(w.title) ? "" : "."}</a>` : esc(w.title) + (/[.?!]$/.test(w.title) ? "" : ".")}</i> ${esc(w.venue || "")}${w.venue && !/[.?!]$/.test(w.venue) ? "." : ""}${w.award ? ` ${esc(w.award)}.` : ""}${w.result ? ` ${inline(w.result)}.` : ""}${live}</span>
       ${w.claim ? `<span class="claim">${inline(w.claim)}</span>` : ""}
-      ${w.body ? `<details class="more"><summary>Proof</summary><div class="proof">${paras(w.body)}</div></details>` : ""}
+      ${w.body ? `<details class="more"><summary>Proof</summary><div class="proof">${tucked}${paras(w.body)}</div></details>` : ""}
       ${link}${thumbs}</div></li>`;
   };
   function work() {
@@ -68,12 +68,12 @@
     SETS.studio = STUDIO.map(w => ({ src: w.img, cap: `<i>${esc(w.title)}</i>, ${esc(w.year)}<small>${esc(w.medium || "")}</small>` }));
     return `<p class="q"><b>Problem 1.</b> Show your work.</p>
       <h3><b>(a)</b> Papers <small>essays written for prize competitions, and independent research</small></h3>
-      <ol class="refs">${PAPERS.map(w => ref(w, ++n)).join("")}</ol>
-      ${PROJECTS.length ? `<h3><b>(b)</b> Projects <small>things I’ve built</small></h3>${pin(6)}<ol class="refs">${PROJECTS.map(w => ref(w, ++n)).join("")}</ol>` : ""}
-      ${STUDIO.length ? `<h3><b>(c)</b> Drawings and paintings</h3>
+      <ol class="refs">${PAPERS.map((w, k) => ref(w, ++n, k ? "" : pin(2))).join("")}</ol>
+      ${PROJECTS.length ? `<h3><b>(b)</b> Projects <small>things I’ve built</small></h3><ol class="refs">${PROJECTS.map(w => ref(w, ++n)).join("")}</ol>` : ""}
+      ${APPEAR.length ? `<h3><b>(c)</b> Appearances <small>conferences, talks and events</small></h3><ol class="refs">${APPEAR.map(w => ref(w, ++n)).join("")}</ol>${pin(3)}` : ""}
+      ${STUDIO.length ? `<h3><b>(${APPEAR.length ? "d" : "c"})</b> Drawings and paintings</h3>
         <div class="figs">${STUDIO.map((w, k) => `<figure><button type="button" data-set="studio" data-n="${k}" aria-label="${esc(w.title)}"><img alt="" loading="lazy" src="${esc(thumbOf(w.img))}" data-full="${esc(w.img)}" onerror="this.onerror=null;this.src=this.dataset.full"></button>
-          <figcaption><b>Fig. ${k + 1}.</b> <i>${esc(w.title)}</i>, ${esc(w.year)}. ${esc((w.medium || "").replace(/\.$/, ""))}.</figcaption></figure>`).join("")}</div>` : ""}
-      ${APPEAR.length ? `<h3><b>(d)</b> Appearances <small>conferences, talks and events</small></h3><ol class="refs">${APPEAR.map(w => ref(w, ++n)).join("")}</ol>` : ""}`;
+          <figcaption><b>Fig. ${k + 1}.</b> <i>${esc(w.title)}</i>, ${esc(w.year)}. ${esc((w.medium || "").replace(/\.$/, ""))}.</figcaption></figure>`).join("")}</div>` : ""}`;
   }
 
   const VI = () => (window.VAULT_INDEX || {}).notes || [];
@@ -90,7 +90,7 @@
       <div id="lemmas">${lemmas()}</div>
       <p>The proofs are in <a href="vault.html">the vault</a>, drawn as a map you can drag around. <button type="button" class="linkish" data-act="lemmas">Three more.</button></p>
       ${recent.length ? `<h3><b>(a)</b> Most recent</h3><ul class="rows">${recent.map(n => `<li><div class="row"><a class="t" href="${vaultLink(n[0])}">${esc(n[0])}</a><span class="r">${esc(fmtDate(n[3]).replace(/, \d{4}$/, ""))}</span></div></li>`).join("")}</ul>` : ""}
-      ${pin(7)}${src.length ? `<h3><b>(b)</b> Sources <small>books and films I have taken notes on</small></h3><ul class="rows">${src.map(n => `<li><div class="row"><span><a class="t" href="${vaultLink(n.note)}"><i>${esc(n.title)}</i></a>${n.author ? `<span class="by">, ${esc(String(n.author).trim())}</span>` : ""}</span><span class="r">${plural(n.ideas.length, "idea")}</span></div></li>`).join("")}</ul>` : ""}
+      ${src.length ? `<h3><b>(b)</b> Sources <small>books and films I have taken notes on</small></h3><ul class="rows">${src.map(n => `<li><div class="row"><span><a class="t" href="${vaultLink(n.note)}"><i>${esc(n.title)}</i></a>${n.author ? `<span class="by">, ${esc(String(n.author).trim())}</span>` : ""}</span><span class="r">${plural(n.ideas.length, "idea")}</span></div></li>`).join("")}</ul>${pin(4)}` : ""}
       ${(window.QUOTES || {}).items ? `<h3><b>(c)</b> Copied out</h3><div id="quote">${quote()}</div><p style="margin-top:8px"><button type="button" class="linkish" data-act="quote">Another.</button></p>` : ""}`;
   }
 
@@ -100,13 +100,11 @@
     const reading = BOOKS.filter(b => b.shelf === "reading");
     const read = BOOKS.filter(b => b.shelf === "read").sort((a, b) => String(b.read || "0" + b.added).localeCompare(String(a.read || "0" + a.added)));
     const favs = BOOKS.filter(b => b.fav).sort(byDesc("read"));
-    const toRead = BOOKS.filter(b => b.shelf === "to-read").sort(byDesc("added"));
     const dnf = S.showDidNotFinish ? BOOKS.filter(b => b.shelf === "dnf") : [];
     const years = [...new Set(read.map(b => b.read ? parse(b.read).y : 0))];
     const films = FILMS.filter(shown), favF = (FD.favorites || []).map(i => FILMS[i]).filter(shown);
     const last = {}; FD.diary.forEach(d => { if (!last[d.f] || d.date > last[d.f]) last[d.f] = d.date; });
     const byRecent = films.slice().sort((a, b) => String(last[b.i] || b.added || "").localeCompare(String(last[a.i] || a.added || "")));
-    const watch = (FD.watchlist || []);
     const artists = [...new Set(ART.map(a => a.artist))];
     SETS.art = ART.map(a => ({ src: a.img, remote: true, cap: `<i>${esc(a.t)}</i>, ${esc(a.artist)}${a.year ? ", " + esc(a.year) : ""}<small>${esc([a.museum, a.city].filter(Boolean).join(", "))}</small>${a.note ? paras(a.note) : ""}` }));
     const M = S.music || {}, lists = (M.lists || []).filter(l => l && l.name && (l.items || []).some(x => x.t)), play = (M.play || []).filter(p => p && p.t);
@@ -116,19 +114,17 @@
       <h3>${tag()} Books <small>${read.length} read</small></h3>
       ${reading.length ? `<h4>Reading now</h4><ul class="rows">${reading.map(bookRow).join("")}</ul>` : ""}
       ${favs.length ? `<h4>Favorites</h4><ul class="rows">${favs.map(bookRow).join("")}</ul>` : ""}
-      <details><summary>All ${read.length} read, most recent first</summary>${years.map(y => `<p class="year">${y || "Earlier"}</p><ul class="rows">${read.filter(b => (b.read ? parse(b.read).y : 0) === y).map(bookRow).join("")}</ul>`).join("")}</details>
-      ${toRead.length ? `<details><summary>${toRead.length} I want to read</summary><ul class="rows" style="margin-top:8px">${toRead.map(bookRow).join("")}</ul></details>` : ""}
+      <details><summary>All ${read.length} read, most recent first</summary>${pin(5)}${years.map(y => `<p class="year">${y || "Earlier"}</p><ul class="rows">${read.filter(b => (b.read ? parse(b.read).y : 0) === y).map(bookRow).join("")}</ul>`).join("")}</details>
       ${dnf.length ? `<details><summary>${dnf.length} I did not finish</summary><ul class="rows" style="margin-top:8px">${dnf.map(bookRow).join("")}</ul></details>` : ""}
       <h3>${tag()} Films <small>${films.length} seen</small></h3>
-      ${pin(8)}${(FD.bio || "").trim() ? `<p>${esc(FD.bio)}</p>` : ""}
+      ${(FD.bio || "").trim() ? `<p>${esc(FD.bio)}</p>` : ""}
       ${favF.length ? `<h4>Favorites</h4><ul class="rows">${favF.map(f => filmRow(f)).join("")}</ul>` : ""}
-      ${(FD.lists || []).map(l => `<details><summary>${esc(l.name)}</summary>${l.desc ? `<p>${esc(l.desc)}</p>` : ""}<ol class="rank">${(l.items || []).map(x => `<li><i>${esc(x.t)}</i>${x.y ? ` (${esc(x.y)})` : ""}</li>`).join("")}</ol></details>`).join("")}
+      ${(FD.lists || []).map((l, k) => `<details><summary>${esc(l.name)}</summary>${k ? "" : pin(6)}${l.desc ? `<p>${esc(l.desc)}</p>` : ""}<ol class="rank">${(l.items || []).map(x => `<li><i>${esc(x.t)}</i>${x.y ? ` (${esc(x.y)})` : ""}</li>`).join("")}</ol></details>`).join("")}
       <details><summary>All ${films.length} seen, most recent first</summary><ul class="rows" style="margin-top:8px">${byRecent.map(f => filmRow(f)).join("")}</ul></details>
-      ${watch.length ? `<details><summary>${watch.length} I want to see</summary><p class="run" style="margin-top:8px">${watch.map(f => `<i>${esc(f.t)}</i>${f.y ? ` (${f.y})` : ""}`).join('<i class="sep"> · </i>')}</p></details>` : ""}
       ${ART.length ? `<h3>${tag()} Paintings <small>${ART.length} works by ${plural(artists.length, "artist")}, seen in person or studied</small></h3>
         ${(S.artists || []).length ? `<p><i>Favorite painters.</i> ${(S.artists || []).map(a => esc(a.name)).join(", ")}.</p>` : ""}
         <h4>Most recent</h4><ul class="plates">${ART.slice(0, 6).map((a, k) => `<li><button type="button" data-set="art" data-n="${k}" aria-label="${esc(a.t)} by ${esc(a.artist)}"><img alt="" loading="lazy" referrerpolicy="no-referrer" src="${esc(a.img || "")}" onerror="this.style.visibility='hidden'"></button><span class="cap"><i>${esc(a.t)}</i>, ${esc(a.artist)}</span></li>`).join("")}</ul>
-        <details><summary>All ${ART.length}, by artist</summary>${artists.sort((a, b) => a.localeCompare(b)).map(name => `<p class="year">${esc(name)}</p><ul class="rows">${ART.map((a, k) => [a, k]).filter(([a]) => a.artist === name).map(([a, k]) =>
+        <details><summary>All ${ART.length}, by artist</summary>${pin(7)}${artists.sort((a, b) => a.localeCompare(b)).map(name => `<p class="year">${esc(name)}</p><ul class="rows">${ART.map((a, k) => [a, k]).filter(([a]) => a.artist === name).map(([a, k]) =>
           `<li><button type="button" class="row" data-set="art" data-n="${k}"><span class="t"><i>${esc(a.t)}</i></span><span class="r">${esc(a.year || "")}</span></button></li>`).join("")}</ul>`).join("")}</details>` : ""}
       <h3>${tag()} Music</h3>
       ${(M.top || []).length ? `<p><i>Favorites.</i> ${M.top.map(esc).join(", ")}.</p>` : ""}
@@ -154,10 +150,9 @@
     return `<p class="q"><b>Problem 4.</b> Who is this?</p>
       ${photo ? `<img class="portrait" alt="${esc(P.name || "")}" src="${esc(encodeURI(photo))}">` : ""}
       ${(S.about || []).map((p, k) => `<p>${k ? "" : "<i>Solution.</i> "}${inline(p)}</p>`).join("")}
-      ${(S.record || []).length ? `<h3><b>(a)</b> Record</h3>${pin(9)}<table class="cv">${S.record.map(([y, t]) => `<tr><td>${esc(y)}</td><td>${esc(t)}</td></tr>`).join("")}</table>` : ""}
-      <h3><b>(b)</b> Contact <small>left as an exercise for the reader</small></h3>
+      <h3>Contact <small>left as an exercise for the reader</small></h3>
       <table class="cv">${(S.socials || []).filter(s => s.url).map(s => `<tr><td>${esc(s.name)}</td><td>${/^mailto:/.test(s.url) ? esc(s.handle) : `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.handle || s.name)}</a>`}</td></tr>`).join("")}</table>
-      <p style="text-align:right;max-width:none;margin-top:14px">${qed}</p>`;
+      ${pin(8)}<p style="text-align:right;max-width:none;margin-top:14px">${qed}</p>`;
   }
 
   function extra() {
@@ -181,13 +176,15 @@
   const links = (S.socials || []).filter(s => s.url && !/^mailto:/.test(s.url)).slice(0, 3);
   document.getElementById("app").innerHTML = `
     <div id="stage">
+      <canvas id="field" aria-hidden="true"></canvas>
       <svg id="strings" aria-hidden="true"></svg>
       <header class="top">
         <div class="who">
           ${P.avatar ? `<a class="face" href="#about" aria-label="About ${esc(P.name || "me")}"><img alt="" src="${esc(encodeURI(P.avatar))}"></a>` : ""}
           <div><h1>${esc(P.name || "")} Cao <span>${esc(P.legalName || "")} ${esc(P.cjk || "")}</span></h1>
-            <p><b>Problem.</b> Find every solution of <span class="eqn-inline"><i>y</i>′ + <i>y</i> = sin <i>x</i>.</span></p>
-            <p class="how">Four are drawn below. Click one.</p></div>
+            <p><b>Problem.</b> Find every solution of <span class="eqn-inline"><i>y</i><span class="pr">′</span> + <i>y</i> = sin <i>x</i>.</span></p>
+            <p class="how">Four are drawn below. Click one.</p>
+            ${HUNT.photos.length ? `<p class="how hunt-how"><b>Extra credit.</b> <span id="hunt-how"></span></p>` : ""}</div>
         </div>
         <div class="snd"><button type="button" id="sound" aria-pressed="false">sound off</button><input type="range" id="vol" min="0" max="100" value="60" aria-label="Volume"></div>
       </header>
@@ -205,7 +202,7 @@
       </div>
       <figure id="gust"><button type="button" aria-label="A matter of taste"><img alt="A girl blown along by a gust of wind, her umbrella turned inside out. Thomas Hood, 1826." src="assets/website/gust-girl.png"></button>
         <figcaption>De gustibus non est disputandum.</figcaption></figure>
-      ${[0, 1, 2, 3, 4, 5].map(k => HUNT.html(k, "out")).join("")}
+      ${[0, 1].map(k => HUNT.html(k, "out")).join("")}
       <p class="colophon"><span id="tally">${esc(HUNT.tally())}</span>${P.updated ? `${HUNT.tally() ? " · " : ""}Updated ${esc(P.updated)}` : ""}</p>
     </div>
     <aside class="panel" id="panel" aria-label="Section" tabindex="-1"></aside>`;
@@ -235,14 +232,17 @@
     b.addEventListener("click", () => toggle(i)); b.addEventListener("focus", () => g.classList.add("kb")); b.addEventListener("blur", () => g.classList.remove("kb"));
     keys.appendChild(b);
   }
+  function huntHow() { const el = $("#hunt-how"), n = HUNT.photos.length; if (!el) return;
+    el.textContent = HUNT.done() ? `You found all ${n} of my photographs.` : `${n} photographs I took are hidden around this site, some inside the sections. Find them all.${HUNT.count() ? ` (${HUNT.count()} so far.)` : ""}`; }
   function build() {
+    huntHow();
     svg.appendChild(mk("g", { id: "axis" }));
     if (HUNT.done()) SECTIONS.push(EXTRA);
     SECTIONS.forEach((s, i) => addString(i));
   }
   /* every photograph found: the fifth string, C = 0, the steady state itself */
   HUNT.on((first, justDone) => {
-    const t = $("#tally"); if (t) t.textContent = HUNT.tally();
+    const t = $("#tally"); if (t) t.textContent = HUNT.tally(); huntHow();
     if (!justDone || SECTIONS.includes(EXTRA)) return;
     SECTIONS.push(EXTRA); addString(SECTIONS.length - 1); draw();
     SECTIONS.forEach((s, i) => setTimeout(() => { st[i].xc = xAt(scrollY + innerHeight / 2); letGo(i, 0.5); }, 160 * i));
@@ -265,12 +265,11 @@
     /* the girl in the gust: bottom right, across the curve from the name. On a phone there is only room where the curve swings left. */
     const gust = $("#gust"), gx = narrow ? 5.05 : 7.2;
     gust.style.top = pyAt(gx) + "px"; gust.style.left = Math.min(W - gust.offsetWidth - 10, ORG + (narrow ? steady(5.6) : 0.72) * SY + (narrow ? 26 : 70)) + "px";
-    /* six prints in the margins, each a set distance out from the curves */
-    [[1.25, 1, 150], [2.3, -1, 190], [4.5, 1, 130], [4.6, -1, 170], [6.25, 1, 110], [6.55, -1, 210]].forEach(([x, side, gap], k) => {
-      const el = $(`.print.out[data-hunt="${k}"]`); if (!el) return;
-      const w = el.offsetWidth, edge = ORG + (steady(x) + 1.5 * side * Math.exp(-x)) * SY, g = narrow ? gap * 0.22 : gap;
-      el.style.top = pyAt(x) + "px"; el.style.left = Math.max(30, Math.min(W - w - 8, side < 0 ? edge - g - w : edge + g)) + "px";
-    });
+    /* two prints hide on this page: one behind the girl, one low in the left margin */
+    const p0 = $('.print.out[data-hunt="0"]'), p1 = $('.print.out[data-hunt="1"]');
+    if (p0) { p0.style.top = (pyAt(gx) + gust.offsetWidth * 0.5) + "px"; p0.style.left = (parseFloat(gust.style.left) + gust.offsetWidth * 0.62) + "px"; }
+    if (p1) { p1.style.top = (H - (narrow ? 150 : 190)) + "px"; p1.style.left = (narrow ? 34 : 70) + "px"; }
+    field();
     /* the x axis, down the left edge */
     const ax = $("#axis"), ax0 = 9; ax.innerHTML = "";
     ax.appendChild(mk("line", { x1: ax0, y1: TOP - 6, x2: ax0, y2: H - 34 }));
@@ -280,11 +279,28 @@
       const t = mk("text", { x: ax0 + 11, y: pyAt(k) + 5 }); t.textContent = minus(k); ax.appendChild(t); }
     draw();
   }
+  /* behind everything: the direction field of the equation, each dash pointing the way a solution must go there.
+     Blank at the top and stronger the further down you read, so the page fills in as the strings settle. */
+  function field() {
+    const cv = $("#field"); if (!cv) return;
+    const dpr = Math.min(2, devicePixelRatio || 1), g = cv.getContext("2d");
+    cv.width = W * dpr; cv.height = H * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+    g.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim() || "#121315"; g.lineWidth = 0.9; g.lineCap = "round";
+    const step = W < 700 ? 30 : 36, half = 6;
+    for (let py = TOP + 40, row = 0; py < H - 10; py += step, row++) {
+      const x = xAt(py), a = Math.min(0.3, Math.max(0, (x - (x0 + 1)) / 5.5) * 0.3); if (a < 0.01) continue;
+      g.globalAlpha = a;
+      for (let px = 34 + (row % 2) * step / 2; px < W - 6; px += step) {
+        const m = (Math.sin(x) - (px - ORG) / SY) * SY / PX, k = half / Math.hypot(1, m);   /* sideways pixels per pixel down */
+        g.beginPath(); g.moveTo(px - m * k, py - k); g.lineTo(px + m * k, py + k); g.stroke();
+      }
+    }
+  }
   const rest = (i, py) => { const x = xAt(py); return ORG + (steady(x) + SECTIONS[i].C * Math.exp(-x)) * SY; };
   function pos(i, py) {
     const q = st[i], x = xAt(py);
     let y = steady(x) + SECTIONS[i].C * Math.exp(-x);
-    if (q.cur) { const u = (x - q.xc) / BEND; y += q.cur * Math.exp(-u * u); }   /* a soft, rounded bend centred where it was pulled */
+    if (q.cur) { const u = (x - q.xc) / BEND, t = Math.min(1, (py - TOP) / 110); y += q.cur * Math.exp(-u * u) * t * t * (3 - 2 * t); }   /* fades to nothing at the top, so the starting point never moves */   /* a soft, rounded bend centred where it was pulled */
     const natural = ORG + y * SY;
     return natural + (railX() - natural) * q.flat;
   }

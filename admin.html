@@ -1,16 +1,14 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
-<script>(function(){var t;try{t=localStorage.getItem("theme")}catch(e){}if(t==="light")document.documentElement.dataset.theme="light"})()</script>
-<script src="data/theme.js?v=73c31dc6"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>Site Editor · Sam Cao</title>
+<title>Editor · Fangyuan Cao</title>
 <link rel="icon" href="assets/website/my-notion-face-transparent.ico" type="image/x-icon">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="assets/style.css?v=0e8e0196">
+<link rel="stylesheet" href="assets/admin.css?v=0e8e0196">
 <style>
   /* Editor layout: sticky toolbar, section list on the left, form on the right. */
   body { min-height: 100vh; }
@@ -219,11 +217,42 @@
     .rows .row.rank-row.mu-item [data-rowmove="-1"] { grid-column: 3; grid-row: 1; } .rows .row.rank-row.mu-item [data-rowmove="1"] { grid-column: 4; grid-row: 1; } .rows .row.rank-row.mu-item [data-rowdel] { grid-column: 5; grid-row: 1; }
     .rows .row.rank-row.mu-item input[data-i=a] { grid-column: 2 / -1; grid-row: 2; } .rows .row.rank-row.mu-item input[data-i=note] { grid-column: 2 / -1; grid-row: 3; }
   }
+
+  /* ---------- the site's look: white paper, black ink, one red pen, New Computer Modern (see assets/paper.css) ---------- */
+  @font-face { font-family: "NewCM"; font-weight: 400; font-style: normal; font-display: swap; src: url(assets/fonts/newcm/newcm-book.woff2) format("woff2"); }
+  @font-face { font-family: "NewCM"; font-weight: 400; font-style: italic; font-display: swap; src: url(assets/fonts/newcm/newcm-italic.woff2) format("woff2"); }
+  @font-face { font-family: "NewCM"; font-weight: 700; font-style: normal; font-display: swap; src: url(assets/fonts/newcm/newcm-bold.woff2) format("woff2"); }
+  html:root, html:root[data-theme] {
+    --bg: #fdfdfb; --bg-glow: #ffffff; --header-bg: #fdfdfb; --header-line: #dcddd9; --bg-raised: #f7f7f4; --surface: #efefeb; --line: #dcddd9; --line-strong: #b4b6b1;
+    --text: #2b2d31; --text-strong: #121315; --heading: #121315; --muted: #6b6e74; --accent: #c8242b; --star: #121315; --orange: #c8242b; --blue: #c8242b; --on-accent: #ffffff;
+    --edge: rgba(18, 19, 21, .18); --backdrop: rgba(253, 253, 251, .9); --glass: rgba(253, 253, 251, .94); --grain: none; --dw: 700; --lift: 0 2px 10px rgba(0, 0, 0, .08);
+    --display: "NewCM", "Latin Modern Roman", "Songti SC", "Times New Roman", serif; --body: "NewCM", "Latin Modern Roman", "Songti SC", "Times New Roman", serif; --serif: "NewCM", "Times New Roman", serif;
+    color-scheme: light;
+  }
+  html, body { background: var(--bg); background-image: none; }
+  body { font-size: 18px; line-height: 1.5; } body::before, body::after { display: none; }
+  .ed-bar { -webkit-backdrop-filter: none; backdrop-filter: none; border-bottom: 1px solid var(--heading); }
+  .ed-title { font: 700 24px/1 var(--display); } .ed-title img { box-shadow: none; filter: grayscale(1); }
+  .ed-status, .ed-dirty, .ed-help, .f small { font-size: 15px; } .ed-dirty { font-weight: 400; font-style: italic; }
+  .btn, .chip, .tab, .icon-btn { border-radius: 0; font: 400 16px/1.2 var(--body); letter-spacing: 0; text-transform: none; background: none; box-shadow: inset 0 0 0 1px var(--line-strong); color: var(--heading); }
+  .btn:hover { background: none; box-shadow: inset 0 0 0 1px var(--accent); color: var(--accent); }
+  .btn.go { background: var(--heading); color: var(--bg); box-shadow: none; } .btn.go:hover { background: var(--accent); color: #fff; filter: none; transform: none; }
+  .ed-nav button { border-radius: 0; font: 400 18px var(--body); padding: 6px 10px; }
+  .ed-nav button:hover { background: none; color: var(--accent); }
+  .ed-nav button[aria-current="true"] { background: none; font-weight: 700; box-shadow: inset 2px 0 0 var(--accent); }
+  .ed-main h1 { font: 700 30px/1.15 var(--display); }
+  .f > span, .section-head h2 { font: italic 400 16px/1.3 var(--body); letter-spacing: 0; text-transform: none; color: var(--muted); }
+  .section-head { border-bottom-color: var(--line); }
+  .f input[type=text], .f input[type=date], .f input[type=url], .f select, .f textarea, .rows .row input, .lfilter input, .lfilter select, .play-row select {
+    border-radius: 0; background: #fff; font: 400 17px/1.45 var(--body); border-color: var(--line-strong); }
+  .f input:focus, .f select:focus, .f textarea:focus { border-color: var(--heading); box-shadow: none; }
+  .card, .logform, .llist, .mu-listcard { border-radius: 0; box-shadow: none; background: none; border: 1px solid var(--line); }
+  .pill { border-radius: 0; }
 </style>
 </head>
 <body>
 <div class="ed-bar"><div class="wrap">
-  <div class="ed-title"><img src="assets/website/logo.png" alt="">Site editor</div>
+  <div class="ed-title">Editor</div>
   <span class="ed-status" id="status"><i></i><span>Not connected</span></span>
   <span class="ed-dirty" id="dirty" hidden></span>
   <button class="btn go" type="button" id="save" disabled title="Changes also save on their own">Save</button>
@@ -232,7 +261,6 @@
     <button class="btn" type="button" id="connect-gh" title="Publish straight to GitHub from any computer">Connect GitHub</button>
     <button class="btn" type="button" id="connect">Connect site folder</button>
     <button class="btn" type="button" id="download" title="Download content.js (for browsers that cannot save to the folder)">Download</button>
-    <button class="btn" type="button" id="mode">Preview light</button>
     <a class="btn" href="index.html" target="_blank" rel="noopener">View site ↗</a>
   </div>
 </div></div>
@@ -240,13 +268,11 @@
   <nav class="ed-nav" id="nav" aria-label="Sections"></nav>
   <main class="ed-main" id="main"></main>
 </div>
-<script src="data/content.js?v=4cbb7160"></script>
+<script src="data/content.js?v=1be5ae58"></script>
 <script src="data/books.js?v=33fec0dd"></script>
 <script src="data/films.js?v=716531a4"></script>
-<script src="data/music.js?v=8e55ff1d"></script>
-<script src="data/listening.js?v=fa36420f"></script>
 <script src="data/art.js?v=cc1fa5c0"></script>
 <script src="assets/covers.js?v=99fec6eb"></script>
-<script src="assets/admin.js?v=9b499fa9"></script>
+<script src="assets/admin.js?v=ebae09fd"></script>
 </body>
 </html>

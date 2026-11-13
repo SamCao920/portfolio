@@ -3,7 +3,7 @@
 window.HUNT = (function () {
   const S = window.SITE || {};
   const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const SLOTS = 11;                  /* places a print can hide: six on the home page, one in each section, one in the vault */
+  const SLOTS = 11;                  /* places a print can hide: two on the home page, seven inside the sections, one in the vault, one on the 404 page */
   const photos = ((S.studio || {}).items || []).filter(w => w.kind === "Photography").slice(0, SLOTS);
   const thumb = src => /^assets\/studio\/[^/]+\.(jpe?g|png|webp)$/i.test(src || "") ? src.replace(/^assets\/studio\/([^/]+)\.\w+$/, "assets/studio/thumbs/$1.webp") : src;
   const KEY = "hunt:found";
