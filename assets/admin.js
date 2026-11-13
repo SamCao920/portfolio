@@ -422,7 +422,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     },
     studio: {
       label: "Art",
-      help: "Your own artwork. Drawings and paintings show as numbered figures at the end of Show your work, in this order. Works of type Photography are not shown there: the first eleven are hidden around the site as small prints for visitors to find. Attach an image with Choose file; it is copied into assets/studio/ on Save.",
+      help: "Your own artwork. Drawings and paintings show as numbered figures at the end of Show your work, in this order. Works of type Photography follow in their own part, Photographs. Attach an image with Choose file; it is copied into assets/studio/ on Save.",
       render: () => { const st = data.studio || (data.studio = { intro: "", items: [] }); return `
         <label class="f" for="studio-intro"><span>Intro</span><textarea id="studio-intro" rows="3">${esc(st.intro || "")}</textarea></label>
         <button class="btn go add" type="button" data-add="studio">+ Add work</button>

@@ -29,9 +29,8 @@
   const when = w => String(w.start || w.end || "");
   const isUpcoming = w => (w.end || w.start) ? (w.end || w.start) >= TODAY : !!w.upcoming;
   const APPEAR = W_ALL.filter(w => w.type === "appearance").sort((a, b) => when(b).localeCompare(when(a)));
-  const HUNT = window.HUNT || { photos: [], html: () => "", tally: () => "", done: () => false, count: () => 0, on: () => {} };
-  const pin = k => HUNT.html(k) ? `<span class="pin">${HUNT.html(k)}</span>` : "";   /* a hidden print, out in the margin of a section */
-  const STUDIO = ((S.studio || {}).items || []).filter(w => w.kind !== "Photography");   /* photographs are hidden around the site instead: assets/hunt.js */
+  const STUDIO = ((S.studio || {}).items || []).filter(w => w.kind !== "Photography");
+  const PHOTOS = ((S.studio || {}).items || []).filter(w => w.kind === "Photography");
   const thumbOf = src => /^assets\/studio\/[^/]+\.(jpe?g|png|webp)$/i.test(src || "") ? src.replace(/^assets\/studio\/([^/]+)\.\w+$/, "assets/studio/thumbs/$1.webp") : src;
   const NOTES = window.NOTES || {};
   const BOOKS = ((window.BOOKS || {}).items || []).map((b, i) => ({ ...b, i, notes: (NOTES.books || []).filter(n => n.book === `${b.t}|${b.a}`) }));
@@ -44,7 +43,7 @@
   const SETS = {};      /* picture sets for the full-size viewer, by name */
 
   /* ---------- sections ---------- */
-  const ref = (w, n, tucked = "") => {
+  const ref = (w, n) => {
     const link = w.link ? `<a class="go" href="${esc(w.link)}"${/\.html$/.test(w.link) ? "" : ' target="_blank" rel="noopener"'}>${esc(w.linkText || "Open")} →</a>` : "";
     const g = (w.gallery || []).map(x => typeof x === "string" ? { src: x } : x).filter(x => x && x.src);
     const key = "g-" + slug(w.title); SETS[key] = g.filter(x => !/youtu\.?be|vimeo/.test(x.src)).map(x => ({ src: x.src, cap: esc(x.cap || w.title), video: /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(x.src) }));
@@ -60,20 +59,23 @@
     return `<li data-n="${n}" id="${slug(w.title)}"><div>
       <span class="cite"><i>${w.link ? `<a href="${esc(w.link)}"${/\.html$/.test(w.link) ? "" : ' target="_blank" rel="noopener"'}>${esc(w.title)}${/[.?!]$/.test(w.title) ? "" : "."}</a>` : esc(w.title) + (/[.?!]$/.test(w.title) ? "" : ".")}</i> ${esc(w.venue || "")}${w.venue && !/[.?!]$/.test(w.venue) ? "." : ""}${w.award ? ` ${esc(w.award)}.` : ""}${w.result ? ` ${inline(w.result)}.` : ""}${live}</span>
       ${w.claim ? `<span class="claim">${inline(w.claim)}</span>` : ""}
-      ${w.body ? `<details class="more"><summary>Proof</summary><div class="proof">${tucked}${paras(w.body)}</div></details>` : ""}
+      ${w.body ? `<details class="more"><summary>Proof</summary><div class="proof">${paras(w.body)}</div></details>` : ""}
       ${link}${thumbs}</div></li>`;
   };
   function work() {
     let n = 0;
-    SETS.studio = STUDIO.map(w => ({ src: w.img, cap: `<i>${esc(w.title)}</i>, ${esc(w.year)}<small>${esc(w.medium || "")}</small>` }));
+    const set = ws => ws.map(w => ({ src: w.img, cap: `<i>${esc(w.title)}</i>, ${esc(w.year)}<small>${esc(w.medium || "")}</small>` }));
+    SETS.studio = set(STUDIO); SETS.photos = set(PHOTOS);
+    const figs = (ws, name, word) => `<div class="figs">${ws.map((w, k) => `<figure><button type="button" data-set="${name}" data-n="${k}" aria-label="${esc(w.title)}"><img alt="" loading="lazy" src="${esc(thumbOf(w.img))}" data-full="${esc(w.img)}" onerror="this.onerror=null;this.src=this.dataset.full"></button>
+      <figcaption><b>${word} ${k + 1}.</b> <i>${esc(w.title)}</i>, ${esc(w.year)}. ${esc((w.medium || "").replace(/\.$/, ""))}.</figcaption></figure>`).join("")}</div>`;
+    const parts = "abcdef"; let part = 2 + (APPEAR.length ? 1 : 0);
     return `<p class="q"><b>Problem 1.</b> Show your work.</p>
       <h3><b>(a)</b> Papers <small>essays written for prize competitions, and independent research</small></h3>
-      <ol class="refs">${PAPERS.map((w, k) => ref(w, ++n, k ? "" : pin(2))).join("")}</ol>
+      <ol class="refs">${PAPERS.map((w, k) => ref(w, ++n)).join("")}</ol>
       ${PROJECTS.length ? `<h3><b>(b)</b> Projects <small>things I’ve built</small></h3><ol class="refs">${PROJECTS.map(w => ref(w, ++n)).join("")}</ol>` : ""}
-      ${APPEAR.length ? `<h3><b>(c)</b> Appearances <small>conferences, talks and events</small></h3><ol class="refs">${APPEAR.map(w => ref(w, ++n)).join("")}</ol>${pin(3)}` : ""}
-      ${STUDIO.length ? `<h3><b>(${APPEAR.length ? "d" : "c"})</b> Drawings and paintings</h3>
-        <div class="figs">${STUDIO.map((w, k) => `<figure><button type="button" data-set="studio" data-n="${k}" aria-label="${esc(w.title)}"><img alt="" loading="lazy" src="${esc(thumbOf(w.img))}" data-full="${esc(w.img)}" onerror="this.onerror=null;this.src=this.dataset.full"></button>
-          <figcaption><b>Fig. ${k + 1}.</b> <i>${esc(w.title)}</i>, ${esc(w.year)}. ${esc((w.medium || "").replace(/\.$/, ""))}.</figcaption></figure>`).join("")}</div>` : ""}`;
+      ${APPEAR.length ? `<h3><b>(c)</b> Appearances <small>conferences, talks and events</small></h3><ol class="refs">${APPEAR.map(w => ref(w, ++n)).join("")}</ol>` : ""}
+      ${STUDIO.length ? `<h3><b>(${parts[part++]})</b> Drawings and paintings</h3>${figs(STUDIO, "studio", "Fig.")}` : ""}
+      ${PHOTOS.length ? `<h3><b>(${parts[part++]})</b> Photographs</h3>${figs(PHOTOS, "photos", "Plate")}` : ""}`;
   }
 
   const VI = () => (window.VAULT_INDEX || {}).notes || [];
@@ -90,7 +92,7 @@
       <div id="lemmas">${lemmas()}</div>
       <p>The proofs are in <a href="vault.html">the vault</a>, drawn as a map you can drag around. <button type="button" class="linkish" data-act="lemmas">Three more.</button></p>
       ${recent.length ? `<h3><b>(a)</b> Most recent</h3><ul class="rows">${recent.map(n => `<li><div class="row"><a class="t" href="${vaultLink(n[0])}">${esc(n[0])}</a><span class="r">${esc(fmtDate(n[3]).replace(/, \d{4}$/, ""))}</span></div></li>`).join("")}</ul>` : ""}
-      ${src.length ? `<h3><b>(b)</b> Sources <small>books and films I have taken notes on</small></h3><ul class="rows">${src.map(n => `<li><div class="row"><span><a class="t" href="${vaultLink(n.note)}"><i>${esc(n.title)}</i></a>${n.author ? `<span class="by">, ${esc(String(n.author).trim())}</span>` : ""}</span><span class="r">${plural(n.ideas.length, "idea")}</span></div></li>`).join("")}</ul>${pin(4)}` : ""}
+      ${src.length ? `<h3><b>(b)</b> Sources <small>books and films I have taken notes on</small></h3><ul class="rows">${src.map(n => `<li><div class="row"><span><a class="t" href="${vaultLink(n.note)}"><i>${esc(n.title)}</i></a>${n.author ? `<span class="by">, ${esc(String(n.author).trim())}</span>` : ""}</span><span class="r">${plural(n.ideas.length, "idea")}</span></div></li>`).join("")}</ul>` : ""}
       ${(window.QUOTES || {}).items ? `<h3><b>(c)</b> Copied out</h3><div id="quote">${quote()}</div><p style="margin-top:8px"><button type="button" class="linkish" data-act="quote">Another.</button></p>` : ""}`;
   }
 
@@ -114,17 +116,17 @@
       <h3>${tag()} Books <small>${read.length} read</small></h3>
       ${reading.length ? `<h4>Reading now</h4><ul class="rows">${reading.map(bookRow).join("")}</ul>` : ""}
       ${favs.length ? `<h4>Favorites</h4><ul class="rows">${favs.map(bookRow).join("")}</ul>` : ""}
-      <details><summary>All ${read.length} read, most recent first</summary>${pin(5)}${years.map(y => `<p class="year">${y || "Earlier"}</p><ul class="rows">${read.filter(b => (b.read ? parse(b.read).y : 0) === y).map(bookRow).join("")}</ul>`).join("")}</details>
+      <details><summary>All ${read.length} read, most recent first</summary>${years.map(y => `<p class="year">${y || "Earlier"}</p><ul class="rows">${read.filter(b => (b.read ? parse(b.read).y : 0) === y).map(bookRow).join("")}</ul>`).join("")}</details>
       ${dnf.length ? `<details><summary>${dnf.length} I did not finish</summary><ul class="rows" style="margin-top:8px">${dnf.map(bookRow).join("")}</ul></details>` : ""}
       <h3>${tag()} Films <small>${films.length} seen</small></h3>
       ${(FD.bio || "").trim() ? `<p>${esc(FD.bio)}</p>` : ""}
       ${favF.length ? `<h4>Favorites</h4><ul class="rows">${favF.map(f => filmRow(f)).join("")}</ul>` : ""}
-      ${(FD.lists || []).map((l, k) => `<details><summary>${esc(l.name)}</summary>${k ? "" : pin(6)}${l.desc ? `<p>${esc(l.desc)}</p>` : ""}<ol class="rank">${(l.items || []).map(x => `<li><i>${esc(x.t)}</i>${x.y ? ` (${esc(x.y)})` : ""}</li>`).join("")}</ol></details>`).join("")}
+      ${(FD.lists || []).map(l => `<details><summary>${esc(l.name)}</summary>${l.desc ? `<p>${esc(l.desc)}</p>` : ""}<ol class="rank">${(l.items || []).map(x => `<li><i>${esc(x.t)}</i>${x.y ? ` (${esc(x.y)})` : ""}</li>`).join("")}</ol></details>`).join("")}
       <details><summary>All ${films.length} seen, most recent first</summary><ul class="rows" style="margin-top:8px">${byRecent.map(f => filmRow(f)).join("")}</ul></details>
       ${ART.length ? `<h3>${tag()} Paintings <small>${ART.length} works by ${plural(artists.length, "artist")}, seen in person or studied</small></h3>
         ${(S.artists || []).length ? `<p><i>Favorite painters.</i> ${(S.artists || []).map(a => esc(a.name)).join(", ")}.</p>` : ""}
         <h4>Most recent</h4><ul class="plates">${ART.slice(0, 6).map((a, k) => `<li><button type="button" data-set="art" data-n="${k}" aria-label="${esc(a.t)} by ${esc(a.artist)}"><img alt="" loading="lazy" referrerpolicy="no-referrer" src="${esc(a.img || "")}" onerror="this.style.visibility='hidden'"></button><span class="cap"><i>${esc(a.t)}</i>, ${esc(a.artist)}</span></li>`).join("")}</ul>
-        <details><summary>All ${ART.length}, by artist</summary>${pin(7)}${artists.sort((a, b) => a.localeCompare(b)).map(name => `<p class="year">${esc(name)}</p><ul class="rows">${ART.map((a, k) => [a, k]).filter(([a]) => a.artist === name).map(([a, k]) =>
+        <details><summary>All ${ART.length}, by artist</summary>${artists.sort((a, b) => a.localeCompare(b)).map(name => `<p class="year">${esc(name)}</p><ul class="rows">${ART.map((a, k) => [a, k]).filter(([a]) => a.artist === name).map(([a, k]) =>
           `<li><button type="button" class="row" data-set="art" data-n="${k}"><span class="t"><i>${esc(a.t)}</i></span><span class="r">${esc(a.year || "")}</span></button></li>`).join("")}</ul>`).join("")}</details>` : ""}
       <h3>${tag()} Music</h3>
       ${(M.top || []).length ? `<p><i>Favorites.</i> ${M.top.map(esc).join(", ")}.</p>` : ""}
@@ -152,23 +154,21 @@
       ${(S.about || []).map((p, k) => `<p>${k ? "" : "<i>Solution.</i> "}${inline(p)}</p>`).join("")}
       <h3>Contact <small>left as an exercise for the reader</small></h3>
       <table class="cv">${(S.socials || []).filter(s => s.url).map(s => `<tr><td>${esc(s.name)}</td><td>${/^mailto:/.test(s.url) ? esc(s.handle) : `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.handle || s.name)}</a>`}</td></tr>`).join("")}</table>
-      ${pin(8)}<p style="text-align:right;max-width:none;margin-top:14px">${qed}</p>`;
-  }
-
-  function extra() {
-    SETS.photos = HUNT.photos.map(w => ({ src: w.img, cap: `<i>${esc(w.title)}</i>, ${esc(w.year)}<small>${esc(w.medium || "")}</small>` }));
-    return `<p class="q"><b>Problem 5</b> (extra credit). Find every photograph hidden on this site.</p>
-      <p><i>Solution.</i> You did. Here they are at full size. <span class="grade" aria-hidden="true">${HUNT.photos.length}/${HUNT.photos.length}</span></p>
-      <div class="figs">${HUNT.photos.map((w, k) => `<figure><button type="button" data-set="photos" data-n="${k}" aria-label="${esc(w.title)}"><img alt="" loading="lazy" src="${esc(thumbOf(w.img))}" data-full="${esc(w.img)}" onerror="this.onerror=null;this.src=this.dataset.full"></button>
-        <figcaption><b>Plate ${k + 1}.</b> <i>${esc(w.title)}</i>, ${esc(w.year)}. ${esc(w.medium || "")}.</figcaption></figure>`).join("")}</div>
       <p style="text-align:right;max-width:none;margin-top:14px">${qed}</p>`;
   }
-  const EXTRA = { key: "extra", tag: "Extra credit", C: 0, hz: 523.25, render: extra, extra: true };
+
   const SECTIONS = [
     { key: "work", tag: "Show your work", C: -1.5, hz: 196.0, render: work },
     { key: "notes", tag: "Take notes", C: -0.5, hz: 293.66, render: notes },
     { key: "taste", tag: "A matter of taste", C: 0.5, hz: 440.0, render: taste },
     { key: "about", tag: "Who is this?", C: 1.5, hz: 659.25, render: about }
+  ];
+
+  /* three stanzas set beside the strings */
+  const POEMS = [
+    { by: "William Wordsworth, 1802", lines: ["My heart leaps up when I behold", "A rainbow in the sky:", "So was it when my life began;", "So is it now I am a man;", "So be it when I shall grow old,", "Or let me die!", "The Child is father of the Man;", "And I could wish my days to be", "Bound each to each by natural piety."] },
+    { by: "Percy Bysshe Shelley, <i>Hymn to Intellectual Beauty</i>, 1816", lines: ["Thus let thy power, which like the truth", "Of nature on my passive youth", "Descended, to my onward life supply", "Its calm – to one who worships thee,", "And every form containing thee,", "Whom, Spirit fair, thy spells did bind", "To fear himself, and love all human kind."] },
+    { by: "Lord Byron, <i>Childe Harold’s Pilgrimage</i>, 1812", lines: ["With thee, my bark, I’ll swiftly go", " Athwart the foaming brine;", "Nor care what land thou bear’st me to,", " So not again to mine.", "Welcome, welcome, ye dark blue waves!", " And when you fail my sight,", "Welcome, ye deserts, and ye caves!", " My Native Land – Good Night!"] }
   ];
 
   /* ---------- the page ---------- */
@@ -183,17 +183,14 @@
           ${P.avatar ? `<a class="face" href="#about" aria-label="About ${esc(P.name || "me")}"><img alt="" src="${esc(encodeURI(P.avatar))}"></a>` : ""}
           <div><h1>${esc(P.name || "")} Cao <span>${esc(P.legalName || "")} ${esc(P.cjk || "")}</span></h1>
             <p><b>Problem.</b> Find every solution of <span class="eqn-inline"><i>y</i><span class="pr">′</span> + <i>y</i> = sin <i>x</i>.</span></p>
-            <p class="how">Four are drawn below. Click one.</p>
-            ${HUNT.photos.length ? `<p class="how hunt-how"><b>Extra credit.</b> <span id="hunt-how"></span></p>` : ""}</div>
+            <p class="how">Four are drawn below. Click one to open it, or pull it sideways and let go.</p>
+</div>
         </div>
         <div class="snd"><button type="button" id="sound" aria-pressed="false">sound off</button><input type="range" id="vol" min="0" max="100" value="60" aria-label="Volume"></div>
       </header>
       <nav aria-label="Sections" id="keys"></nav>
-      <p class="note" id="n1"><b>Four solutions.</b> Each is the same curve plus <i>Ce</i><sup>−<i>x</i></sup>; only <i>C</i> differs. Click one to open it. Pull one sideways and let go to pluck it.</p>
-      <p class="note" id="n2"><b><i>x</i> = 1.</b> What made them different is already down to a third of what it was.</p>
-      <p class="note" id="n3"><b><i>x</i> = 3.5.</b> The four are now within three pixels of each other.</p>
+      ${POEMS.map((p, k) => `<figure class="poem" id="poem${k}"><blockquote>${p.lines.map(l => `<span class="${/^\s/.test(l) ? "in" : ""}">${esc(l.trim())}</span>`).join("")}</blockquote><figcaption>${p.by}</figcaption></figure>`).join("")}
       <p class="aside eqn" id="eqn"><i>y</i> = <span class="frac"><span>1</span><span>2</span></span>(sin <i>x</i> − cos <i>x</i>) + <i>Ce</i><sup>−<i>x</i></sup><span class="no">(1)</span></p>
-      <p class="aside rem" id="rem"><i>Remark.</i> Wherever a solution starts, the last term dies and this is what is left.</p>
       <div class="end" id="end">
         <h2>${esc(P.name || "")} Cao ${qed}</h2>
         <p>Contact is left as an exercise for the reader.</p>
@@ -202,8 +199,7 @@
       </div>
       <figure id="gust"><button type="button" aria-label="A matter of taste"><img alt="A girl blown along by a gust of wind, her umbrella turned inside out. Thomas Hood, 1826." src="assets/website/gust-girl.png"></button>
         <figcaption>De gustibus non est disputandum.</figcaption></figure>
-      ${[0, 1].map(k => HUNT.html(k, "out")).join("")}
-      <p class="colophon"><span id="tally">${esc(HUNT.tally())}</span>${P.updated ? `${HUNT.tally() ? " · " : ""}Updated ${esc(P.updated)}` : ""}</p>
+      ${P.updated ? `<p class="colophon">Updated ${esc(P.updated)}</p>` : ""}
     </div>
     <aside class="panel" id="panel" aria-label="Section" tabindex="-1"></aside>`;
 
@@ -222,7 +218,7 @@
   const still = matchMedia("(prefers-reduced-motion: reduce)");
 
   function addString(i) {
-    const s = SECTIONS[i], g = mk("g", {}); g.dataset.i = i; if (s.extra) g.classList.add("extra");
+    const s = SECTIONS[i], g = mk("g", {}); g.dataset.i = i;
     st[i] = fresh();
     const text = mk("text", { dy: -7 }), tp = mk("textPath", { href: "#guide" + i });
     tp.innerHTML = `<tspan class="n">${i + 1}.</tspan> ${s.tag}`; text.appendChild(tp);
@@ -232,43 +228,29 @@
     b.addEventListener("click", () => toggle(i)); b.addEventListener("focus", () => g.classList.add("kb")); b.addEventListener("blur", () => g.classList.remove("kb"));
     keys.appendChild(b);
   }
-  function huntHow() { const el = $("#hunt-how"), n = HUNT.photos.length; if (!el) return;
-    el.textContent = HUNT.done() ? `You found all ${n} of my photographs.` : `${n} photographs I took are hidden around this site, some inside the sections. Find them all.${HUNT.count() ? ` (${HUNT.count()} so far.)` : ""}`; }
   function build() {
-    huntHow();
     svg.appendChild(mk("g", { id: "axis" }));
-    if (HUNT.done()) SECTIONS.push(EXTRA);
     SECTIONS.forEach((s, i) => addString(i));
   }
-  /* every photograph found: the fifth string, C = 0, the steady state itself */
-  HUNT.on((first, justDone) => {
-    const t = $("#tally"); if (t) t.textContent = HUNT.tally(); huntHow();
-    if (!justDone || SECTIONS.includes(EXTRA)) return;
-    SECTIONS.push(EXTRA); addString(SECTIONS.length - 1); draw();
-    SECTIONS.forEach((s, i) => setTimeout(() => { st[i].xc = xAt(scrollY + innerHeight / 2); letGo(i, 0.5); }, 160 * i));
-  });
   function layout() {
     W = stage.clientWidth; const narrow = W < 700;
     TOP = Math.round($(".top").getBoundingClientRect().height + (narrow ? 30 : 16));
     x0 = -Math.log((0.40 * W) / (SY * 1.5));           /* the outer solutions start 40% of the width from the middle */
     ORG = W / 2 - steady(x0) * SY;                      /* shift the axis so the four starting points are centred */
-    const xEnd = 3.5 + Math.PI * 1.75;
+    const xEnd = 3.5 + Math.PI * (narrow ? 2.85 : 1.75);   /* a phone needs another swing of the curve to fit the stanzas */
     H = Math.round(pyAt(xEnd)); stage.style.height = H + "px"; svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
     const put = (id, x, side, gap) => { const el = document.getElementById(id), edge = ORG + (steady(x) + 1.5 * side * Math.exp(-x)) * SY;
       el.style.top = pyAt(x) + "px";
-      if (side < 0) { el.style.left = ""; el.style.right = (W - edge + gap) + "px"; el.style.textAlign = "right"; el.style.maxWidth = (edge - gap - 34) + "px"; }
+      if (side < 0) { el.style.left = ""; el.style.right = (W - edge + gap) + "px"; el.style.textAlign = el.classList.contains("poem") ? "left" : "right"; el.style.maxWidth = (edge - gap - 34) + "px"; }
       else { el.style.right = ""; el.style.left = (edge + gap) + "px"; el.style.textAlign = "left"; el.style.maxWidth = (W - edge - gap - 16) + "px"; } };
-    put("eqn", 3.25, narrow ? -1 : 1, narrow ? 14 : 40); put("rem", 5.5, -1, narrow ? 18 : 36);
-    if (narrow) put("n1", 1, -1, 16); else put("n1", x0 + 1.6, 1, 44);
-    $("#n2").hidden = narrow; put("n2", 1, -1, 34); put("n3", 3.6, -1, narrow ? 16 : 34);
-    const end = $("#end"); end.style.top = pyAt(7.35) + "px"; end.style.right = (W - ORG + 2) + "px";
+    put("eqn", 3.25, narrow ? -1 : 1, narrow ? 14 : 40);
+    /* the stanzas go where the curve leaves room: on a phone that means alternating sides as it swings */
+    if (narrow) { put("poem0", 1.0, -1, 14); put("poem1", 4.35, 1, 16); put("poem2", 7.05, -1, 18); }
+    else { put("poem0", x0 + 1.55, 1, 56); put("poem1", 1.75, -1, 64); put("poem2", 4.55, 1, 70); }
+    const end = $("#end"); end.style.top = pyAt(narrow ? 8.45 : 7.35) + "px"; end.style.right = (W - ORG + 2) + "px";
     /* the girl in the gust: bottom right, across the curve from the name. On a phone there is only room where the curve swings left. */
-    const gust = $("#gust"), gx = narrow ? 5.05 : 7.2;
-    gust.style.top = pyAt(gx) + "px"; gust.style.left = Math.min(W - gust.offsetWidth - 10, ORG + (narrow ? steady(5.6) : 0.72) * SY + (narrow ? 26 : 70)) + "px";
-    /* two prints hide on this page: one behind the girl, one low in the left margin */
-    const p0 = $('.print.out[data-hunt="0"]'), p1 = $('.print.out[data-hunt="1"]');
-    if (p0) { p0.style.top = (pyAt(gx) + gust.offsetWidth * 0.5) + "px"; p0.style.left = (parseFloat(gust.style.left) + gust.offsetWidth * 0.62) + "px"; }
-    if (p1) { p1.style.top = (H - (narrow ? 150 : 190)) + "px"; p1.style.left = (narrow ? 34 : 70) + "px"; }
+    const gust = $("#gust"), gx = narrow ? 10.45 : 7.2;
+    gust.style.top = pyAt(gx) + "px"; gust.style.left = Math.min(W - gust.offsetWidth - 10, ORG + (narrow ? steady(11) : 0.72) * SY + (narrow ? 26 : 70)) + "px";
     field();
     /* the x axis, down the left edge */
     const ax = $("#axis"), ax0 = 9; ax.innerHTML = "";
@@ -286,12 +268,15 @@
     const dpr = Math.min(2, devicePixelRatio || 1), g = cv.getContext("2d");
     cv.width = W * dpr; cv.height = H * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
     g.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim() || "#121315"; g.lineWidth = 0.9; g.lineCap = "round";
-    const step = W < 700 ? 30 : 36, half = 6;
+    const step = W < 700 ? 30 : 36, half = 6, sr = stage.getBoundingClientRect();
+    const boxes = $$(".poem, .aside, .end, #gust", stage).map(el => { const r = el.getBoundingClientRect(); return [r.left - sr.left, r.top - sr.top, r.right - sr.left, r.bottom - sr.top]; });
+    const near = (px, py) => { let d = 1e9; for (const [l, t, r, b] of boxes) d = Math.min(d, Math.hypot(Math.max(l - px, 0, px - r), Math.max(t - py, 0, py - b))); return d; };
     for (let py = TOP + 40, row = 0; py < H - 10; py += step, row++) {
       const x = xAt(py), a = Math.min(0.3, Math.max(0, (x - (x0 + 1)) / 5.5) * 0.3); if (a < 0.01) continue;
-      g.globalAlpha = a;
       for (let px = 34 + (row % 2) * step / 2; px < W - 6; px += step) {
         const m = (Math.sin(x) - (px - ORG) / SY) * SY / PX, k = half / Math.hypot(1, m);   /* sideways pixels per pixel down */
+        const t = Math.min(1, Math.max(0, (near(px, py) - 10) / 46)); if (t < 0.02) continue;
+        g.globalAlpha = a * t * t * (3 - 2 * t);
         g.beginPath(); g.moveTo(px - m * k, py - k); g.lineTo(px + m * k, py + k); g.stroke();
       }
     }

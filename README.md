@@ -7,7 +7,7 @@ Plain HTML, CSS and JS, served by GitHub Pages. No build step.
 - `data/content.js`: bio, writing, socials and settings. Edit by hand.
 - `data/books.js`, `data/films.js`: my reading and watching log, edited in `admin.html` (Reading, Watching).
 - `data/art.js`, `assets/gallery/`: generated from the Visual Art notes in the Obsidian vault.
-- `assets/paper.js`: draws the home page and fills each section from the data. `assets/hunt.js`: the hidden photographs. `assets/vault-graph.js`: the map on `vault.html`.
+- `assets/paper.js`: draws the home page and fills each section from the data. `assets/vault-graph.js`: the map on `vault.html`.
 - `assets/paper.css`: the look of the public pages; colours and fonts are tokens at the top. Type is New Computer Modern (`assets/fonts/newcm`, GUST licence). `assets/admin.css` is the editor's own stylesheet.
 - `assets/vault-graph.js`: the interactive notes graph on the Vault page.
 - `tools/build-graph.py`: rebuilds the graph data inside `vault.html` from the Obsidian vault.

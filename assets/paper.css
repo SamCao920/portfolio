@@ -55,7 +55,6 @@ button { font: inherit; color: inherit; }
 .top h1 span { font-weight: 400; font-size: 17px; color: var(--grey); margin-left: 8px; }
 .top p { margin: 0; }
 .pr { margin: 0 -.16em 0 .02em; }
-.hunt-how { margin-top: 2px !important; max-width: 62ch; } .hunt-how b { font-style: normal; color: var(--pen); }
 .top .how { color: var(--grey); font-size: 16px; font-style: italic; }
 .eqn-inline { white-space: nowrap; }
 /* sound: the slider sits under the toggle and only shows when the pointer is near */
@@ -80,7 +79,12 @@ button { font: inherit; color: inherit; }
 .aside.rem { width: 250px; }
 .note { width: 240px; font-size: 16px; line-height: 1.4; color: var(--grey); }
 .note b { color: var(--ink); }
-.note, .aside, .end { background: var(--paper); box-shadow: 0 0 0 8px var(--paper); }
+/* a stanza beside the strings */
+.poem { position: absolute; z-index: 1; margin: 0; width: max-content; transition: opacity .35s; }
+.poem blockquote { margin: 0; font-size: 17px; line-height: 1.42; }
+.poem blockquote span { display: block; padding-left: 1.6em; text-indent: -1.6em; } .poem blockquote span.in { padding-left: 3em; }
+.poem figcaption { margin-top: 8px; font-size: 14px; color: var(--grey); }
+#stage.open .poem { opacity: .12; }
 #stage.open .aside, #stage.open .note, #stage.open #gust { opacity: .12; }
 .top { transition: opacity .3s; } #stage.open .top { opacity: 0; pointer-events: none; }
 .frac { display: inline-grid; vertical-align: middle; text-align: center; font-size: .74em; line-height: 1.05; margin: 0 1px; } .frac span:first-child { border-bottom: 1px solid currentColor; padding: 0 2px; }
@@ -111,7 +115,6 @@ button { font: inherit; color: inherit; }
 .bar { position: sticky; top: 0; z-index: 3; height: 0; text-align: right; }
 .close { position: relative; top: 26px; font-style: italic; font-size: 16px; line-height: 1; color: var(--grey); background: var(--paper); border: 0; padding: 6px; cursor: pointer; }
 .close:hover, .close:focus-visible { color: var(--pen); }
-.print.out { opacity: 1; transition: transform .35s cubic-bezier(.3, 1.5, .5, 1), box-shadow .3s, opacity .35s; }
 /* numbered references */
 ol.refs { margin: 0 0 8px; padding: 0; list-style: none; display: grid; gap: 18px; }
 ol.refs > li { display: grid; grid-template-columns: 2.3em minmax(0, 1fr); line-height: 1.42; scroll-margin-top: 20px; }
@@ -135,20 +138,6 @@ details .proof { margin-top: 6px; } details .proof p:last-child { margin-bottom:
 .figs button { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
 .figs img { display: block; width: 100%; height: auto; background: var(--hair); }
 .figs figcaption { margin-top: 6px; font-size: 15px; line-height: 1.35; color: var(--grey); } .figs figcaption b, .figs figcaption i { color: var(--ink); }
-/* a photograph hidden as a small print (assets/hunt.js) */
-.print { display: block; width: 84px; padding: 4px 4px 13px; border: 0; background: #fff; box-shadow: 0 0 0 1px var(--hair), 0 1px 4px rgba(0, 0, 0, .08); cursor: zoom-in; transform: rotate(var(--tilt, -3deg)); transition: transform .35s cubic-bezier(.3, 1.5, .5, 1), box-shadow .3s; }
-.print img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; filter: grayscale(1) contrast(1.05); transition: filter .4s; }
-.print:hover, .print:focus-visible { transform: rotate(0) scale(1.08); box-shadow: 0 0 0 1px var(--ink), 0 4px 14px rgba(0, 0, 0, .14); }
-.print:hover img, .print:focus-visible img, .print.got img { filter: none; }
-.print.got::after { content: "✓"; position: absolute; right: 4px; bottom: -3px; font: 700 12px/1.3 system-ui, sans-serif; color: var(--pen); }
-.print.out { position: absolute; z-index: 1; }
-.print.in { position: relative; float: right; width: 76px; margin: 2px 6px 12px 22px; }
-.pin { display: block; position: relative; height: 0; }
-.pin .print { position: absolute; right: -128px; top: 4px; width: 80px; }
-@media (max-width: 1180px) { .pin { height: auto; text-align: right; } .pin .print { position: relative; right: auto; top: auto; display: inline-block; width: 64px; margin: 0 8px 12px; } }
-.grade { display: inline-block; margin-left: 10px; font: 500 30px/1 var(--hand); color: var(--pen); transform: rotate(-6deg); }
-#strings g.extra path.s { stroke: var(--pen); } #strings g.extra circle { stroke: var(--pen); fill: var(--pen); } #strings g.extra text { fill: var(--pen); }
-dialog.light .cap .tally { margin-top: 6px; font-style: italic; }
 .plates { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 18px 16px; margin: 4px 0 6px; padding: 0; list-style: none; }
 .plates button { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
 .plates img { display: block; width: 100%; height: 150px; object-fit: cover; filter: grayscale(1); transition: filter .4s; background: var(--hair); }
@@ -241,13 +230,13 @@ dialog.light .x:hover, dialog.light .nav:hover { color: var(--pen); }
   .top h1 { font-size: 25px; } .top h1 span { display: block; margin: 3px 0 0; font-size: 15px; }
   .top .how { font-size: 15px; }
   #strings g[data-i] text { font-size: 16px; }
-  .note { font-size: 14px; } #vol { width: 60px; } #gust { width: 120px; } #gust figcaption { font-size: 12px; }
+  .poem blockquote { font-size: 13.5px; } .poem figcaption { font-size: 12px; } #vol { width: 60px; } #gust { width: 120px; } #gust figcaption { font-size: 12px; }
   .aside.eqn { font-size: 15px; } .aside.eqn .no { display: none; } .aside.rem { font-size: 15px; }
   .end h2 { font-size: 24px; } .end ul, .end p { font-size: 15px; } .end .see { font-size: 21px; }
   .colophon { left: 30px; font-size: 12px; }
   .panel { left: calc(clamp(22px, 7vw, 64px) + 16px); padding: 0 16px 56px 20px; } .panel p.q { font-size: 19px; margin-right: 56px; }
   .sheet { padding-top: 28px; } .close { top: 18px; }
-  .print { width: 56px; padding: 3px 3px 9px; } .print.in { width: 60px; margin-left: 14px; } .figs { columns: 2 130px; column-gap: 16px; }
+  .figs { columns: 2 130px; column-gap: 16px; }
   .plates { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); } .plates img { height: 118px; }
   .portrait { width: 104px; margin-left: 14px; }
   .detail { grid-template-columns: 70px minmax(0, 1fr); gap: 12px; } .detail img { width: 70px; }
