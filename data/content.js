@@ -23,7 +23,7 @@ window.SITE = {
   },
   "about": [
     "Hi, I’m Sam. My given name is Fangyuan (曹方源), but you can call me Sam. I grew up in China and finished high school in California. I’m currently a freshman planning on double majoring in Moral and Political Economy and Applied Mathematics and Statistics at the Johns Hopkins University.",
-    "<a href=\"https://cal.com/sam-cao-msbnd5/30min\">Reach out<a> if you want to chat!"
+    "<a href=\"https://cal.com/sam-cao-msbnd5/30min\">Reach out<\\a> if you want to chat!"
   ],
   "facts": [
     [
