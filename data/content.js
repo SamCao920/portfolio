@@ -264,11 +264,6 @@ window.SITE = {
       "name": "X",
       "handle": "@fangyuansamcao",
       "url": "https://x.com/fangyuansamcao"
-    },
-    {
-      "name": "Musescore",
-      "handle": "Sam_Cao",
-      "url": "https://musescore.com/user/28636156"
     }
   ],
   "studio": {
