@@ -281,3 +281,6 @@ dialog.light[open]::backdrop { animation: veil .25s ease-out both; }
 .go { transition: transform .25s cubic-bezier(.2,.8,.2,1); } .go:hover { transform: translateX(3px); }
 .plates.eight > li:nth-child(n+9) { display: none; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+ol.rows.ranked { list-style: none; margin: 0 0 6px; padding: 0; counter-reset: rk; }
+ol.rows.ranked > li { counter-increment: rk; border-bottom: 1px solid var(--hair); position: relative; padding-left: 2.2em; } ol.rows.ranked > li:first-child { border-top: 1px solid var(--hair); }
+ol.rows.ranked > li::before { content: counter(rk) "."; position: absolute; left: 0; top: 6px; color: var(--grey); font-variant-numeric: tabular-nums; }

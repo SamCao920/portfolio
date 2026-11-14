@@ -115,6 +115,7 @@ for fn in sorted(os.listdir(NOTES)):
     d, body = front(open(os.path.join(NOTES, fn), encoding='utf-8').read())
     author = d.get('author') or ''
     author = author[0] if isinstance(author, list) and author else (author if isinstance(author, str) else '')
+    author = re.sub(r'\s+', ' ', re.sub(r'\\[rn]', ' ', author)).strip()   # a stray literal "\r" from the note's front matter
     aliases = d.get('aliases') or []
     aliases = [aliases] if isinstance(aliases, str) else aliases
     sec = sections(body)

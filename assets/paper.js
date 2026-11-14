@@ -19,6 +19,7 @@
   const paras = t => String(t || "").split(/\n\s*\n/).filter(x => x.trim()).map(x => `<p>${inline(x.replace(/^#+\s*(.+)$/gm, "<b>$1.</b>")).replace(/\n/g, "<br>")}</p>`).join("");
   const ext = u => /^https?:/.test(u || "") ? ' target="_blank" rel="noopener"' : "";
   const rating = r => r == null ? "" : `<b>${Math.floor(r) || ""}${r % 1 ? "½" : ""}</b>`;
+  const clean = t => String(t || "").replace(/\\[rn]/g, " ").replace(/\s+/g, " ").trim();   /* stray "\r" left by the vault's front matter */
   const vaultLink = t => "vault.html?note=" + encodeURIComponent(t);
   const qed = '<span class="qed" role="img" aria-label="end of proof"></span>';
 
@@ -93,7 +94,7 @@
       <p>The proofs are in <a href="vault.html">the vault</a>, drawn as a map you can drag around. <button type="button" class="linkish" data-act="lemmas">Three more.</button></p>
       ${hoodFig("tree", "A mystery.")}
       ${recent.length ? `<h3><b>(a)</b> Most recent</h3><ul class="rows">${recent.map(n => `<li><div class="row"><a class="t" href="${vaultLink(n[0])}">${esc(n[0])}</a><span class="r">${esc(fmtDate(n[3]).replace(/, \d{4}$/, ""))}</span></div></li>`).join("")}</ul>` : ""}
-      ${src.length ? `<h3><b>(b)</b> Sources <small>books and films I have taken notes on</small></h3><ul class="rows">${src.map(n => `<li><div class="row"><span><a class="t" href="${vaultLink(n.note)}"><i>${esc(n.title)}</i></a>${n.author ? `<span class="by">, ${esc(String(n.author).trim())}</span>` : ""}</span><span class="r">${plural(n.ideas.length, "idea")}</span></div></li>`).join("")}</ul>` : ""}
+      ${src.length ? `<h3><b>(b)</b> Sources <small>books and films I have taken notes on</small></h3><ul class="rows">${src.map(n => `<li><div class="row"><span><a class="t" href="${vaultLink(n.note)}"><i>${esc(n.title)}</i></a>${clean(n.author) ? `<span class="by">, ${esc(clean(n.author))}</span>` : ""}</span><span class="r">${plural(n.ideas.length, "idea")}</span></div></li>`).join("")}</ul>` : ""}
       ${(window.QUOTES || {}).items ? `<h3><b>(c)</b> Copied out</h3><div id="quote">${quote()}</div><p style="margin-top:8px"><button type="button" class="linkish" data-act="quote">Another.</button></p>` : ""}`;
   }
 
@@ -106,13 +107,14 @@
     const dnf = S.showDidNotFinish ? BOOKS.filter(b => b.shelf === "dnf") : [];
     const years = [...new Set(read.map(b => b.read ? parse(b.read).y : 0))];
     const films = FILMS.filter(shown), favF = (FD.favorites || []).map(i => FILMS[i]).filter(shown);
+    const top = (FD.lists || []).find(l => /favou?rite/i.test(l.name) && (l.items || []).length);   /* my ranked favorites list, shown in full; the four-film row is only a fallback */
     const last = {}; FD.diary.forEach(d => { if (!last[d.f] || d.date > last[d.f]) last[d.f] = d.date; });
     const byRecent = films.slice().sort((a, b) => String(last[b.i] || b.added || "").localeCompare(String(last[a.i] || a.added || "")));
     const artists = [...new Set(ART.map(a => a.artist))];
     SETS.art = ART.map(a => ({ src: a.img, remote: true, cap: `<i>${esc(a.t)}</i>, ${esc(a.artist)}${a.year ? ", " + esc(a.year) : ""}<small>${esc([a.museum, a.city].filter(Boolean).join(", "))}</small>${a.note ? paras(a.note) : ""}` }));
     const M = S.music || {}, lists = (M.lists || []).filter(l => l && l.name && (l.items || []).some(x => x.t)), play = (M.play || []).filter(p => p && p.t);
     let part = 0; const tag = () => `<b>(${"abcdefgh"[part++]})</b>`;
-    return `<p class="q"><b>Problem 3.</b> <i>De gustibus non est disputandum.</i> Dispute anyway.</p>
+    return `<p class="q"><b>Problem 3.</b> A matter of taste.</p>
       <p class="foot">Ratings are out of five. A dagger (†) marks a favorite. Click a row for the review.</p>
       <h3>${tag()} Books <small>${read.length} read</small></h3>
       ${reading.length ? `<h4>Reading now</h4><ul class="rows">${reading.map(bookRow).join("")}</ul>` : ""}
@@ -121,8 +123,9 @@
       ${dnf.length ? `<details><summary>${dnf.length} I did not finish</summary><ul class="rows" style="margin-top:8px">${dnf.map(bookRow).join("")}</ul></details>` : ""}
       <h3>${tag()} Films <small>${films.length} seen</small></h3>
       ${(FD.bio || "").trim() ? `<p>${esc(FD.bio)}</p>` : ""}
-      ${favF.length ? `<h4>Favorites</h4><ul class="rows">${favF.map(f => filmRow(f)).join("")}</ul>` : ""}
-      ${(FD.lists || []).map(l => `<details><summary>${esc(l.name)}</summary>${l.desc ? `<p>${esc(l.desc)}</p>` : ""}<ol class="rank">${(l.items || []).map(x => `<li><i>${esc(x.t)}</i>${x.y ? ` (${esc(x.y)})` : ""}</li>`).join("")}</ol></details>`).join("")}
+      ${top ? `<h4>${esc(top.name)}</h4><ol class="rows ranked">${top.items.map(x => FILMS[x.f] ? filmRow(FILMS[x.f]) : `<li><div class="row"><span class="t"><i>${esc(x.t)}</i></span></div></li>`).join("")}</ol>`
+        : favF.length ? `<h4>Favorites</h4><ul class="rows">${favF.map(f => filmRow(f)).join("")}</ul>` : ""}
+      ${(FD.lists || []).filter(l => l !== top).map(l => `<details><summary>${esc(l.name)}</summary>${l.desc ? `<p>${esc(l.desc)}</p>` : ""}<ol class="rank">${(l.items || []).map(x => `<li><i>${esc(x.t)}</i>${x.y ? ` (${esc(x.y)})` : ""}</li>`).join("")}</ol></details>`).join("")}
       <details><summary>All ${films.length} seen, most recent first</summary><ul class="rows" style="margin-top:8px">${byRecent.map(f => filmRow(f)).join("")}</ul></details>
       ${ART.length ? `<h3>${tag()} Paintings <small>${ART.length} works by ${plural(artists.length, "artist")}, seen in person or studied</small></h3>
         ${(S.artists || []).length ? `<p><i>Favorite painters.</i> ${(S.artists || []).map(a => esc(a.name)).join(", ")}.</p>` : ""}
@@ -207,7 +210,6 @@
       </header>
       <nav aria-label="Sections" id="keys"></nav>
       ${POEMS.map((p, k) => `<figure class="poem" id="poem${k}"><blockquote>${p.lines.map(l => `<span class="${/^\s/.test(l) ? "in" : ""}">${esc(l.trim())}</span>`).join("")}</blockquote><figcaption>${p.by}</figcaption></figure>`).join("")}
-      <p class="aside eqn" id="eqn"><i>y</i> = <span class="frac"><span>1</span><span>2</span></span>(sin <i>x</i> − cos <i>x</i>) + <i>Ce</i><sup>−<i>x</i></sup><span class="no">(1)</span></p>
       <div class="end" id="end">
         <h2>${esc(P.name || "")} Cao ${qed}</h2>
         <p>Contact is left as an exercise for the reader.</p>
@@ -262,7 +264,6 @@
       el.style.top = pyAt(x) + "px";
       if (side < 0) { el.style.left = ""; el.style.right = (W - edge + gap) + "px"; el.style.textAlign = el.classList.contains("poem") ? "left" : "right"; el.style.maxWidth = (edge - gap - 34) + "px"; }
       else { el.style.right = ""; el.style.left = (edge + gap) + "px"; el.style.textAlign = "left"; el.style.maxWidth = (W - edge - gap - 16) + "px"; } };
-    put("eqn", 3.25, narrow ? -1 : 1, narrow ? 14 : 40);
     /* the stanzas go where the curve leaves room: on a phone that means alternating sides as it swings */
     if (narrow) { put("poem0", 1.0, -1, 14); put("poem1", 4.35, 1, 16); put("poem2", 7.05, -1, 18); }
     else { put("poem0", x0 + 1.55, 1, 56); put("poem1", 1.75, -1, 64); put("poem2", 4.55, 1, 70); }
