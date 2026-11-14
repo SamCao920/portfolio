@@ -44,8 +44,11 @@
   const SETS = {};      /* picture sets for the full-size viewer, by name */
 
   /* ---------- sections ---------- */
-  const ref = (w, n) => {
-    const link = w.link ? `<a class="go" href="${esc(w.link)}"${/\.html$/.test(w.link) ? "" : ' target="_blank" rel="noopener"'}>${esc(w.linkText || "Open")} →</a>` : "";
+  const ref = (w0, n) => {
+    /* a paper whose link is a PDF has a typeset page of its own (essays/, built by tools/build-essays.py); the PDF stays one click further */
+    const pdf = w0.type !== "project" && w0.type !== "appearance" && /\.pdf$/i.test(w0.link || "") ? w0.link : "";
+    const w = pdf ? { ...w0, link: `essays/${slug(w0.title)}.html` } : w0;
+    const link = w.link ? `<a class="go" href="${esc(w.link)}"${/\.html$/.test(w.link) ? "" : ' target="_blank" rel="noopener"'}>${esc(w.linkText || "Open")} →</a>${pdf ? ` <a class="go pdf" href="${esc(pdf)}" target="_blank" rel="noopener">PDF</a>` : ""}` : "";
     const g = (w.gallery || []).map(x => typeof x === "string" ? { src: x } : x).filter(x => x && x.src);
     const key = "g-" + slug(w.title); SETS[key] = g.filter(x => !/youtu\.?be|vimeo/.test(x.src)).map(x => ({ src: x.src, cap: esc(x.cap || w.title), video: /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(x.src) }));
     let k = 0;
@@ -122,7 +125,6 @@
       <details><summary>All ${read.length} read, most recent first</summary>${years.map(y => `<p class="year">${y || "Earlier"}</p><ul class="rows">${read.filter(b => (b.read ? parse(b.read).y : 0) === y).map(bookRow).join("")}</ul>`).join("")}</details>
       ${dnf.length ? `<details><summary>${dnf.length} I did not finish</summary><ul class="rows" style="margin-top:8px">${dnf.map(bookRow).join("")}</ul></details>` : ""}
       <h3>${tag()} Films <small>${films.length} seen</small></h3>
-      ${(FD.bio || "").trim() ? `<p>${esc(FD.bio)}</p>` : ""}
       ${top ? `<h4>${esc(top.name)}</h4><ol class="rows ranked">${top.items.map(x => FILMS[x.f] ? filmRow(FILMS[x.f]) : `<li><div class="row"><span class="t"><i>${esc(x.t)}</i></span></div></li>`).join("")}</ol>`
         : favF.length ? `<h4>Favorites</h4><ul class="rows">${favF.map(f => filmRow(f)).join("")}</ul>` : ""}
       ${(FD.lists || []).filter(l => l !== top).map(l => `<details><summary>${esc(l.name)}</summary>${l.desc ? `<p>${esc(l.desc)}</p>` : ""}<ol class="rank">${(l.items || []).map(x => `<li><i>${esc(x.t)}</i>${x.y ? ` (${esc(x.y)})` : ""}</li>`).join("")}</ol></details>`).join("")}
@@ -258,7 +260,7 @@
     TOP = Math.round($(".top").getBoundingClientRect().height + (narrow ? 40 : 44));
     x0 = -Math.log((0.40 * W) / (SY * 1.5));           /* the outer solutions start 40% of the width from the middle */
     ORG = W / 2 - steady(x0) * SY;                      /* shift the axis so the four starting points are centred */
-    const xEnd = 3.5 + Math.PI * (narrow ? 2.85 : 1.75);   /* a phone needs another swing of the curve to fit the stanzas */
+    const xEnd = 3.5 + Math.PI * (narrow ? 2.58 : 1.36);   /* a phone needs another swing of the curve to fit the stanzas */
     H = Math.round(pyAt(xEnd)); stage.style.height = H + "px"; svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
     const put = (id, x, side, gap) => { const el = document.getElementById(id), edge = ORG + (steady(x) + 1.5 * side * Math.exp(-x)) * SY;
       el.style.top = pyAt(x) + "px";
@@ -267,9 +269,9 @@
     /* the stanzas go where the curve leaves room: on a phone that means alternating sides as it swings */
     if (narrow) { put("poem0", 1.0, -1, 14); put("poem1", 4.35, 1, 16); put("poem2", 7.05, -1, 18); }
     else { put("poem0", x0 + 1.55, 1, 56); put("poem1", 1.75, -1, 64); put("poem2", 4.55, 1, 70); }
-    const end = $("#end"); end.style.top = pyAt(narrow ? 8.45 : 7.35) + "px"; end.style.right = (W - ORG + 2) + "px";
+    const xe = narrow ? 8.45 : 6.35, end = $("#end"); end.style.top = pyAt(xe) + "px"; end.style.right = (W - (ORG + Math.min(steady(xe), steady(xe + 0.7)) * SY) + 16) + "px";   /* clear of the curve, which is moving right here */
     /* the girl in the gust: bottom right, across the curve from the name. On a phone there is only room where the curve swings left. */
-    const gust = $("#gust"), gx = narrow ? 10.45 : 7.2;
+    const gust = $("#gust"), gx = narrow ? 10.45 : 6.2;
     gust.style.top = pyAt(gx) + "px"; gust.style.left = Math.min(W - gust.offsetWidth - 10, ORG + (narrow ? steady(11) : 0.72) * SY + (narrow ? 26 : 70)) + "px";
     /* three more of Hood's drawings: the leap beside "My heart leaps up", the dream on the left under Shelley, the sea under Byron */
     /* each stanza has a drawing across the strings from it */
@@ -452,6 +454,8 @@
   document.addEventListener("keydown", e => { if (e.key === "Escape" && open >= 0 && !dlg.open && performance.now() - lightShut > 400) toggle(open); });
 
   build(); layout(); route();
+  /* on arrival the strings stir once, left to right, to show they can be moved */
+  if (open < 0) SECTIONS.forEach((s, i) => setTimeout(() => { if (open < 0 && scrollY < 200) flick(i, x0 + 2.3, i % 2 ? -1.5 : 1.5); }, 1100 + i * 170));
   addEventListener("resize", layout); addEventListener("hashchange", route);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
   $$(".top img").forEach(im => im.addEventListener("load", layout));

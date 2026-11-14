@@ -284,3 +284,33 @@ dialog.light[open]::backdrop { animation: veil .25s ease-out both; }
 ol.rows.ranked { list-style: none; margin: 0 0 6px; padding: 0; counter-reset: rk; }
 ol.rows.ranked > li { counter-increment: rk; border-bottom: 1px solid var(--hair); position: relative; padding-left: 2.2em; } ol.rows.ranked > li:first-child { border-top: 1px solid var(--hair); }
 ol.rows.ranked > li::before { content: counter(rk) "."; position: absolute; left: 0; top: 6px; color: var(--grey); font-variant-numeric: tabular-nums; }
+
+/* ---------- an essay, typeset (essays/*.html, built by tools/build-essays.py) ---------- */
+.essay { max-width: 680px; margin: 0 auto; padding: 26px 20px 70px; counter-reset: para; }
+.essay .back { font-style: italic; color: var(--grey); }
+.essay header { margin: 34px 0 30px; text-align: center; }
+.essay h1 { margin: 0 0 12px; font: 700 34px/1.15 var(--cm); text-wrap: balance; }
+.essay .byline { margin: 0 0 8px; font-size: 20px; font-variant: small-caps; letter-spacing: .04em; }
+.essay .meta { margin: 0; font-size: 16px; font-style: italic; color: var(--grey); }
+.essay article p { margin: 0; text-align: justify; hyphens: auto; -webkit-hyphens: auto; text-indent: 1.5em; line-height: 1.55; }
+.essay article h2 + p, .essay article > p:first-child, .essay article figure + p, .essay article blockquote + p { text-indent: 0; }
+.essay h2 { margin: 34px 0 10px; font: 700 21px/1.25 var(--cm); scroll-margin-top: 16px; }
+.essay blockquote { margin: 14px 0 14px 1.5em; font-size: 17px; } .essay blockquote p { text-indent: 0 !important; }
+.essay article p.bib { text-indent: -1.5em; padding-left: 1.5em; margin-bottom: 8px; text-align: left; font-size: 17px; overflow-wrap: anywhere; }
+.essay article p.cap, .essay figcaption { margin: 8px 0 18px; text-indent: 0; text-align: center; font-size: 16px; color: var(--grey); }
+.essay figure { margin: 22px 0; } .essay figure img { display: block; width: 100%; height: auto; }
+.essay figure.tbl { overflow-x: auto; }
+.essay table { width: 100%; border-collapse: collapse; font-size: 16px; line-height: 1.4; border-top: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); }
+.essay thead th { border-bottom: 1px solid var(--ink); font-weight: 700; } .essay th, .essay td { padding: 8px 10px; text-align: left; vertical-align: top; } .essay tbody th { font-weight: 400; white-space: nowrap; }
+.essay sup { font-size: .68em; line-height: 0; } .essay sup a { text-decoration: none; color: var(--pen); padding: 0 1px; }
+.essay .notes { margin-top: 44px; border-top: 1px solid var(--ink); } .essay .notes h2 { margin-top: 18px; }
+.essay .notes ol { margin: 0; padding-left: 2.2em; font-size: 16px; line-height: 1.45; } .essay .notes li { margin-bottom: 7px; overflow-wrap: anywhere; scroll-margin-top: 16px; }
+.essay .notes li:target, .essay sup a:target { background: color-mix(in srgb, var(--pen) 14%, transparent); }
+.essay .notes .back { font-style: normal; text-decoration: none; color: var(--grey); }
+.essay .fin { text-align: right; margin: 26px 0 0; }
+/* a note shown beside its mark, when there is room in the margin */
+.sidenote { position: absolute; width: 230px; font-size: 14.5px; line-height: 1.4; color: var(--grey); text-align: left; text-indent: 0; hyphens: manual; overflow-wrap: anywhere; }
+.sidenote b { color: var(--pen); font-weight: 400; margin-right: 4px; }
+.progress { position: fixed; left: 0; top: 0; height: 2px; width: 0; background: var(--pen); z-index: 20; }
+@media (max-width: 700px) { .essay h1 { font-size: 27px; } .essay article p { text-align: left; } }
+.go.pdf { margin-left: 14px; font-size: .85em; color: var(--grey); }

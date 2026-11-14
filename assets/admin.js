@@ -915,9 +915,6 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       render: () => {
         const opts = films.items.map((f, i) => [f, i]).sort(([a], [b]) => a.t.localeCompare(b.t));
         return `<div data-nodirty>${filmFormHtml()}
-        <div class="section-head" style="margin-top:26px"><h2>Favorite films</h2></div>
-        <div class="grid2 favs">${[0, 1, 2, 3].map(k => `<label class="f"><span>Favorite ${k + 1}</span><select data-fav="${k}"><option value="">None</option>${opts.map(([f, i]) =>
-          `<option value="${i}" ${films.favorites[k] === i ? "selected" : ""}>${esc(filmLabel(f))}</option>`).join("")}</select></label>`).join("")}</div>
         <div class="section-head" style="margin-top:26px"><h2>Watchlist</h2></div>
         <p class="ed-help">${plural(films.watchlist.length, "film")}. Add one with Want to watch above.</p>
         <ul class="llist">${films.watchlist.map((w, i) => `<li class="lrow static"><b>${esc(w.t)}</b><span>${esc(w.y || "")}</span><span class="lr-date">${esc(w.added || "")}</span>
