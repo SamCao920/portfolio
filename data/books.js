@@ -1,6 +1,6 @@
 /* Books: what I have read, am reading and want to read.
    Edit it with admin.html. It must stay valid JavaScript. */
-window.BOOKS = {"updated":"2026-11-06","items":[
+window.BOOKS = {"updated":"2026-11-14","items":[
   {"t":"Napoleón","full":"Napoleón","a":"Andrew Roberts","isbn":"9780670025329","r":null,"read":null,"added":"2026-11-06","shelf":"to-read","fav":false,"review":null,"pages":926,"year":"2014","cover":"https://covers.openlibrary.org/b/id/9133218-M.jpg"},
   {"t":"Elements","full":"Elements","a":"Euclid","isbn":"9788702395808","r":null,"read":null,"added":"2026-11-04","shelf":"to-read","fav":false,"review":null,"pages":350,"year":"1482","cover":"https://covers.openlibrary.org/b/id/1736063-M.jpg"},
   {"t":"Music in India","full":"Music in India","a":"Bonnie C. Wade","isbn":"9780136070368","r":null,"read":null,"added":"2026-11-01","shelf":"to-read","fav":false,"review":null,"pages":252,"year":"1979","cover":"https://covers.openlibrary.org/b/id/9614023-M.jpg"},
@@ -64,7 +64,6 @@ window.BOOKS = {"updated":"2026-11-06","items":[
   {"t":"A Mathematician's Apology","full":"A Mathematician's Apology","a":"G.H. Hardy","isbn":"9780521427067","r":null,"read":null,"added":"2026-06-12","shelf":"to-read","fav":false,"review":null,"pages":256,"year":"1940"},
   {"t":"City of God","full":"City of God","a":"Augustine of Hippo","isbn":"9780140448948","r":null,"read":null,"added":"2026-06-09","shelf":"to-read","fav":false,"review":null,"pages":1186,"year":"426"},
   {"t":"The Rise of the Roman Empire","full":"The Rise of the Roman Empire","a":"Polybius","isbn":"9780140443622","r":4,"read":"2026-06-08","added":"2026-04-22","shelf":"read","fav":false,"review":null,"pages":576,"year":"-170"},
-  {"t":"The Odyssey","full":"The Odyssey","a":"Homer","isbn":"9780143139379","r":null,"read":null,"added":"2026-06-01","shelf":"to-read","fav":false,"review":null,"pages":560,"year":"-800"},
   {"t":"The Odyssey","full":"The Odyssey","a":"Homer","isbn":"9780393089059","r":4,"read":"2026-05-31","added":"2026-05-07","shelf":"read","fav":false,"review":null,"pages":582,"year":"-800"},
   {"t":"Nostromo","full":"Nostromo","a":"Joseph Conrad","isbn":"9780486424521","r":null,"read":null,"added":"2026-05-28","shelf":"to-read","fav":false,"review":null,"pages":336,"year":"1904"},
   {"t":"A Theory of Justice","full":"A Theory of Justice","a":"John Rawls","isbn":"9780674017726","r":3,"read":"2026-05-24","added":"2026-02-12","shelf":"read","fav":false,"review":null,"pages":824,"year":"1971"},
