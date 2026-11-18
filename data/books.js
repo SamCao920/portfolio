@@ -1,6 +1,7 @@
 /* Books: what I have read, am reading and want to read.
    Edit it with admin.html. It must stay valid JavaScript. */
-window.BOOKS = {"updated":"2026-11-15","items":[
+window.BOOKS = {"updated":"2026-11-18","items":[
+  {"t":"The World of Yesterday","full":"The World of Yesterday","a":"Stefan Zweig","isbn":"9780803252240","r":null,"read":null,"added":"2026-11-18","shelf":"to-read","fav":false,"review":null,"pages":455,"year":"1943","cover":"https://covers.openlibrary.org/b/id/6793214-M.jpg"},
   {"t":"On Seeing the 100% Perfect Girl One Beautiful April Morning","full":"On Seeing the 100% Perfect Girl One Beautiful April Morning","a":"Haruki Murakami","isbn":"9781494279554","r":4,"read":"2026-11-15","added":"2026-11-15","shelf":"read","fav":false,"review":"Apparently this story influence Wong-kar Wai's films, especially Chungking Express. I can see it.","pages":24,"year":"2013","cover":"https://covers.openlibrary.org/b/id/10468295-M.jpg"},
   {"t":"Napoleón","full":"Napoleón","a":"Andrew Roberts","isbn":"9780670025329","r":null,"read":null,"added":"2026-11-06","shelf":"to-read","fav":false,"review":null,"pages":926,"year":"2014","cover":"https://covers.openlibrary.org/b/id/9133218-M.jpg"},
   {"t":"Elements","full":"Elements","a":"Euclid","isbn":"9788702395808","r":null,"read":null,"added":"2026-11-04","shelf":"to-read","fav":false,"review":null,"pages":350,"year":"1482","cover":"https://covers.openlibrary.org/b/id/1736063-M.jpg"},
