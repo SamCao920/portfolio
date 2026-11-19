@@ -100,6 +100,10 @@ window.SITE = {
   ],
   "writings": [
     {
+      "type": "essay",
+      "featured": false
+    },
+    {
       "title": "Programmable Money and the Abolition of Visible Failure",
       "type": "essay",
       "featured": true,
