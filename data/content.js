@@ -153,12 +153,11 @@ window.SITE = {
     {
       "type": "project",
       "featured": false,
-      "title": "Obiter Dicta",
+      "title": "Essais",
       "claim": "My Substack, where I write about anything that catches my interest.",
       "link": "https://samcao7.substack.com/",
       "venue": "Personal Substack",
-      "linkText": "Visit Obiter Dicta",
-      "body": "As per Wikipedia, *obiter dictum* (usually used in the plural, *obiter dicta*) is a Latin phrase meaning \"said in passing\"."
+      "linkText": "Visit Obiter Dicta"
     },
     {
       "title": "Open Margins",
