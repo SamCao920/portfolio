@@ -100,13 +100,6 @@ window.SITE = {
   ],
   "writings": [
     {
-      "type": "project",
-      "featured": false,
-      "title": "Obiter Dicta",
-      "claim": "My Substack, where I write about anything that catches my interest.",
-      "link": "https://samcao7.substack.com/"
-    },
-    {
       "title": "Programmable Money and the Abolition of Visible Failure",
       "type": "essay",
       "featured": true,
@@ -156,6 +149,13 @@ window.SITE = {
       "linkText": "Read the paper",
       "claim": "The one-child policy is usually read as an authoritarian state stopping at nothing. It is better read as a state that had lost faith in ideology and put its faith in science instead.",
       "body": "After Mao’s campaigns the Party rejected the ideological wholesale, and Scientism filled the vacuum: the Song group’s control-theory models carried an authority social scientists could not match, reinforced by Western overpopulation anxiety from <em>The Population Bomb</em> and <em>Limits to Growth</em>. What followed was a shrinking workforce, a skewed sex ratio, and rapid aging."
+    },
+    {
+      "type": "project",
+      "featured": false,
+      "title": "Obiter Dicta",
+      "claim": "My Substack, where I write about anything that catches my interest.",
+      "link": "https://samcao7.substack.com/"
     },
     {
       "title": "Open Margins",
