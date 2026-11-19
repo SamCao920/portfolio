@@ -100,8 +100,10 @@ window.SITE = {
   ],
   "writings": [
     {
-      "type": "essay",
-      "featured": false
+      "type": "project",
+      "featured": false,
+      "title": "Obiter Dicta",
+      "claim": "My Substack"
     },
     {
       "title": "Programmable Money and the Abolition of Visible Failure",
