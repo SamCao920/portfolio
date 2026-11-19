@@ -103,7 +103,7 @@ window.SITE = {
       "type": "project",
       "featured": false,
       "title": "Obiter Dicta",
-      "claim": "My Substack"
+      "claim": "My Substack, where I write about anything that catches my interest."
     },
     {
       "title": "Programmable Money and the Abolition of Visible Failure",
