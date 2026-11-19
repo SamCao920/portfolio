@@ -163,7 +163,7 @@ window.SITE = {
     {
       "title": "Open Margins",
       "type": "project",
-      "venue": "Open-source website · 2026",
+      "venue": "Open-source website",
       "featured": false,
       "claim": "Free, open annotated editions of classic books: a short note in the margin wherever a high school or college reader is likely to get stuck.",
       "body": "It starts with Joseph Conrad’s *Lord Jim*. Notes come in layers you can turn on and off (vocabulary, allusions, history, places), so a 10th grader can see everything and a college reader can hide the vocabulary.\n\n[Source on GitHub](https://github.com/SamCao920/scholia)",
@@ -174,10 +174,10 @@ window.SITE = {
     {
       "title": "Connections Map",
       "type": "project",
-      "venue": "Web app · 2026",
+      "venue": "Web app",
       "featured": false,
       "claim": "A private map of the people I know, so that when I visit a city I remember who lives there and can reach out for coffee.",
-      "body": "Each person is pinned to a city with how we met and how to reach them. It lists who lives near an upcoming trip, greys out people whose time in a place has probably ended and asks before that happens, and keeps a log of each coffee or call. The page itself is static and anyone can use it with their own data: contacts stay in the browser or in a private GitHub repo, never in the site.",
+      "body": "Each person is pinned to a city with how we met and how to reach them. It lists who lives near an upcoming trip, greys out people whose time in a place has probably ended and asks before that happens, and keeps a log of each coffee or call. The page itself is static and anyone can use it with their own data: contacts stay in the browser or in a private GitHub repo.",
       "link": "https://github.com/SamCao920/connections-map",
       "linkText": "View on GitHub",
       "cover": "assets/plates/connections-map-cover.jpg"
