@@ -157,7 +157,8 @@ window.SITE = {
       "claim": "My Substack, where I write about anything that catches my interest.",
       "link": "https://samcao7.substack.com/",
       "venue": "Personal Substack",
-      "linkText": "Visit Obiter Dicta"
+      "linkText": "Visit Obiter Dicta",
+      "body": "This is a repository of my writings, where I try to write across a variety of genres to explore new and interesting fields and ideas. Inspired by Michel de Montaigne’s fabulous Essays (or Essais in French), this Substack aims to be something similar: a series of attempts with no telos."
     },
     {
       "title": "Open Margins",
