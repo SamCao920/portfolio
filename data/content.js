@@ -155,7 +155,9 @@ window.SITE = {
       "featured": false,
       "title": "Obiter Dicta",
       "claim": "My Substack, where I write about anything that catches my interest.",
-      "link": "https://samcao7.substack.com/"
+      "link": "https://samcao7.substack.com/",
+      "venue": "Personal Substack",
+      "linkText": "Visit Obiter Dicta"
     },
     {
       "title": "Open Margins",
@@ -163,7 +165,7 @@ window.SITE = {
       "venue": "Open-source website · 2026",
       "featured": false,
       "claim": "Free, open annotated editions of classic books: a short note in the margin wherever a high school or college reader is likely to get stuck.",
-      "body": "It starts with Joseph Conrad’s *Lord Jim*. Notes come in layers you can turn on and off (vocabulary, allusions, history, places), so a 10th grader can see everything and a college reader can hide the vocabulary. Each note is drafted with AI, then checked by a person against a cited source before it is marked verified, and a random sample of verified notes is rechecked so the error rate can be published. Every note is released under an open license.\n\n[Source on GitHub](https://github.com/SamCao920/scholia)",
+      "body": "It starts with Joseph Conrad’s *Lord Jim*. Notes come in layers you can turn on and off (vocabulary, allusions, history, places), so a 10th grader can see everything and a college reader can hide the vocabulary.\n\n[Source on GitHub](https://github.com/SamCao920/scholia)",
       "link": "https://scholia.dpdns.org/",
       "linkText": "Visit Open Margins",
       "cover": "assets/plates/open-margins-cover.jpg"
