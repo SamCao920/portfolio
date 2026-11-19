@@ -103,7 +103,8 @@ window.SITE = {
       "type": "project",
       "featured": false,
       "title": "Obiter Dicta",
-      "claim": "My Substack, where I write about anything that catches my interest."
+      "claim": "My Substack, where I write about anything that catches my interest.",
+      "link": "https://samcao7.substack.com/"
     },
     {
       "title": "Programmable Money and the Abolition of Visible Failure",
