@@ -156,7 +156,7 @@ window.SITE = {
       "featured": true,
       "link": "https://firm-innovation.pages.dev/",
       "linkText": "Project website",
-      "claim": "An empirical investigation into whether market power slows down innovation, testing Kenneth Arrow’s replacement effect against historical evidence across three distinct gates.",
+      "claim": "An empirical investigation into whether market power slows down innovation, testing Kenneth Arrow’s replacement effect against historical evidence.",
       "body": "Inspired by Brian Potter's excellent \"[How long do we wait for new inventions?](https://www.construction-physics.com/p/how-long-do-we-wait-for-new-inventions)\".",
       "venue": "Independent research"
     },
