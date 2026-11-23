@@ -1,6 +1,6 @@
 /* Books: what I have read, am reading and want to read.
    Edit it with admin.html. It must stay valid JavaScript. */
-window.BOOKS = {"updated":"2026-11-21","items":[
+window.BOOKS = {"updated":"2026-11-23","items":[
   {"t":"The Metropolis and Mental Life","full":"The Metropolis and Mental Life","a":"Georg Simmel","isbn":null,"r":4,"read":"2026-11-21","added":"2026-11-21","shelf":"read","fav":false,"review":"Quite an insightful analysis into the psychology of individuals that live in cities.","pages":null,"year":null},
   {"t":"The World of Yesterday","full":"The World of Yesterday","a":"Stefan Zweig","isbn":"9780803252240","r":null,"read":null,"added":"2026-11-18","shelf":"to-read","fav":false,"review":null,"pages":455,"year":"1943","cover":"https://covers.openlibrary.org/b/id/6793214-M.jpg"},
   {"t":"On Seeing the 100% Perfect Girl One Beautiful April Morning","full":"On Seeing the 100% Perfect Girl One Beautiful April Morning","a":"Haruki Murakami","isbn":"9781494279554","r":4,"read":"2026-11-15","added":"2026-11-15","shelf":"read","fav":false,"review":"Apparently this story influence Wong-kar Wai's films, especially Chungking Express. I can see it.","pages":24,"year":"2013","cover":"https://covers.openlibrary.org/b/id/10468295-M.jpg"},
@@ -145,7 +145,7 @@ window.BOOKS = {"updated":"2026-11-21","items":[
   {"t":"Faust","full":"Faust","a":"Johann Wolfgang von Goethe","isbn":"9780385031141","r":null,"read":null,"added":"2026-03-26","shelf":"to-read","fav":false,"review":null,"pages":503,"year":"1808"},
   {"t":"2666","full":"2666","a":"Roberto Bolaño","isbn":"9788433968678","r":null,"read":null,"added":"2026-03-25","shelf":"to-read","fav":false,"review":null,"pages":1128,"year":"2004"},
   {"t":"Superforecasting","full":"Superforecasting: The Art and Science of Prediction","a":"Philip E. Tetlock","isbn":"9780804136693","r":null,"read":null,"added":"2026-03-25","shelf":"to-read","fav":false,"review":null,"pages":352,"year":"2015"},
-  {"t":"Why Nations Fail","full":"Why Nations Fail: The Origins of Power, Prosperity, and Poverty","a":"Daron Acemoğlu","isbn":"9780307719218","r":5,"read":null,"added":"2026-03-06","shelf":"read","fav":true,"review":null,"pages":529,"year":"2012"},
+  {"t":"Why Nations Fail","full":"Why Nations Fail: The Origins of Power, Prosperity, and Poverty","a":"Daron Acemoğlu","isbn":"9780307719218","r":3,"read":"2026-11-23","added":"2026-03-06","shelf":"read","fav":false,"review":null,"pages":529,"year":"2012"},
   {"t":"Steve Jobs","full":"Steve Jobs","a":"Walter Isaacson","isbn":"9781451648539","r":4,"read":null,"added":"2026-01-29","shelf":"read","fav":true,"review":null,"pages":630,"year":"2011"},
   {"t":"Frankenstein","full":"Frankenstein","a":"Mary Wollstonecraft Shelley","isbn":"9780143131847","r":5,"read":null,"added":"2026-01-29","shelf":"read","fav":true,"review":null,"pages":260,"year":"1818"},
   {"t":"Romeo and Juliet","full":"Romeo and Juliet","a":"William Shakespeare","isbn":null,"r":4,"read":null,"added":"2026-01-29","shelf":"read","fav":false,"review":null,"pages":304,"year":"1590"},
