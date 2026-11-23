@@ -104,7 +104,9 @@ window.SITE = {
       "type": "research",
       "featured": false,
       "link": "https://firm-innovation.pages.dev/",
-      "linkText": "Project website"
+      "linkText": "Project website",
+      "claim": "An empirical investigation into whether market power slows down innovation, testing Kenneth Arrow’s replacement effect against historical evidence across three distinct gates.",
+      "body": "Inspired by Brian Potter's"
     },
     {
       "title": "Programmable Money and the Abolition of Visible Failure",
