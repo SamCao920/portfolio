@@ -100,15 +100,6 @@ window.SITE = {
   ],
   "writings": [
     {
-      "title": "Monopoly and Firm Innovation",
-      "type": "research",
-      "featured": false,
-      "link": "https://firm-innovation.pages.dev/",
-      "linkText": "Project website",
-      "claim": "An empirical investigation into whether market power slows down innovation, testing Kenneth Arrow’s replacement effect against historical evidence across three distinct gates.",
-      "body": "Inspired by Brian Potter's"
-    },
-    {
       "title": "Programmable Money and the Abolition of Visible Failure",
       "type": "essay",
       "featured": true,
@@ -137,7 +128,7 @@ window.SITE = {
     {
       "title": "Beyond Carbon Subsidies",
       "type": "essay",
-      "featured": true,
+      "featured": false,
       "venue": "Harvard International Economics Essay Contest",
       "award": "Finalist",
       "result": "Top 5% of 347 entries",
@@ -150,7 +141,7 @@ window.SITE = {
     {
       "title": "Why One Child?",
       "type": "research",
-      "featured": true,
+      "featured": false,
       "venue": "Independent research",
       "result": "Book-length history",
       "cover": "assets/plates/cover-3.jpg",
@@ -160,8 +151,18 @@ window.SITE = {
       "body": "After Mao’s campaigns the Party rejected the ideological wholesale, and Scientism filled the vacuum: the Song group’s control-theory models carried an authority social scientists could not match, reinforced by Western overpopulation anxiety from <em>The Population Bomb</em> and <em>Limits to Growth</em>. What followed was a shrinking workforce, a skewed sex ratio, and rapid aging."
     },
     {
+      "title": "Monopoly and Firm Innovation",
+      "type": "research",
+      "featured": true,
+      "link": "https://firm-innovation.pages.dev/",
+      "linkText": "Project website",
+      "claim": "An empirical investigation into whether market power slows down innovation, testing Kenneth Arrow’s replacement effect against historical evidence across three distinct gates.",
+      "body": "Inspired by Brian Potter's excellent \"[How long do we wait for new inventions?](https://www.construction-physics.com/p/how-long-do-we-wait-for-new-inventions)\".",
+      "venue": "Independent research"
+    },
+    {
       "type": "project",
-      "featured": false,
+      "featured": true,
       "title": "Essais",
       "claim": "My Substack, where I write about anything that catches my interest.",
       "link": "https://samcao7.substack.com/",
