@@ -413,16 +413,19 @@
 
   /* ---------- sound: the four strings of a violin, G D A E ---------- */
   let ctx = null, soundOn = false, volume = 0.6;
-  /* Pitch follows the strings. The lower you touch a string, the higher it plays, and the four notes close in on one another
-     the way the curves do: at the top they are the open strings of a violin, G D A E, and the gap between them shrinks like e^(-x),
-     so by the time the curves merge they sound in unison, a unison that keeps rising to the foot of the page. Notes are rounded to
-     G major pentatonic, which holds all four open strings, so any mix of them sounds in tune. */
-  const OPEN = [55, 62, 69, 76], MID = 62, RISE = 24, SCALE = [7, 9, 11, 2, 4];
+  /* Pitch follows the strings. At the top each string plays its open violin note, G D A E. The lower you touch a string, the higher it
+     plays, and the four notes close in on one another the way the curves do (the gap shrinks like e^(-x)), meeting in a unison where
+     the curves merge, which keeps rising to the foot of the page. Notes are rounded to G major pentatonic, which holds all four open
+     strings, so any mix sounds in tune; until the curves merge, no two strings share a note. */
+  const OPEN = [55, 62, 69, 76], HIGH = 83, SCALE = [7, 9, 11, 2, 4];
+  const inScale = n => SCALE.includes(((n % 12) + 12) % 12);
+  const below = n => { do n--; while (!inScale(n)); return n; };
+  const nearest = m => { let b = 0, d = 99; for (let n = 48; n <= 96; n++) if (inScale(n) && Math.abs(n - m) < d) { d = Math.abs(n - m); b = n; } return b; };
   const midiAt = (i, x) => {
-    const u = Math.max(0, x - x0), m = MID + RISE * Math.min(1, u / Math.max(1, xEnd - x0)) + (OPEN[i] - MID) * Math.exp(-0.7 * u);
-    let best = OPEN[i], d = 99;
-    for (let n = 50; n <= 90; n++) if (SCALE.includes(n % 12) && Math.abs(n - m) < d) { d = Math.abs(n - m); best = n; }
-    return best;
+    const u = Math.max(0, x - x0), top = OPEN[3] + (HIGH - OPEN[3]) * Math.min(1, u / Math.max(1, xEnd - x0)), r = Math.exp(-0.37 * u);
+    const q = OPEN.map(o => nearest(top - (OPEN[3] - o) * r));
+    if (r > 0.15) for (let k = 2; k >= 0; k--) if (q[k] >= q[k + 1]) q[k] = below(q[k + 1]);   /* still apart on the page: still apart in pitch */
+    return q[i];
   };
   function ping(i, vol, x) {
     if (!soundOn) return;
