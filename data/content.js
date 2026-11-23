@@ -126,19 +126,6 @@ window.SITE = {
       "body": "Moral disagreement is permanent, and we cannot know how future values will diverge from ours, so fixed precepts are the wrong tool for questions like climate change. Using Moehler’s multilevel social contract theory, the essay separates intuitive first-level morality from second-level bargaining among instrumentally rational agents, and argues that only the second can bind us across generations."
     },
     {
-      "title": "Beyond Carbon Subsidies",
-      "type": "essay",
-      "featured": false,
-      "venue": "Harvard International Economics Essay Contest",
-      "award": "Finalist",
-      "result": "Top 5% of 347 entries",
-      "cover": "assets/plates/cover-2.jpg",
-      "link": "assets/Beyond Carbon Subsidies (Improved).pdf",
-      "linkText": "Read the essay",
-      "claim": "Green subsidies buy almost no abatement at enormous cost. Carbon taxes buy a great deal at a fraction of it, and are still the harder policy to keep.",
-      "body": "U.S. renewable subsidies cut CO₂ by roughly 0.3% a year; global biofuel subsidies <em>raised</em> emissions by 4.8 million tons. Britain’s carbon price cut power-sector emissions 55%. Abatement costs tell the same story: €206 and €978 a ton for German wind and solar against €36 and €55 in Britain. But repeals and fuel-price revolts show the efficient instrument is the fragile one."
-    },
-    {
       "title": "Why One Child?",
       "type": "research",
       "featured": false,
