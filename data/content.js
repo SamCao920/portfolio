@@ -126,6 +126,16 @@ window.SITE = {
       "body": "Moral disagreement is permanent, and we cannot know how future values will diverge from ours, so fixed precepts are the wrong tool for questions like climate change. Using Moehler’s multilevel social contract theory, the essay separates intuitive first-level morality from second-level bargaining among instrumentally rational agents, and argues that only the second can bind us across generations."
     },
     {
+      "title": "Monopoly and Firm Innovation",
+      "type": "research",
+      "featured": true,
+      "link": "https://firm-innovation.pages.dev/",
+      "linkText": "Project website",
+      "claim": "An empirical investigation into whether market power slows down innovation, testing Kenneth Arrow’s replacement effect against historical evidence.",
+      "body": "Inspired by Brian Potter's excellent \"[How long do we wait for new inventions?](https://www.construction-physics.com/p/how-long-do-we-wait-for-new-inventions)\".",
+      "venue": "Independent research"
+    },
+    {
       "title": "Why One Child?",
       "type": "research",
       "featured": false,
@@ -136,16 +146,6 @@ window.SITE = {
       "linkText": "Read the paper",
       "claim": "The one-child policy is usually read as an authoritarian state stopping at nothing. It is better read as a state that had lost faith in ideology and put its faith in science instead.",
       "body": "After Mao’s campaigns the Party rejected the ideological wholesale, and Scientism filled the vacuum: the Song group’s control-theory models carried an authority social scientists could not match, reinforced by Western overpopulation anxiety from <em>The Population Bomb</em> and <em>Limits to Growth</em>. What followed was a shrinking workforce, a skewed sex ratio, and rapid aging."
-    },
-    {
-      "title": "Monopoly and Firm Innovation",
-      "type": "research",
-      "featured": true,
-      "link": "https://firm-innovation.pages.dev/",
-      "linkText": "Project website",
-      "claim": "An empirical investigation into whether market power slows down innovation, testing Kenneth Arrow’s replacement effect against historical evidence.",
-      "body": "Inspired by Brian Potter's excellent \"[How long do we wait for new inventions?](https://www.construction-physics.com/p/how-long-do-we-wait-for-new-inventions)\".",
-      "venue": "Independent research"
     },
     {
       "type": "project",
