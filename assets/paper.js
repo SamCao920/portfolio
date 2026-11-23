@@ -413,19 +413,15 @@
 
   /* ---------- sound: the four strings of a violin, G D A E ---------- */
   let ctx = null, soundOn = false, volume = 0.6;
-  /* Pitch follows the strings. At the top each string plays its open violin note, G D A E. The lower you touch a string, the higher it
-     plays, and the four notes close in on one another the way the curves do (the gap shrinks like e^(-x)), meeting in a unison where
-     the curves merge, which keeps rising to the foot of the page. Notes are rounded to G major pentatonic, which holds all four open
-     strings, so any mix sounds in tune; until the curves merge, no two strings share a note. */
-  const OPEN = [55, 62, 69, 76], HIGH = 83, SCALE = [7, 9, 11, 2, 4];
-  const inScale = n => SCALE.includes(((n % 12) + 12) % 12);
-  const below = n => { do n--; while (!inScale(n)); return n; };
-  const nearest = m => { let b = 0, d = 99; for (let n = 48; n <= 96; n++) if (inScale(n) && Math.abs(n - m) < d) { d = Math.abs(n - m); b = n; } return b; };
+  /* Pitch works like stopping a violin string. The four strings are tuned in fifths, G D A E. Touching a string lower down is like
+     pressing it closer to the bridge: what is left to vibrate is shorter, so it sounds higher, by f = f0 / (1 - stopped). The top of the
+     page is the open string and the foot of the page is the middle of the string, an octave up. Every string rises by the same interval
+     at the same height, so they stay a fifth apart. The rise is rounded to steps of a major scale, so each string plays a tune. */
+  const OPEN = [55, 62, 69, 76], STEPS = [0, 2, 4, 5, 7, 9, 11, 12];
   const midiAt = (i, x) => {
-    const u = Math.max(0, x - x0), top = OPEN[3] + (HIGH - OPEN[3]) * Math.min(1, u / Math.max(1, xEnd - x0)), r = Math.exp(-0.37 * u);
-    const q = OPEN.map(o => nearest(top - (OPEN[3] - o) * r));
-    if (r > 0.15) for (let k = 2; k >= 0; k--) if (q[k] >= q[k + 1]) q[k] = below(q[k + 1]);   /* still apart on the page: still apart in pitch */
-    return q[i];
+    const stopped = 0.5 * Math.min(1, Math.max(0, (x - x0) / Math.max(1, xEnd - x0)));
+    const rise = -12 * Math.log2(1 - stopped);                     /* semitones */
+    return OPEN[i] + STEPS.reduce((b, n) => Math.abs(n - rise) < Math.abs(b - rise) ? n : b, 0);
   };
   function ping(i, vol, x) {
     if (!soundOn) return;
