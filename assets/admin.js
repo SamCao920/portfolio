@@ -1479,7 +1479,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
       ${!window.showDirectoryPicker ? '<div class="notice">This browser can’t save into folders. Edit here, then use Download content.js and replace data/content.js with it. Chrome or Edge can save directly.</div>' : ""}
       ${s.render()}
       <div class="ed-tools"><p><b>Art, book notes and the vault graph</b> come from your Obsidian vault, not this editor. They refresh on their own every hour on the Mac mini, or run this in Terminal there:</p>
-        <p><code>bash ~/Desktop/Portfolio/tools/mac/update-site.sh</code> (art, notes and graph, then publishes)</p></div>`;
+        <p><code>bash ~/Desktop/Projects/Portfolio/tools/mac/update-site.sh</code> (art, notes and graph, then publishes)</p></div>`;
   }
   document.addEventListener("click", e => {
     const t = e.target;

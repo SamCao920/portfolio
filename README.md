@@ -35,9 +35,9 @@ Run `python3 -m http.server` in this folder and open http://localhost:8000.
 
 In Terminal, once:
 
-    git clone https://github.com/SamCao920/portfolio.git ~/Desktop/Portfolio && bash ~/Desktop/Portfolio/tools/mac/install.sh
+    git clone https://github.com/SamCao920/portfolio.git ~/Desktop/Projects/Portfolio && bash ~/Desktop/Projects/Portfolio/tools/mac/install.sh
 
-Then open `~/Desktop/Portfolio/admin.html`, click Change folder and pick `~/Desktop/Portfolio`. Saves publish about
+Then open `~/Desktop/Projects/Portfolio/admin.html`, click Change folder and pick `~/Desktop/Projects/Portfolio`. Saves publish about
 10 seconds later; the vault pages rebuild every hour. Problems are written to
 `tools/mac/publish.log` and `tools/mac/update.log`. If the morning job says macOS won't let it read the
 vault, add `/bin/bash` under System Settings > Privacy & Security > Full Disk Access.
