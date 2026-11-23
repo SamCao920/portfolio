@@ -108,7 +108,6 @@ window.SITE = {
       "result": "1,142 essays from 110 countries",
       "cover": "assets/plates/cover-0.jpg",
       "link": "assets/Programmable Money and the Abolition of Visible Failure.pdf",
-      "linkText": "Read the essay",
       "claim": "Interventions have always failed in public, and that is what forced governments to retreat. Money that blocks the act before it happens leaves no failure to see.",
       "body": "A botched intervention is still a signal: the queue, the shortage, the black market are public evidence the state must answer for. Programmable money, <em>ex ante</em> control of the payment protocol, invalidates the act before it occurs, so the distortion never surfaces. Cash and permissionless rails are the economy’s error-detection apparatus."
     },
@@ -121,7 +120,6 @@ window.SITE = {
       "result": "Top 1% globally",
       "cover": "assets/plates/cover-1.jpg",
       "link": "assets/The Asymmetry of Moral Obligations.pdf",
-      "linkText": "Read the essay",
       "claim": "We can ground our obligations to the living in ordinary morality. Our obligations to future people cannot be grounded that way at all.",
       "body": "Moral disagreement is permanent, and we cannot know how future values will diverge from ours, so fixed precepts are the wrong tool for questions like climate change. Using Moehler’s multilevel social contract theory, the essay separates intuitive first-level morality from second-level bargaining among instrumentally rational agents, and argues that only the second can bind us across generations."
     },
@@ -130,7 +128,6 @@ window.SITE = {
       "type": "research",
       "featured": true,
       "link": "https://firm-innovation.pages.dev/",
-      "linkText": "Project website",
       "claim": "An empirical investigation into whether market power slows down innovation, testing Kenneth Arrow’s replacement effect against historical evidence.",
       "body": "Inspired by Brian Potter's excellent \"[How long do we wait for new inventions?](https://www.construction-physics.com/p/how-long-do-we-wait-for-new-inventions)\".",
       "venue": "Independent research"
@@ -143,7 +140,6 @@ window.SITE = {
       "result": "Book-length history",
       "cover": "assets/plates/cover-3.jpg",
       "link": "assets/Why One Child (FINAL).pdf",
-      "linkText": "Read the paper",
       "claim": "The one-child policy is usually read as an authoritarian state stopping at nothing. It is better read as a state that had lost faith in ideology and put its faith in science instead.",
       "body": "After Mao’s campaigns the Party rejected the ideological wholesale, and Scientism filled the vacuum: the Song group’s control-theory models carried an authority social scientists could not match, reinforced by Western overpopulation anxiety from <em>The Population Bomb</em> and <em>Limits to Growth</em>. What followed was a shrinking workforce, a skewed sex ratio, and rapid aging."
     },
@@ -154,7 +150,6 @@ window.SITE = {
       "claim": "My Substack, where I write about anything that catches my interest.",
       "link": "https://samcao7.substack.com/",
       "venue": "Personal Substack",
-      "linkText": "Visit Essais",
       "body": "This is a repository of my writings, where I try to write across a variety of genres to explore new and interesting fields and ideas. Inspired by Michel de Montaigne’s fabulous Essays (or Essais in French), this Substack aims to be something similar: a series of attempts with no telos."
     },
     {
