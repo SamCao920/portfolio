@@ -213,7 +213,7 @@ window.SITE = {
       "start": "2026-10-21",
       "end": "2026-10-23",
       "place": "Madrid",
-      "claim": "The annual conference of the Fundación Jesús Huerta de Soto, where the three Youth Liberty Prize winners present their essays. I will be presenting <em>Programmable Money and the Abolition of Visible Failure</em>.",
+      "claim": "The annual conference of the Fundación Jesús Huerta de Soto, where the three Youth Liberty Prize winners presented their essays. I presented <em>Programmable Money and the Abolition of Visible Failure</em>.",
       "featured": false,
       "cover": "assets/plates/call_for_papers2026-1.jpg",
       "gallery": [
