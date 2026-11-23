@@ -137,7 +137,6 @@ window.SITE = {
       "type": "research",
       "featured": false,
       "venue": "Independent research",
-      "result": "Book-length history",
       "cover": "assets/plates/cover-3.jpg",
       "link": "assets/Why One Child (FINAL).pdf",
       "claim": "The one-child policy is usually read as an authoritarian state stopping at nothing. It is better read as a state that had lost faith in ideology and put its faith in science instead.",
