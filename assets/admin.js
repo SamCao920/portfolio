@@ -416,7 +416,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
         data.writings = $$(".card", el).map(c => {
           const o = clone((data.writings || [])[+c.dataset.i] || {}); readInto(c, o);
           if ($("[data-k=galleryText]", c)) { const g = parseGallery(o.galleryText); if (g.length) o.gallery = g; else delete o.gallery; }
-          delete o.galleryText; return o;
+          delete o.galleryText; delete o.linkText; return o;
         });
       }
     },
@@ -1446,7 +1446,7 @@ window.SITE = ${JSON.stringify(data, null, 2)};
         ${field(w, "venue", "Venue", { prefix: `w${i}-`, placeholder: "Competition, publication or place" })}
         ${field(w, "claim", "Summary (always shown)", { type: "textarea", rows: 3, prefix: `w${i}-` })}
         ${field(w, "body", "More (behind the toggle)", { type: "textarea", rows: 4, prefix: `w${i}-` })}
-        <div class="grid2">${field(w, "link", "Link or file", { type: "file", dir: "assets", accept: ".pdf,video/*,image/*", prefix: `w${i}-` })}${field(w, "linkText", "Link text", { prefix: `w${i}-`, placeholder: "Read the essay" })}</div>
+        ${field(w, "link", "Link or file", { type: "file", dir: "assets", accept: ".pdf,video/*,image/*", prefix: `w${i}-` })}
         ${field(w, "cover", "Cover image", { type: "file", dir: "assets/plates", accept: "image/*", prefix: `w${i}-` })}
         <div class="grid3">${field(w, "start", "Start date", { type: "date", prefix: `w${i}-` })}${field(w, "end", "End date", { type: "date", prefix: `w${i}-` })}${field(w, "place", "Place (short)", { prefix: `w${i}-`, placeholder: "Madrid" })}</div>
         ${field(w, "featured", "Feature on the home page", { type: "check" })}

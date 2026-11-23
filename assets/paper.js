@@ -48,7 +48,6 @@
     /* a paper whose link is a PDF has a typeset page of its own (essays/, built by tools/build-essays.py); the PDF stays one click further */
     const pdf = w0.type !== "project" && w0.type !== "appearance" && /\.pdf$/i.test(w0.link || "") ? w0.link : "";
     const w = pdf ? { ...w0, link: `essays/${slug(w0.title)}.html` } : w0;
-    const link = w.link ? `<a class="go" href="${esc(w.link)}"${/\.html$/.test(w.link) ? "" : ' target="_blank" rel="noopener"'}>${esc(w.linkText || "Open")} →</a>${pdf ? ` <a class="go pdf" href="${esc(pdf)}" target="_blank" rel="noopener">PDF</a>` : ""}` : "";
     const g = (w.gallery || []).map(x => typeof x === "string" ? { src: x } : x).filter(x => x && x.src);
     const key = "g-" + slug(w.title); SETS[key] = g.filter(x => !/youtu\.?be|vimeo/.test(x.src)).map(x => ({ src: x.src, cap: esc(x.cap || w.title), video: /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(x.src) }));
     let k = 0;
@@ -64,7 +63,7 @@
       <span class="cite"><i>${w.link ? `<a href="${esc(w.link)}"${/\.html$/.test(w.link) ? "" : ' target="_blank" rel="noopener"'}>${esc(w.title)}${/[.?!]$/.test(w.title) ? "" : "."}</a>` : esc(w.title) + (/[.?!]$/.test(w.title) ? "" : ".")}</i> ${esc(w.venue || "")}${w.venue && !/[.?!]$/.test(w.venue) ? "." : ""}${w.award ? ` ${esc(w.award)}.` : ""}${w.result ? ` ${inline(w.result)}.` : ""}${live}</span>
       ${w.claim ? `<span class="claim">${inline(w.claim)}</span>` : ""}
       ${w.body ? `<details class="more"><summary>Proof</summary><div class="proof">${paras(w.body)}</div></details>` : ""}
-      ${link}${thumbs}</div></li>`;
+      ${thumbs}</div></li>`;
   };
   function work() {
     let n = 0;

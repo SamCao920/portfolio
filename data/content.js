@@ -108,7 +108,6 @@ window.SITE = {
       "result": "1,142 essays from 110 countries",
       "cover": "assets/plates/cover-0.jpg",
       "link": "assets/Programmable Money and the Abolition of Visible Failure.pdf",
-      "linkText": "Read the essay",
       "claim": "Interventions have always failed in public, and that is what forced governments to retreat. Money that blocks the act before it happens leaves no failure to see.",
       "body": "A botched intervention is still a signal: the queue, the shortage, the black market are public evidence the state must answer for. Programmable money, <em>ex ante</em> control of the payment protocol, invalidates the act before it occurs, so the distortion never surfaces. Cash and permissionless rails are the economy’s error-detection apparatus."
     },
@@ -121,7 +120,6 @@ window.SITE = {
       "result": "Top 1% globally",
       "cover": "assets/plates/cover-1.jpg",
       "link": "assets/The Asymmetry of Moral Obligations.pdf",
-      "linkText": "Read the essay",
       "claim": "We can ground our obligations to the living in ordinary morality. Our obligations to future people cannot be grounded that way at all.",
       "body": "Moral disagreement is permanent, and we cannot know how future values will diverge from ours, so fixed precepts are the wrong tool for questions like climate change. Using Moehler’s multilevel social contract theory, the essay separates intuitive first-level morality from second-level bargaining among instrumentally rational agents, and argues that only the second can bind us across generations."
     },
@@ -134,7 +132,6 @@ window.SITE = {
       "result": "Top 5% of 347 entries",
       "cover": "assets/plates/cover-2.jpg",
       "link": "assets/Beyond Carbon Subsidies (Improved).pdf",
-      "linkText": "Read the essay",
       "claim": "Green subsidies buy almost no abatement at enormous cost. Carbon taxes buy a great deal at a fraction of it, and are still the harder policy to keep.",
       "body": "U.S. renewable subsidies cut CO₂ by roughly 0.3% a year; global biofuel subsidies <em>raised</em> emissions by 4.8 million tons. Britain’s carbon price cut power-sector emissions 55%. Abatement costs tell the same story: €206 and €978 a ton for German wind and solar against €36 and €55 in Britain. But repeals and fuel-price revolts show the efficient instrument is the fragile one."
     },
@@ -146,7 +143,6 @@ window.SITE = {
       "result": "Book-length history",
       "cover": "assets/plates/cover-3.jpg",
       "link": "assets/Why One Child (FINAL).pdf",
-      "linkText": "Read the paper",
       "claim": "The one-child policy is usually read as an authoritarian state stopping at nothing. It is better read as a state that had lost faith in ideology and put its faith in science instead.",
       "body": "After Mao’s campaigns the Party rejected the ideological wholesale, and Scientism filled the vacuum: the Song group’s control-theory models carried an authority social scientists could not match, reinforced by Western overpopulation anxiety from <em>The Population Bomb</em> and <em>Limits to Growth</em>. What followed was a shrinking workforce, a skewed sex ratio, and rapid aging."
     },
@@ -158,7 +154,6 @@ window.SITE = {
       "claim": "Free, open annotated editions of classic books: a short note in the margin wherever a high school or college reader is likely to get stuck.",
       "body": "It starts with Joseph Conrad’s *Lord Jim*. Notes come in layers you can turn on and off (vocabulary, allusions, history, places), so a 10th grader can see everything and a college reader can hide the vocabulary. Each note is drafted with AI, then checked by a person against a cited source before it is marked verified, and a random sample of verified notes is rechecked so the error rate can be published. Every note is released under an open license.\n\n[Source on GitHub](https://github.com/SamCao920/scholia)",
       "link": "https://scholia.dpdns.org/",
-      "linkText": "Visit Open Margins",
       "cover": "assets/plates/open-margins-cover.jpg"
     },
     {
@@ -169,7 +164,6 @@ window.SITE = {
       "claim": "A private map of the people I know, so that when I visit a city I remember who lives there and can reach out for coffee.",
       "body": "Each person is pinned to a city with how we met and how to reach them. It lists who lives near an upcoming trip, greys out people whose time in a place has probably ended and asks before that happens, and keeps a log of each coffee or call. The page itself is static and anyone can use it with their own data: contacts stay in the browser or in a private GitHub repo, never in the site.",
       "link": "https://github.com/SamCao920/connections-map",
-      "linkText": "View on GitHub",
       "cover": "assets/plates/connections-map-cover.jpg"
     },
     {
