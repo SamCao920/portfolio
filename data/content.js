@@ -124,21 +124,18 @@ window.SITE = {
       "body": "Moral disagreement is permanent, and we cannot know how future values will diverge from ours, so fixed precepts are the wrong tool for questions like climate change. Using Moehler’s multilevel social contract theory, the essay separates intuitive first-level morality from second-level bargaining among instrumentally rational agents, and argues that only the second can bind us across generations."
     },
     {
-      "title": "Beyond Carbon Subsidies",
-      "type": "essay",
+      "title": "Monopoly and Firm Innovation",
+      "type": "research",
       "featured": true,
-      "venue": "Harvard International Economics Essay Contest",
-      "award": "Finalist",
-      "result": "Top 5% of 347 entries",
-      "cover": "assets/plates/cover-2.jpg",
-      "link": "assets/Beyond Carbon Subsidies (Improved).pdf",
-      "claim": "Green subsidies buy almost no abatement at enormous cost. Carbon taxes buy a great deal at a fraction of it, and are still the harder policy to keep.",
-      "body": "U.S. renewable subsidies cut CO₂ by roughly 0.3% a year; global biofuel subsidies <em>raised</em> emissions by 4.8 million tons. Britain’s carbon price cut power-sector emissions 55%. Abatement costs tell the same story: €206 and €978 a ton for German wind and solar against €36 and €55 in Britain. But repeals and fuel-price revolts show the efficient instrument is the fragile one."
+      "link": "https://firm-innovation.pages.dev/",
+      "claim": "An empirical investigation into whether market power slows down innovation, testing Kenneth Arrow’s replacement effect against historical evidence.",
+      "body": "Inspired by Brian Potter's excellent \"[How long do we wait for new inventions?](https://www.construction-physics.com/p/how-long-do-we-wait-for-new-inventions)\".",
+      "venue": "Independent research"
     },
     {
       "title": "Why One Child?",
       "type": "research",
-      "featured": true,
+      "featured": false,
       "venue": "Independent research",
       "result": "Book-length history",
       "cover": "assets/plates/cover-3.jpg",
@@ -147,22 +144,31 @@ window.SITE = {
       "body": "After Mao’s campaigns the Party rejected the ideological wholesale, and Scientism filled the vacuum: the Song group’s control-theory models carried an authority social scientists could not match, reinforced by Western overpopulation anxiety from <em>The Population Bomb</em> and <em>Limits to Growth</em>. What followed was a shrinking workforce, a skewed sex ratio, and rapid aging."
     },
     {
+      "type": "project",
+      "featured": true,
+      "title": "Essais",
+      "claim": "My Substack, where I write about anything that catches my interest.",
+      "link": "https://samcao7.substack.com/",
+      "venue": "Personal Substack",
+      "body": "This is a repository of my writings, where I try to write across a variety of genres to explore new and interesting fields and ideas. Inspired by Michel de Montaigne’s fabulous Essays (or Essais in French), this Substack aims to be something similar: a series of attempts with no telos."
+    },
+    {
       "title": "Open Margins",
       "type": "project",
-      "venue": "Open-source website · 2026",
+      "venue": "Open-source website",
       "featured": false,
       "claim": "Free, open annotated editions of classic books: a short note in the margin wherever a high school or college reader is likely to get stuck.",
-      "body": "It starts with Joseph Conrad’s *Lord Jim*. Notes come in layers you can turn on and off (vocabulary, allusions, history, places), so a 10th grader can see everything and a college reader can hide the vocabulary. Each note is drafted with AI, then checked by a person against a cited source before it is marked verified, and a random sample of verified notes is rechecked so the error rate can be published. Every note is released under an open license.\n\n[Source on GitHub](https://github.com/SamCao920/scholia)",
+      "body": "It starts with Joseph Conrad’s *Lord Jim*. Notes come in layers you can turn on and off (vocabulary, allusions, history, places), so a 10th grader can see everything and a college reader can hide the vocabulary.\n\n[Source on GitHub](https://github.com/SamCao920/scholia)",
       "link": "https://scholia.dpdns.org/",
       "cover": "assets/plates/open-margins-cover.jpg"
     },
     {
       "title": "Connections Map",
       "type": "project",
-      "venue": "Web app · 2026",
+      "venue": "Web app",
       "featured": false,
       "claim": "A private map of the people I know, so that when I visit a city I remember who lives there and can reach out for coffee.",
-      "body": "Each person is pinned to a city with how we met and how to reach them. It lists who lives near an upcoming trip, greys out people whose time in a place has probably ended and asks before that happens, and keeps a log of each coffee or call. The page itself is static and anyone can use it with their own data: contacts stay in the browser or in a private GitHub repo, never in the site.",
+      "body": "Each person is pinned to a city with how we met and how to reach them. It lists who lives near an upcoming trip, greys out people whose time in a place has probably ended and asks before that happens, and keeps a log of each coffee or call. The page itself is static and anyone can use it with their own data: contacts stay in the browser or in a private GitHub repo.",
       "link": "https://github.com/SamCao920/connections-map",
       "cover": "assets/plates/connections-map-cover.jpg"
     },
@@ -207,7 +213,7 @@ window.SITE = {
       "start": "2026-10-21",
       "end": "2026-10-23",
       "place": "Madrid",
-      "claim": "The annual conference of the Fundación Jesús Huerta de Soto, where the three Youth Liberty Prize winners present their essays. I will be presenting <em>Programmable Money and the Abolition of Visible Failure</em>.",
+      "claim": "The annual conference of the Fundación Jesús Huerta de Soto, where the three Youth Liberty Prize winners presented their essays. I presented <em>Programmable Money and the Abolition of Visible Failure</em>.",
       "featured": false,
       "cover": "assets/plates/call_for_papers2026-1.jpg",
       "gallery": [

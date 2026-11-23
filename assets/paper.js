@@ -227,7 +227,7 @@
   const SY = 70, PX = 220;           /* pixels per unit of y (sideways) and of x (down the page) */
   const BEND = 1.15;                 /* width of a bend, in units of x: wide, so the string leans rather than kinks */
   const QUIET = 150;                 /* pixels below the starting point where the string does not move at all (its label sits there) */
-  let TOP = 190, W = 0, H = 0, x0 = 0, ORG = 0, open = -1;   /* ORG: where y = 0 sits, sideways */
+  let TOP = 190, W = 0, H = 0, x0 = 0, xEnd = 8, ORG = 0, open = -1;   /* ORG: where y = 0 sits, sideways */
   /* per string: how far it is straightened; and its bend: where (xc), how far now (cur), and either held by the pointer (to) or let go (amp, t0) */
   const st = [];
   /* per string: flat = how far it is straightened (0..1). The bend is a spring: cur = how far it leans now, vel = how fast that is changing,
@@ -259,7 +259,7 @@
     TOP = Math.round($(".top").getBoundingClientRect().height + (narrow ? 40 : 44));
     x0 = -Math.log((0.40 * W) / (SY * 1.5));           /* the outer solutions start 40% of the width from the middle */
     ORG = W / 2 - steady(x0) * SY;                      /* shift the axis so the four starting points are centred */
-    const xEnd = 3.5 + Math.PI * (narrow ? 2.58 : 1.36);   /* a phone needs another swing of the curve to fit the stanzas */
+    xEnd = 3.5 + Math.PI * (narrow ? 2.58 : 1.36);   /* a phone needs another swing of the curve to fit the stanzas */
     H = Math.round(pyAt(xEnd)); stage.style.height = H + "px"; svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
     const put = (id, x, side, gap) => { const el = document.getElementById(id), edge = ORG + (steady(x) + 1.5 * side * Math.exp(-x)) * SY;
       el.style.top = pyAt(x) + "px";
@@ -348,9 +348,9 @@
   const kick = () => { if (!raf) raf = requestAnimationFrame(tick); };
   /* where along the string a bend sits: set straight away if the string is at rest, otherwise glide there */
   const aim = (q, x) => { q.xcTo = x; if (Math.abs(q.cur) < 0.01 && Math.abs(q.vel) < 0.05) q.xc = x; };
-  const letGo = i => { const q = st[i]; if (!q.held) return; q.held = false; kick(); ping(i, Math.min(1, Math.abs(q.cur) * 2.5)); };
+  const letGo = i => { const q = st[i]; if (!q.held) return; q.held = false; kick(); ping(i, Math.min(1, Math.abs(q.cur) * 2.5), q.xc); };
   /* a flick: push the string sideways with some speed and let the spring do the rest */
-  const flick = (i, x, v) => { const q = st[i]; aim(q, x); q.vel += Math.max(-3, Math.min(3, v)); q.hit = performance.now(); kick(); ping(i, Math.min(1, Math.abs(v) / 3)); };
+  const flick = (i, x, v) => { const q = st[i]; aim(q, x); q.vel += Math.max(-3, Math.min(3, v)); q.hit = performance.now(); kick(); ping(i, Math.min(1, Math.abs(v) / 3), x); };
 
   /* ---------- opening a section ---------- */
   function toggle(i, keepHash) {
@@ -412,15 +412,29 @@
 
   /* ---------- sound: the four strings of a violin, G D A E ---------- */
   let ctx = null, soundOn = false, volume = 0.6;
-  function ping(i, vol) {
+  /* Pitch works like stopping a violin string. The four strings are tuned in fifths, G D A E. Touching a string lower down is like
+     pressing it closer to the bridge: what is left to vibrate is shorter, so it sounds higher, by f = f0 / (1 - stopped). The top of the
+     page is the open string and the foot of the page is the middle of the string, an octave up. Every string rises by the same interval
+     at the same height, so they stay a fifth apart. The rise is rounded to steps of a major scale, so each string plays a tune. */
+  const OPEN = [55, 62, 69, 76], STEPS = [0, 2, 4, 5, 7, 9, 11, 12];
+  const midiAt = (i, x) => {
+    const stopped = 0.5 * Math.min(1, Math.max(0, (x - x0) / Math.max(1, xEnd - x0)));
+    const rise = -12 * Math.log2(1 - stopped);                     /* semitones */
+    return OPEN[i] + STEPS.reduce((b, n) => Math.abs(n - rise) < Math.abs(b - rise) ? n : b, 0);
+  };
+  function ping(i, vol, x) {
     if (!soundOn) return;
     try { ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
-      const o = ctx.createOscillator(), g = ctx.createGain(), t = ctx.currentTime;
-      o.type = "triangle"; o.frequency.value = SECTIONS[i].hz;
-      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(Math.max(0.0009, Math.min(0.3, 0.1 + vol * 0.25) * volume), t + 0.01); g.gain.exponentialRampToValueAtTime(0.0008, t + 1.6);
-      o.connect(g).connect(ctx.destination); o.start(t); o.stop(t + 1.7);
+      const f = 440 * Math.pow(2, ((x == null ? OPEN[i] : midiAt(i, x)) - 69) / 12), t = ctx.currentTime;
+      /* a plucked string: bright at the attack, mellowing as it rings */
+      const o = ctx.createOscillator(), lp = ctx.createBiquadFilter(), g = ctx.createGain();
+      o.type = "sawtooth"; o.frequency.value = f;
+      lp.type = "lowpass"; lp.Q.value = 0.7; lp.frequency.setValueAtTime(Math.min(12000, f * 9), t); lp.frequency.exponentialRampToValueAtTime(f * 1.3, t + 0.9);
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(Math.max(0.0009, Math.min(0.22, 0.07 + vol * 0.18) * volume), t + 0.006); g.gain.exponentialRampToValueAtTime(0.0008, t + 1.8);
+      o.connect(lp).connect(g).connect(ctx.destination); o.start(t); o.stop(t + 1.9);
     } catch (e) {}
   }
+
   const volEl = $("#vol"), sndBtn = $("#sound");
   const setSound = on => { soundOn = on; sndBtn.textContent = "sound " + (on ? "on" : "off"); sndBtn.setAttribute("aria-pressed", on); sndBtn.parentNode.classList.toggle("on", on); };
   sndBtn.addEventListener("click", () => { setSound(!soundOn); if (soundOn) ping(1, 0.4); });
