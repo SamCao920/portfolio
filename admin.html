@@ -57,18 +57,21 @@
   .f input:focus, .f select:focus, .f textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
   .f.check { grid-template-columns: auto 1fr; align-items: center; gap: 8px; }
   .f.check > span { text-transform: none; letter-spacing: 0; font-size: 14px; color: var(--text-strong); }
-  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 14px; }
-  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 14px; }
-  @media (max-width: 600px) { .grid2, .grid3 { grid-template-columns: minmax(0, 1fr); } }
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 14px; }
+  @media (max-width: 900px) { .grid3 { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 600px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
   .filerow { display: flex; gap: 8px; }
   .filerow input { flex: 1; }
   .card { border: 1px solid var(--line); border-radius: 8px; background: var(--bg-raised); margin-bottom: 10px; transition: box-shadow .2s; }
   .card.new { animation: pop .35s var(--ease); box-shadow: 0 0 0 2px var(--accent); }
-  .card-head { display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer; }
-  .card-head b { flex: 1; min-width: 0; color: var(--heading); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card-head { display: flex; align-items: center; gap: 8px 10px; padding: 10px 12px; cursor: pointer; }
+  .card-head b { flex: 1; min-width: 80px; color: var(--heading); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .card-head .pill { flex: none; }
   .card-head .chev { transition: transform .2s var(--ease); color: var(--muted); }
   .card.open .chev { transform: rotate(90deg); }
+  .card-head .card-btns { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: auto; }
+  .card-head .icon-btn { flex-shrink: 0; }
   .card-body { display: none; padding: 4px 14px 14px; border-top: 1px solid var(--line); }
   .card.open .card-body { display: block; }
   .icon-btn { width: 30px; height: 30px; flex: none; border: 0; border-radius: 6px; background: var(--surface); color: var(--text-strong); cursor: pointer; font-size: 14px; transition: background .15s, transform .15s var(--ease); }
@@ -183,7 +186,7 @@
     .ed-extra.open { display: flex; }
     .ed-extra .btn { justify-content: center; text-align: center; }
     .ed { padding-block: 0 80px; gap: 12px; }
-    .ed-nav { position: sticky !important; top: 47px !important; z-index: 15; flex-wrap: nowrap !important; overflow-x: auto; gap: 4px; margin-inline: -16px; padding: 8px 16px;
+    .ed-nav { position: sticky !important; top: 56px !important; z-index: 15; flex-wrap: nowrap !important; overflow-x: auto; gap: 4px; margin-inline: -16px; padding: 8px 16px;
       background: var(--glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); scrollbar-width: none; }
     .ed-nav::-webkit-scrollbar { display: none; }
     .ed-nav button { flex: none; white-space: nowrap; padding: 8px 12px; }
@@ -231,7 +234,7 @@
   }
   html, body { background: var(--bg); background-image: none; }
   body { font-size: 18px; line-height: 1.5; } body::before, body::after { display: none; }
-  .ed-bar { -webkit-backdrop-filter: none; backdrop-filter: none; border-bottom: 1px solid var(--heading); }
+  .ed-bar { -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-bottom: 1px solid var(--heading); }
   .ed-title { font: 700 24px/1 var(--display); } .ed-title img { box-shadow: none; filter: grayscale(1); }
   .ed-status, .ed-dirty, .ed-help, .f small { font-size: 15px; } .ed-dirty { font-weight: 400; font-style: italic; }
   .btn, .chip, .tab, .icon-btn { border-radius: 0; font: 400 16px/1.2 var(--body); letter-spacing: 0; text-transform: none; background: none; box-shadow: inset 0 0 0 1px var(--line-strong); color: var(--heading); }
@@ -273,6 +276,6 @@
 <script src="data/films.js?v=8374c401"></script>
 <script src="data/art.js?v=5753dfa7"></script>
 <script src="assets/covers.js?v=99fec6eb"></script>
-<script src="assets/admin.js?v=50db8d40"></script>
+<script src="assets/admin.js?v=ff62f7ea"></script>
 </body>
 </html>

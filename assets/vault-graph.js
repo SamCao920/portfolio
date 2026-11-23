@@ -373,13 +373,14 @@
                         var ni = cand[ci];
                         var lx = sx(ni), ly = sy(ni) - R[ni] * scale * 2.2 - 9;
                         if (lx < 40 || ly < 12 || lx > W - 40 || ly > H - 12) continue;
+                        if (lx > W - 180 && ly > H - 80) continue;
                         var txt = TITLE[ni];
                         if (txt.length > 34) txt = txt.slice(0, 33) + '…';
                         var hw = ctx.measureText(txt).width / 2 + 5;
                         var clash = false;
                         for (var pi = 0; pi < placed.length; pi++) {
                             var q2 = placed[pi];
-                            if (Math.abs(lx - q2[0]) < hw + q2[2] && Math.abs(ly - q2[1]) < 15) { clash = true; break; }
+                            if (Math.abs(lx - q2[0]) < hw + q2[2] && Math.abs(ly - q2[1]) < 19) { clash = true; break; }
                         }
                         if (clash) continue;
                         placed.push([lx, ly, hw]);
@@ -490,14 +491,16 @@
             canvas.addEventListener('pointerdown', function (ev) {
                 canvas.setPointerCapture(ev.pointerId);
                 pointerDown = true; moved = false;
-                lastX = ev.offsetX; lastY = ev.offsetY; downX = lastX; downY = lastY;
+                var rect = canvas.getBoundingClientRect();
+                lastX = ev.clientX - rect.left; lastY = ev.clientY - rect.top; downX = lastX; downY = lastY;
                 var i = pick(lastX, lastY, 4);
                 if (i >= 0) { dragIdx = i; activateAround(i); heat(0.1); }
                 canvas.classList.add('dragging');
             });
 
             canvas.addEventListener('pointermove', function (ev) {
-                var px = ev.offsetX, py = ev.offsetY;
+                var rect = canvas.getBoundingClientRect();
+                var px = ev.clientX - rect.left, py = ev.clientY - rect.top;
                 if (pointerDown) {
                     if (!moved && Math.abs(px - downX) + Math.abs(py - downY) < 5) return;   /* a click, not a drag */
                     moved = true;

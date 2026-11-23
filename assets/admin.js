@@ -1350,9 +1350,11 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     return `<div class="card" data-i="${i}">
       <div class="card-head" data-toggle><span class="chev">›</span>${w.img ? `<img class="card-thumb" src="${esc(w.img)}" alt="">` : ""}<b>${esc(w.title || "Untitled")}</b>
         <span class="pill">${esc(w.kind || "Work")}</span>
-        <button class="icon-btn" type="button" data-move="-1" aria-label="Move up">↑</button>
-        <button class="icon-btn" type="button" data-move="1" aria-label="Move down">↓</button>
-        <button class="icon-btn danger" type="button" data-del aria-label="Delete">×</button></div>
+        <span class="card-btns">
+          <button class="icon-btn" type="button" data-move="-1" aria-label="Move up">↑</button>
+          <button class="icon-btn" type="button" data-move="1" aria-label="Move down">↓</button>
+          <button class="icon-btn danger" type="button" data-del aria-label="Delete">×</button>
+        </span></div>
       <div class="card-body">
         <div class="grid3">${field(w, "title", "Title", { prefix: `s${i}-` })}${field(w, "year", "Year", { prefix: `s${i}-`, placeholder: "2026" })}${field(w, "kind", "Type", { type: "select", options: KINDS, prefix: `s${i}-` })}</div>
         <div class="grid2">${field(w, "medium", "Medium or camera settings", { prefix: `s${i}-`, placeholder: "Charcoal on newsprint paper" })}${field(w, "size", "Size", { prefix: `s${i}-`, placeholder: "18 × 24 in" })}</div>
@@ -1437,9 +1439,11 @@ window.SITE = ${JSON.stringify(data, null, 2)};
     return `<div class="card" data-i="${i}" data-scope="w${i}">
       <div class="card-head" data-toggle><span class="chev">›</span><b>${esc(w.title || "Untitled")}</b>
         ${w.featured ? '<span class="pill award">Featured</span>' : ""}<span class="pill">${t ? t[1] : "Entry"}</span>
-        <button class="icon-btn" type="button" data-move="-1" aria-label="Move up">↑</button>
-        <button class="icon-btn" type="button" data-move="1" aria-label="Move down">↓</button>
-        <button class="icon-btn danger" type="button" data-del aria-label="Delete">×</button></div>
+        <span class="card-btns">
+          <button class="icon-btn" type="button" data-move="-1" aria-label="Move up">↑</button>
+          <button class="icon-btn" type="button" data-move="1" aria-label="Move down">↓</button>
+          <button class="icon-btn danger" type="button" data-del aria-label="Delete">×</button>
+        </span></div>
       <div class="card-body">
         ${field(w, "title", "Title", { prefix: `w${i}-` })}
         <div class="grid3">${field(w, "type", "Type", { type: "select", options: TYPES, prefix: `w${i}-` })}${field(w, "award", "Award / badge", { prefix: `w${i}-`, placeholder: "e.g. 3rd Place" })}${field(w, "result", "Result line", { prefix: `w${i}-`, placeholder: "e.g. Top 1%" })}</div>

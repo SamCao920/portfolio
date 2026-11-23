@@ -403,7 +403,7 @@
       dlg.innerHTML = `<div class="in">${p.video ? `<video src="${esc(p.src)}" controls playsinline autoplay></video>` : `<img alt="" src="${esc(p.src)}"${p.remote ? ' referrerpolicy="no-referrer"' : ""}>`}<div class="cap">${p.cap || ""}</div></div>
         <button class="x" type="button">close</button>${lset.length > 1 ? '<button class="nav prev" type="button" aria-label="Previous">prev</button><button class="nav next" type="button" aria-label="Next">next</button>' : ""}`; };
     show(); if (!dlg.open) dlg.showModal();
-    dlg.onclick = e => { if (e.target.closest(".x") || e.target === dlg || e.target.classList.contains("in")) return dlg.close();
+    dlg.onclick = e => { if (e.target.closest(".x") || e.target === dlg || (e.target.classList.contains("in") && !dlg.querySelector("video"))) return dlg.close();
       const n = e.target.closest(".nav"); if (n) { lk = (lk + (n.classList.contains("next") ? 1 : -1) + lset.length) % lset.length; show(); } };
     dlg.onkeydown = e => { if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); dlg.close(); return; } if (lset.length < 2) return; if (e.key === "ArrowRight") { lk = (lk + 1) % lset.length; show(); } if (e.key === "ArrowLeft") { lk = (lk - 1 + lset.length) % lset.length; show(); } };
   }
