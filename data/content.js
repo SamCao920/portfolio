@@ -100,6 +100,13 @@ window.SITE = {
   ],
   "writings": [
     {
+      "title": "Monopoly and Firm Innovation",
+      "type": "research",
+      "featured": false,
+      "link": "https://firm-innovation.pages.dev/",
+      "linkText": "Project website"
+    },
+    {
       "title": "Programmable Money and the Abolition of Visible Failure",
       "type": "essay",
       "featured": true,
