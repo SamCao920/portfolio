@@ -3,7 +3,7 @@
 Static site on GitHub Pages (repo SamCao920/portfolio, branch master). Two real pages: index.html (assets/paper.js + assets/paper.css) draws four solutions of y' + y = sin x as strings and opens Work, Notes, Taste and About from data/*.js; vault.html is the notes map (assets/vault-graph.js). admin.html (assets/admin.js, assets/admin.css) edits the data files. essays/*.html are the papers typeset from their PDFs by `python3 tools/build-essays.py` (re-run it after replacing a PDF or changing a paper's title; assets/essay.js adds margin notes). The other *.html files only redirect old addresses to index.html.
 
 ## Machines
-- The Mac mini is the main machine: repo at ~/Desktop/Projects/Portfolio, set up by tools/mac/install.sh. launchd publishes admin saves (tools/mac/publish-admin.sh) and rebuilds the vault pages every hour (tools/mac/update-site.sh). Logs: tools/mac/*.log.
+- The Mac mini is the main machine: repo at ~/Desktop/Projects/portfolio, set up by tools/mac/install.sh. launchd publishes admin saves (tools/mac/publish-admin.sh) and rebuilds the vault pages every hour (tools/mac/update-site.sh). Logs: tools/mac/*.log.
 - Admin has a GitHub mode (Connect GitHub, token in that browser's localStorage): Save commits straight to master via the GitHub API and restamps ?v= in the pages. Used on the MacBook Neo and any other computer.
 - The Windows PC (OneDrive copy, tools/*.ps1) is mostly off. Don't edit the OneDrive copy on the Mac; it is a sync of the PC's folder.
 
