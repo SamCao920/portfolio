@@ -257,8 +257,10 @@ window.FILMS = {"updated":"2026-11-23","user":"TrueRoman","bio":"I don't watch e
   {"t":"Tetsuo: The Iron Man","y":1989,"uri":"https://boxd.it/ZoM","r":3.5,"liked":false,"added":"2026-10-09","cover":"assets/films/tetsuo-the-iron-man.webp"},
   {"t":"A Brighter Summer Day","y":1991,"r":5,"liked":true,"added":"2026-10-31","cover":"assets/films/a-brighter-summer-day.webp"},
   {"t":"Godzilla Minus Zero","y":2026,"r":2,"liked":false,"added":"2026-11-07","cover":"https://upload.wikimedia.org/wikipedia/en/0/09/Godzilla_Minus_Zero_poster.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"},
-  {"t":"Primetime","y":2026,"r":1.5,"liked":false,"added":"2026-11-21","cover":"https://upload.wikimedia.org/wikipedia/en/f/f2/Primetime_poster.jpeg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"}
+  {"t":"Primetime","y":2026,"r":1.5,"liked":false,"added":"2026-11-21","cover":"https://upload.wikimedia.org/wikipedia/en/f/f2/Primetime_poster.jpeg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"},
+  {"t":"Out of the Past","y":1947,"r":3.5,"liked":false,"added":"2026-11-23","cover":"https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f9/Out_of_the_Past_%281947_poster_-_retouched%29.jpg/500px-Out_of_the_Past_%281947_poster_-_retouched%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"}
 ],"diary":[
+  {"f":257,"date":"2026-11-23","r":3.5,"rewatch":false,"review":null},
   {"f":256,"date":"2026-11-21","r":1.5,"rewatch":false,"review":null},
   {"f":255,"date":"2026-11-07","r":2,"rewatch":false,"review":null},
   {"f":254,"date":"2026-10-31","r":5,"rewatch":false,"review":null},
