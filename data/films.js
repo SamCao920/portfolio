@@ -1,6 +1,6 @@
 /* Films: everything I have seen, a dated diary, ranked lists and a watchlist.
    Edit it with admin.html. It must stay valid JavaScript. */
-window.FILMS = {"updated":"2026-11-23","user":"TrueRoman","bio":"I don't watch enough movies:(","favorites":[140,125,229,254],"items":[
+window.FILMS = {"updated":"2026-11-25","user":"TrueRoman","bio":"I don't watch enough movies:(","favorites":[140,125,229,254],"items":[
   {"t":"Taxi Driver","y":1976,"uri":"https://boxd.it/2b8y","r":4,"liked":false,"added":"2022-09-07","cover":"assets/films/taxi-driver.webp"},
   {"t":"Fight Club","y":1999,"uri":"https://boxd.it/2a9q","r":3.5,"liked":false,"added":"2022-09-07","cover":"assets/films/fight-club.webp"},
   {"t":"Inception","y":2010,"uri":"https://boxd.it/1skk","r":4.5,"liked":false,"added":"2022-09-07","cover":"assets/films/inception.webp"},
@@ -258,9 +258,9 @@ window.FILMS = {"updated":"2026-11-23","user":"TrueRoman","bio":"I don't watch e
   {"t":"A Brighter Summer Day","y":1991,"r":5,"liked":true,"added":"2026-10-31","cover":"assets/films/a-brighter-summer-day.webp"},
   {"t":"Godzilla Minus Zero","y":2026,"r":2,"liked":false,"added":"2026-11-07","cover":"https://upload.wikimedia.org/wikipedia/en/0/09/Godzilla_Minus_Zero_poster.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"},
   {"t":"Primetime","y":2026,"r":1.5,"liked":false,"added":"2026-11-21","cover":"https://upload.wikimedia.org/wikipedia/en/f/f2/Primetime_poster.jpeg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"},
-  {"t":"Out of the Past","y":1947,"r":3.5,"liked":false,"added":"2026-11-23","cover":"https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f9/Out_of_the_Past_%281947_poster_-_retouched%29.jpg/500px-Out_of_the_Past_%281947_poster_-_retouched%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"}
+  {"t":"Out of the Past","y":1947,"r":4,"liked":false,"added":"2026-11-23","cover":"https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f9/Out_of_the_Past_%281947_poster_-_retouched%29.jpg/500px-Out_of_the_Past_%281947_poster_-_retouched%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"}
 ],"diary":[
-  {"f":257,"date":"2026-11-23","r":3.5,"rewatch":false,"review":null},
+  {"f":257,"date":"2026-11-23","r":4,"rewatch":false,"review":null},
   {"f":256,"date":"2026-11-21","r":1.5,"rewatch":false,"review":null},
   {"f":255,"date":"2026-11-07","r":2,"rewatch":false,"review":null},
   {"f":254,"date":"2026-10-31","r":5,"rewatch":false,"review":null},
