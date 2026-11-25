@@ -100,13 +100,6 @@ window.SITE = {
   ],
   "writings": [
     {
-      "title": "Forecast Autopsy",
-      "type": "research",
-      "link": "https://forecast-autopsy.pages.dev/",
-      "featured": false,
-      "venue": "Independent research"
-    },
-    {
       "title": "Programmable Money and the Abolition of Visible Failure",
       "type": "essay",
       "featured": true,
@@ -138,6 +131,15 @@ window.SITE = {
       "claim": "An empirical investigation into whether market power slows down innovation, testing Kenneth Arrow’s replacement effect against historical evidence.",
       "body": "Inspired by Brian Potter's excellent \"[How long do we wait for new inventions?](https://www.construction-physics.com/p/how-long-do-we-wait-for-new-inventions)\".",
       "venue": "Independent research"
+    },
+    {
+      "title": "Forecast Autopsy",
+      "type": "research",
+      "link": "https://forecast-autopsy.pages.dev/",
+      "featured": false,
+      "venue": "Independent research",
+      "claim": "When Chinese demographers forecast the population, how wrong were they, and why?",
+      "body": "A continuation of my previous research on the one-child policy, i.e., the \"Why One Child?\" paper."
     },
     {
       "title": "Why One Child?",
