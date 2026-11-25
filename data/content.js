@@ -139,17 +139,7 @@ window.SITE = {
       "featured": false,
       "venue": "Independent research, August 2026",
       "claim": "When Chinese demographers forecast the population, how wrong were they, and why?",
-      "body": "A continuation of my previous research on the one-child policy, i.e., the \"[Why One Child?](assets/Why One Child (FINAL).pdf)\" paper."
-    },
-    {
-      "title": "Why One Child?",
-      "type": "research",
-      "featured": false,
-      "venue": "Independent research, November 2024",
-      "cover": "assets/plates/cover-3.jpg",
-      "link": "assets/Why One Child (FINAL).pdf",
-      "claim": "The one-child policy is usually read as an authoritarian state stopping at nothing. It is better read as a state that had lost faith in ideology and put its faith in science instead.",
-      "body": "After Mao’s campaigns the Party rejected the ideological wholesale, and Scientism filled the vacuum: the Song group’s control-theory models carried an authority social scientists could not match, reinforced by Western overpopulation anxiety from <em>The Population Bomb</em> and <em>Limits to Growth</em>. What followed was a shrinking workforce, a skewed sex ratio, and rapid aging."
+      "body": "A continuation of my previous research on the one-child policy, [Why One Child?](https://fangyuancao.me/essays/why-one-child.html), researched and written in 2024."
     },
     {
       "type": "project",
