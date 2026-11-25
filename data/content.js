@@ -100,6 +100,13 @@ window.SITE = {
   ],
   "writings": [
     {
+      "title": "Forecast Autopsy",
+      "type": "research",
+      "link": "https://forecast-autopsy.pages.dev/",
+      "featured": false,
+      "venue": "Independent research"
+    },
+    {
       "title": "Programmable Money and the Abolition of Visible Failure",
       "type": "essay",
       "featured": true,
