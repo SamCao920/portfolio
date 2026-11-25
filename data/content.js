@@ -130,14 +130,14 @@ window.SITE = {
       "link": "https://firm-innovation.pages.dev/",
       "claim": "An empirical investigation into whether market power slows down innovation, testing Kenneth Arrow’s replacement effect against historical evidence.",
       "body": "Inspired by Brian Potter's excellent \"[How long do we wait for new inventions?](https://www.construction-physics.com/p/how-long-do-we-wait-for-new-inventions)\".",
-      "venue": "Independent research"
+      "venue": "Independent research, November 2026"
     },
     {
       "title": "Forecast Autopsy",
       "type": "research",
       "link": "https://forecast-autopsy.pages.dev/",
       "featured": false,
-      "venue": "Independent research",
+      "venue": "Independent research, August 2026",
       "claim": "When Chinese demographers forecast the population, how wrong were they, and why?",
       "body": "A continuation of my previous research on the one-child policy, i.e., the \"Why One Child?\" paper."
     },
