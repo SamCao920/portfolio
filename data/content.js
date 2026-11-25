@@ -100,14 +100,6 @@ window.SITE = {
   ],
   "writings": [
     {
-      "title": "Horologium",
-      "type": "project",
-      "featured": false,
-      "venue": "Open-source website",
-      "claim": "Open-source website",
-      "link": "https://horologium-9bi.pages.dev/"
-    },
-    {
       "title": "Programmable Money and the Abolition of Visible Failure",
       "type": "essay",
       "featured": true,
@@ -147,7 +139,7 @@ window.SITE = {
       "featured": false,
       "venue": "Independent research, August 2026",
       "claim": "When Chinese demographers forecast the population, how wrong were they, and why?",
-      "body": "A continuation of my previous research on the one-child policy, i.e., the \"Why One Child?\" paper."
+      "body": "A continuation of my previous research on the one-child policy, i.e., the \"[Why One Child?](assets/Why One Child (FINAL).pdf)\" paper."
     },
     {
       "title": "Why One Child?",
@@ -177,6 +169,14 @@ window.SITE = {
       "body": "It starts with Joseph Conrad’s *Lord Jim*. Notes come in layers you can turn on and off (vocabulary, allusions, history, places), so a 10th grader can see everything and a college reader can hide the vocabulary.\n\n[Source on GitHub](https://github.com/SamCao920/scholia)",
       "link": "https://scholia.dpdns.org/",
       "cover": "assets/plates/open-margins-cover.jpg"
+    },
+    {
+      "title": "Horologium",
+      "type": "project",
+      "featured": false,
+      "venue": "Open-source website",
+      "claim": "A sourced compendium of 250 writers, scientists, philosophers, military leaders, athletes, tech founders, and artists.",
+      "link": "https://horologium-9bi.pages.dev/"
     },
     {
       "title": "Making Progress",
