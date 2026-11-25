@@ -1,6 +1,7 @@
 /* Books: what I have read, am reading and want to read.
    Edit it with admin.html. It must stay valid JavaScript. */
-window.BOOKS = {"updated":"2026-11-24","items":[
+window.BOOKS = {"updated":"2026-11-25","items":[
+  {"t":"Empire of Honor","full":"Empire of Honor","a":"J. E. Lendon","isbn":null,"r":null,"read":null,"added":"2026-11-25","shelf":"reading","fav":false,"review":null,"pages":null,"year":null},
   {"t":"The Metropolis and Mental Life","full":"The Metropolis and Mental Life","a":"Georg Simmel","isbn":null,"r":4,"read":"2026-11-21","added":"2026-11-21","shelf":"read","fav":false,"review":"Quite an insightful analysis into the psychology of individuals that live in cities.","pages":null,"year":null},
   {"t":"The World of Yesterday","full":"The World of Yesterday","a":"Stefan Zweig","isbn":"9780803252240","r":null,"read":null,"added":"2026-11-18","shelf":"to-read","fav":false,"review":null,"pages":455,"year":"1943","cover":"https://covers.openlibrary.org/b/id/6793214-M.jpg"},
   {"t":"On Seeing the 100% Perfect Girl One Beautiful April Morning","full":"On Seeing the 100% Perfect Girl One Beautiful April Morning","a":"Haruki Murakami","isbn":"9781494279554","r":4,"read":"2026-11-15","added":"2026-11-15","shelf":"read","fav":false,"review":"Apparently this story influence Wong-kar Wai's films, especially Chungking Express. I can see it.","pages":24,"year":"2013","cover":"https://covers.openlibrary.org/b/id/10468295-M.jpg"},
