@@ -13,6 +13,16 @@
   --hand: "Caveat", "Bradley Hand", cursive;
   /* read by assets/vault-graph.js */
   --ink-muted: #b4b6b1; --ink-faint: #cfd0cc; --gilt: #c8242b;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --paper: #191a1b;
+  --ink: #e8e6df;
+  --grey: #aaa9a2;
+  --hair: #444541;
+  --pen: #e66b70;
+  --ink-muted: #777873; --ink-faint: #555650;
+  color-scheme: dark;
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
@@ -58,9 +68,10 @@ button { font: inherit; color: inherit; }
 .deco { max-width: none; }
 .eqn-inline { white-space: nowrap; }
 /* sound: the slider sits under the toggle and only shows when the pointer is near */
+.controls { display: flex; flex-direction: column; align-items: flex-end; }
 .snd { position: relative; text-align: right; padding-bottom: 26px; }
-#sound { font-style: italic; font-size: 15px; line-height: 1; color: var(--grey); background: none; border: 0; padding: 6px 0; cursor: pointer; white-space: nowrap; }
-#sound:hover, #sound:focus-visible { color: var(--pen); }
+#sound, #theme-toggle { font-style: italic; font-size: 15px; line-height: 1; color: var(--grey); background: none; border: 0; padding: 6px 0; cursor: pointer; white-space: nowrap; }
+#sound:hover, #sound:focus-visible, #theme-toggle:hover, #theme-toggle:focus-visible { color: var(--pen); }
 #vol { position: absolute; right: 0; top: 30px; -webkit-appearance: none; appearance: none; width: 84px; height: 18px; margin: 0; background: transparent; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .7s ease; }
 .snd:hover #vol, .snd:focus-within #vol { opacity: 1; pointer-events: auto; }
 @media (hover: none) { .snd.on #vol { opacity: 1; pointer-events: auto; } }
@@ -91,6 +102,7 @@ button { font: inherit; color: inherit; }
 .deco { position: absolute; z-index: 2; width: 170px; margin: 0; text-align: center !important; transition: opacity .35s; }
 .deco button { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; }
 .deco img { display: block; width: 100%; height: auto; transition: transform .6s cubic-bezier(.3,1.6,.5,1); }
+:root[data-theme="dark"] .hood-img { filter: invert(1); }
 .deco button, .panel figure.fig button { cursor: zoom-in; }
 .deco button:hover img, .deco button:focus-visible img, .panel figure.fig button:hover img, .panel figure.fig button:focus-visible img { transform: rotate(-3deg); }
 .deco figcaption { margin-top: 4px; font-size: 14px; font-style: italic; color: var(--grey); }
@@ -182,7 +194,7 @@ blockquote.epi footer { margin-top: 6px; font-style: normal; font-size: 16px; co
 
 /* ---------- full-size pictures ---------- */
 dialog.light { border: 0; padding: 0; background: transparent; max-width: 100vw; max-height: 100vh; max-height: 100dvh; width: 100vw; height: 100vh; height: 100dvh; margin: 0; }
-dialog.light::backdrop { background: rgba(253, 253, 251, .96); }
+dialog.light::backdrop { background: color-mix(in srgb, var(--paper) 96%, transparent); }
 dialog.light .in { height: 100%; display: grid; grid-template-rows: minmax(0, 1fr) auto; justify-items: center; align-items: center; gap: 10px; padding: 44px 20px 22px; }
 dialog.light img, dialog.light video { max-width: 100%; max-height: 100%; min-height: 0; object-fit: contain; display: block; }
 dialog.light .cap { text-align: center; font-size: 17px; max-width: 70ch; max-height: 30vh; overflow-y: auto; } dialog.light .cap small { display: block; font-size: 16px; color: var(--grey); }

@@ -182,7 +182,7 @@
   ];
   const figNo = k => HOODS.findIndex(h => h.k === k) + 1;
   SETS.hood = HOODS.map(h => ({ src: h.src, cap: `<b>Fig. ${figNo(h.k)}.</b> ${h.cap}<small>Thomas Hood, <i>Whims and Oddities</i>, 1826</small>` }));
-  const hoodBtn = k => { const i = HOODS.findIndex(h => h.k === k), h = HOODS[i]; return `<button type="button" data-set="hood" data-n="${i}" aria-label="${esc(h.alt)} Open full size."><img alt="${esc(h.alt)}" loading="lazy" src="${h.src}"></button>`; };
+  const hoodBtn = k => { const i = HOODS.findIndex(h => h.k === k), h = HOODS[i]; return `<button type="button" data-set="hood" data-n="${i}" aria-label="${esc(h.alt)} Open full size."><img class="hood-img" alt="${esc(h.alt)}" loading="lazy" src="${h.src}"></button>`; };
   const hoodFig = (k, more = "") => `<figure class="fig">${hoodBtn(k)}<figcaption><b>Fig. ${figNo(k)}.</b> ${HOODS.find(h => h.k === k).cap} Thomas Hood, <i>Whims and Oddities</i>, 1826.${more ? " " + more : ""}</figcaption></figure>`;
   const hoodDeco = k => `<figure class="deco" id="${k}">${hoodBtn(k)}<figcaption>Fig. ${figNo(k)}. ${HOODS.find(h => h.k === k).cap}</figcaption></figure>`;
 
@@ -207,7 +207,7 @@
             <p><b>Problem.</b> Find every solution of <span class="eqn-inline"><i>y</i>' + <i>y</i> = sin <i>x</i>.</span> <span class="how">Four are drawn below: click one to open it, or pull it sideways and let go.</span></p>
 </div>
         </div>
-        <div class="snd"><button type="button" id="sound" aria-pressed="false">sound off</button><input type="range" id="vol" min="0" max="100" value="60" aria-label="Volume"></div>
+        <div class="controls"><button type="button" id="theme-toggle" aria-pressed="false">dark mode off</button><div class="snd"><button type="button" id="sound" aria-pressed="false">sound off</button><input type="range" id="vol" min="0" max="100" value="60" aria-label="Volume"></div></div>
       </header>
       <nav aria-label="Sections" id="keys"></nav>
       ${POEMS.map((p, k) => `<figure class="poem" id="poem${k}"><blockquote>${p.lines.map(l => `<span class="${/^\s/.test(l) ? "in" : ""}">${esc(l.trim())}</span>`).join("")}</blockquote><figcaption>${p.by}</figcaption></figure>`).join("")}
@@ -436,6 +436,17 @@
   }
 
   const volEl = $("#vol"), sndBtn = $("#sound");
+  const themeBtn = $("#theme-toggle");
+  const setDark = on => {
+    document.documentElement.dataset.theme = on ? "dark" : "light";
+    themeBtn.textContent = `dark mode ${on ? "on" : "off"}`;
+    themeBtn.setAttribute("aria-pressed", on);
+    try { localStorage.setItem("theme", on ? "dark" : "light"); } catch (_) {}
+  };
+  let darkMode = false;
+  try { darkMode = localStorage.getItem("theme") === "dark"; } catch (_) {}
+  setDark(darkMode);
+  themeBtn.addEventListener("click", () => setDark(document.documentElement.dataset.theme !== "dark"));
   const setSound = on => { soundOn = on; sndBtn.textContent = "sound " + (on ? "on" : "off"); sndBtn.setAttribute("aria-pressed", on); sndBtn.parentNode.classList.toggle("on", on); };
   sndBtn.addEventListener("click", () => { setSound(!soundOn); if (soundOn) ping(1, 0.4); });
   volEl.addEventListener("input", () => { volume = volEl.value / 100; });
