@@ -288,7 +288,7 @@
   }
   /* behind everything: the direction field of the equation, each dash pointing the way a solution must go there.
      Blank at the top and stronger the further down you read, so the page fills in as the strings settle. */
-  let fieldRaf = 0, fieldLastT = 0, fieldTime = 0, fieldPointer = null;
+  let fieldRaf = 0, fieldLastT = 0, fieldPointer = null, fieldSize = "", fieldStreams = [], fieldEmitClock = 0, fieldEmitWait = 0.08, fieldEmitRow = 0;
   function field() {
     const cv = $("#field"); if (!cv) return;
     const dpr = Math.min(2, devicePixelRatio || 1), g = cv.getContext("2d");
@@ -298,33 +298,55 @@
     const near = (px, py) => { let d = 1e9; for (const [l, t, r, b] of boxes) d = Math.min(d, Math.hypot(Math.max(l - px, 0, px - r), Math.max(t - py, 0, py - b))); return d; };
     const render = now => {
       const dt = Math.min(0.05, fieldLastT ? (now - fieldLastT) / 1000 : 0); fieldLastT = now;
-      fieldTime += dt;
       g.clearRect(0, 0, W, H);
       g.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim() || "#121315"; g.lineWidth = 0.9; g.lineCap = "round";
       const sr = stage.getBoundingClientRect();
       const cursor = fieldPointer ? { x: fieldPointer.x - sr.left, y: fieldPointer.y - sr.top } : null;
       const xTop = xAt(TOP + 40), xBottom = xAt(H - 10), span = xBottom - xTop;
-      const accel = 0.05 / Math.max(1, span), baseSpeed = 0.035;
-      for (let base = TOP + 40, row = 0; base < H - 10; base += step, row++) {
-        const seedX = xAt(base), depth = seedX - xTop;
-        // Integrate dx/dt = baseSpeed + accel * depth: each dash accelerates as it travels down.
-        const advance = (baseSpeed / accel + depth) * (Math.exp(accel * fieldTime) - 1);
-        const x = xTop + ((depth + advance) % span), py = pyAt(x);
-        for (let seedPx = 34 + (row % 2) * step / 2; seedPx < W - 6; seedPx += step) {
-          const seedY = (seedPx - ORG) / SY;
-          const c = (seedY - steady(seedX)) * Math.exp(seedX);
-          const rawPx = ORG + (steady(x) + c * Math.exp(-x)) * SY;
-          // Re-enter from the opposite edge so converging trajectories keep the field populated.
-          const px = ((rawPx % W) + W) % W;
-          const a = Math.min(0.3, Math.max(0, (x - (x0 + 1)) / 5.5) * 0.3); if (a < 0.01) continue;
-          const m = (Math.sin(x) - (px - ORG) / SY) * SY / PX, k = half / Math.hypot(1, m);
-          const t = Math.min(1, Math.max(0, (near(px, py) - 10) / 46)); if (t < 0.02) continue;
-          const d = cursor ? Math.hypot(px - cursor.x, py - cursor.y) : Infinity;
-          const fade = cursor ? Math.min(1, Math.max(0, (d - 28) / 172)) : 1;
-          if (fade < 0.015) continue;
-          g.globalAlpha = a * t * t * (3 - 2 * t) * fade;
-          g.beginPath(); g.moveTo(px - m * k, py - k); g.lineTo(px + m * k, py + k); g.stroke();
+      const accel = 0.04 / Math.max(1, span), baseSpeed = 0.055;
+      const size = `${W}:${H}:${TOP}:${step}`;
+      if (fieldSize !== size) {
+        fieldSize = size; fieldStreams = []; fieldEmitClock = 0; fieldEmitWait = 0.08; fieldEmitRow = 0;
+      }
+      const leftY = (34 - ORG) / SY, rightY = (W - 6 - ORG) / SY;
+      // Emit fresh particles at both edges continuously; their motion then follows y' = sin(x) - y.
+      fieldEmitClock += dt;
+      if (fieldEmitClock >= fieldEmitWait) {
+        fieldEmitClock -= fieldEmitWait;
+        fieldEmitWait = 0.04 + Math.random() * 0.08;
+        const rows = Math.max(1, Math.floor((H - TOP - 50) / step));
+        const burst = 2 + Math.floor(Math.random() * 4);
+        for (let n = 0; n < burst; n++) {
+          const row = (fieldEmitRow++ * 7) % rows;
+          const emitX = xTop + (row + (Math.random() - 0.5) * 0.6) / rows * span;
+          const leftSlope = Math.sin(emitX) - leftY, rightSlope = Math.sin(emitX) - rightY;
+          const pace = 0.82 + Math.random() * 0.36;
+          if (leftSlope > 0) fieldStreams.push({ x: emitX, y: leftY, side: "left", pace, age: 0 });
+          if (rightSlope < 0) fieldStreams.push({ x: emitX, y: rightY, side: "right", pace, age: 0 });
         }
+      }
+      if (fieldStreams.length > 1400) fieldStreams.splice(0, fieldStreams.length - 1400);
+      for (let i = fieldStreams.length - 1; i >= 0; i--) {
+        const p = fieldStreams[i], speed = (baseSpeed + accel * (p.x - xTop)) * p.pace;
+        p.age += dt;
+        p.x += speed * dt;
+        p.y += (Math.sin(p.x) - p.y) * speed * dt;
+        const px = ORG + p.y * SY, py = pyAt(p.x);
+        if (p.x >= xBottom || (p.side === "left" && px > W + 12) || (p.side === "right" && px < -12)) { fieldStreams.splice(i, 1); continue; }
+        if (px < 0 || px >= W || py < TOP || py >= H) continue;
+        const mergeDistance = Math.min(...SECTIONS.map((_, j) => Math.abs(px - pos(j, py))));
+        if (mergeDistance < 2) { fieldStreams.splice(i, 1); continue; }
+        const mergeFade = Math.min(1, Math.max(0, (mergeDistance - 2) / 22));
+        const edgeDistance = p.side === "left" ? W - px : px;
+        const edgeFade = Math.min(1, Math.max(0, edgeDistance / 70));
+        const a = Math.min(0.3, Math.max(0, (p.x - (x0 + 1)) / 5.5) * 0.3); if (a < 0.01) continue;
+        const m = (Math.sin(p.x) - p.y) * SY / PX, k = half / Math.hypot(1, m);
+        const t = Math.min(1, Math.max(0, (near(px, py) - 10) / 46)); if (t < 0.02) continue;
+        const d = cursor ? Math.hypot(px - cursor.x, py - cursor.y) : Infinity;
+        const fade = cursor ? Math.min(1, Math.max(0, (d - 28) / 172)) : 1;
+        if (fade < 0.015) continue;
+        g.globalAlpha = a * t * t * (3 - 2 * t) * fade * mergeFade * edgeFade * Math.min(1, p.age / 0.7);
+        g.beginPath(); g.moveTo(px - m * k, py - k); g.lineTo(px + m * k, py + k); g.stroke();
       }
       fieldRaf = requestAnimationFrame(render);
     };
