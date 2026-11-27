@@ -288,23 +288,53 @@
   }
   /* behind everything: the direction field of the equation, each dash pointing the way a solution must go there.
      Blank at the top and stronger the further down you read, so the page fills in as the strings settle. */
+  let fieldRaf = 0, fieldLastT = 0, fieldTime = 0, fieldPointer = null;
   function field() {
     const cv = $("#field"); if (!cv) return;
     const dpr = Math.min(2, devicePixelRatio || 1), g = cv.getContext("2d");
-    cv.width = W * dpr; cv.height = H * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
-    g.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim() || "#121315"; g.lineWidth = 0.9; g.lineCap = "round";
-    const step = W < 700 ? 30 : 36, half = 6, sr = stage.getBoundingClientRect();
-    const boxes = $$(".poem, .aside, .end, .deco:not([hidden])", stage).map(el => { const r = el.getBoundingClientRect(); return [r.left - sr.left, r.top - sr.top, r.right - sr.left, r.bottom - sr.top]; });
+    cv.width = W * dpr; cv.height = H * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const step = W < 700 ? 30 : 36, half = 6;
+    const boxes = $$(".poem, .aside, .end, .deco:not([hidden])", stage).map(el => { const r = el.getBoundingClientRect(), sr = stage.getBoundingClientRect(); return [r.left - sr.left, r.top - sr.top, r.right - sr.left, r.bottom - sr.top]; });
     const near = (px, py) => { let d = 1e9; for (const [l, t, r, b] of boxes) d = Math.min(d, Math.hypot(Math.max(l - px, 0, px - r), Math.max(t - py, 0, py - b))); return d; };
-    for (let py = TOP + 40, row = 0; py < H - 10; py += step, row++) {
-      const x = xAt(py), a = Math.min(0.3, Math.max(0, (x - (x0 + 1)) / 5.5) * 0.3); if (a < 0.01) continue;
-      for (let px = 34 + (row % 2) * step / 2; px < W - 6; px += step) {
-        const m = (Math.sin(x) - (px - ORG) / SY) * SY / PX, k = half / Math.hypot(1, m);   /* sideways pixels per pixel down */
-        const t = Math.min(1, Math.max(0, (near(px, py) - 10) / 46)); if (t < 0.02) continue;
-        g.globalAlpha = a * t * t * (3 - 2 * t);
-        g.beginPath(); g.moveTo(px - m * k, py - k); g.lineTo(px + m * k, py + k); g.stroke();
+    const render = now => {
+      const dt = Math.min(0.05, fieldLastT ? (now - fieldLastT) / 1000 : 0); fieldLastT = now;
+      fieldTime += dt;
+      g.clearRect(0, 0, W, H);
+      g.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim() || "#121315"; g.lineWidth = 0.9; g.lineCap = "round";
+      const sr = stage.getBoundingClientRect();
+      const cursor = fieldPointer ? { x: fieldPointer.x - sr.left, y: fieldPointer.y - sr.top } : null;
+      const xTop = xAt(TOP + 40), xBottom = xAt(H - 10), span = xBottom - xTop;
+      const accel = 0.05 / Math.max(1, span), baseSpeed = 0.035;
+      for (let base = TOP + 40, row = 0; base < H - 10; base += step, row++) {
+        const seedX = xAt(base), depth = seedX - xTop;
+        // Integrate dx/dt = baseSpeed + accel * depth: each dash accelerates as it travels down.
+        const advance = (baseSpeed / accel + depth) * (Math.exp(accel * fieldTime) - 1);
+        const x = xTop + ((depth + advance) % span), py = pyAt(x);
+        for (let seedPx = 34 + (row % 2) * step / 2; seedPx < W - 6; seedPx += step) {
+          const seedY = (seedPx - ORG) / SY;
+          const c = (seedY - steady(seedX)) * Math.exp(seedX);
+          const rawPx = ORG + (steady(x) + c * Math.exp(-x)) * SY;
+          // Re-enter from the opposite edge so converging trajectories keep the field populated.
+          const px = ((rawPx % W) + W) % W;
+          const a = Math.min(0.3, Math.max(0, (x - (x0 + 1)) / 5.5) * 0.3); if (a < 0.01) continue;
+          const m = (Math.sin(x) - (px - ORG) / SY) * SY / PX, k = half / Math.hypot(1, m);
+          const t = Math.min(1, Math.max(0, (near(px, py) - 10) / 46)); if (t < 0.02) continue;
+          const d = cursor ? Math.hypot(px - cursor.x, py - cursor.y) : Infinity;
+          const fade = cursor ? Math.min(1, Math.max(0, (d - 28) / 172)) : 1;
+          if (fade < 0.015) continue;
+          g.globalAlpha = a * t * t * (3 - 2 * t) * fade;
+          g.beginPath(); g.moveTo(px - m * k, py - k); g.lineTo(px + m * k, py + k); g.stroke();
+        }
       }
+      fieldRaf = requestAnimationFrame(render);
+    };
+    if (!cv.dataset.pointerTracking) {
+      stage.addEventListener("pointermove", e => { fieldPointer = { x: e.clientX, y: e.clientY }; });
+      stage.addEventListener("pointerleave", () => { fieldPointer = null; });
+      cv.dataset.pointerTracking = "true";
     }
+    if (fieldRaf) cancelAnimationFrame(fieldRaf);
+    fieldLastT = 0; fieldRaf = requestAnimationFrame(render);
   }
   const rest = (i, py) => { const x = xAt(py); return ORG + (steady(x) + SECTIONS[i].C * Math.exp(-x)) * SY; };
   function pos(i, py) {
