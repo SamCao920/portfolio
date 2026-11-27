@@ -96,6 +96,10 @@ button { font: inherit; color: inherit; }
 .poem blockquote span { display: block; padding-left: 1.6em; text-indent: -1.6em; } .poem blockquote span.in { padding-left: 3em; }
 .poem figcaption { margin-top: 8px; font-size: 14px; color: var(--grey); }
 #stage.open .poem { opacity: .12; }
+/* a soft oval of paper behind each stanza and figure (with its caption): solid in the middle, gone at the rim, so the field never competes with the text */
+.poem::before, .deco::before { content: ""; position: absolute; z-index: -1; inset: -36px -64px; pointer-events: none;
+  background: radial-gradient(ellipse closest-side, var(--paper) 0%, var(--paper) 52%, color-mix(in srgb, var(--paper) 0%, transparent) 100%); }
+.poem::before { inset: -64px -84px; background: radial-gradient(ellipse closest-side, var(--paper) 0%, var(--paper) 66%, color-mix(in srgb, var(--paper) 0%, transparent) 100%); }
 #stage.open .aside, #stage.open .note { opacity: .12; }
 .top { transition: opacity .3s; } #stage.open .top { opacity: 0; pointer-events: none; }
 .frac { display: inline-grid; vertical-align: middle; text-align: center; font-size: .74em; line-height: 1.05; margin: 0 1px; } .frac span:first-child { border-bottom: 1px solid currentColor; padding: 0 2px; }
@@ -326,3 +330,5 @@ ol.rows.ranked > li::before { content: counter(rk) "."; position: absolute; left
 .progress { position: fixed; left: 0; top: 0; height: 2px; width: 0; background: var(--pen); z-index: 20; }
 @media (max-width: 700px) { .essay h1 { font-size: 27px; } .essay article p { text-align: left; } }
 .go.pdf { margin-left: 14px; font-size: .85em; color: var(--grey); }
+/* on a phone the stanzas and figures sit right against the strings, so keep the ovals from washing them out */
+@media (max-width: 700px) { .poem::before { inset: -40px -14px; } .deco::before { inset: -24px -14px; } }

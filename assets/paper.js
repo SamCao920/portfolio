@@ -297,10 +297,10 @@
      FIELD_SPEED for every dash while sound is off, and varies a little per dash (pace) while it is on. Nothing is ever removed in
      flight: a dash ends only by reaching its string. */
   const FIELD_SPEED = 100;            /* px a second along a dash's path */
-  const FIELD_PEAK = 0.32;            /* opacity of a dash where the field is at full strength (low on the page) */
+  const FIELD_PEAK = 0.22;            /* opacity of a dash where the field is at full strength (low on the page) */
   const FIELD_HALF = 6;               /* half the length of a dash, px */
   const FIELD_RATE = 36;              /* dashes born a second per 1000 px of page height, on each side */
-  const FIELD_FADE = 14;              /* px of path over which a dash fades into its string; at full strength until then */
+  const FIELD_FADE = 22;              /* a dash fades out as it comes within this many px (sideways) of its string; at full strength until then */
   const FIELD_TOP = 0.25;             /* how strong the field is at the top of the page; it grows to full strength lower down */
   const smooth = t => { t = Math.min(1, Math.max(0, t)); return t * t * (3 - 2 * t); };
   const fieldRamp = py => FIELD_TOP + (1 - FIELD_TOP) * Math.min(1, Math.max(0, (xAt(py) - (x0 + 1)) / 5.5));
@@ -309,14 +309,16 @@
   /* a new dash at height py0 on the given side (-1 left, +1 right), heading for string `target` */
   function makeDash(side, py0, target) {
     const px0 = side < 0 ? -8 : W + 8, d0 = px0 - natural(target, py0), a = Math.abs(d0);
-    const len = Math.min(H - 12 - py0, Math.max(150, Math.min(440, 280 + 0.12 * a)));
-    return { side, target, py0, d0, len, tail: Math.exp(-len / PX), s: 0, travel: 0, pace: 0.86 + Math.random() * 0.28 };
+    const len = Math.max(40, Math.min(H - 12 - py0, Math.max(150, Math.min(440, 280 + 0.12 * a)))), L = len / PX;
+    /* c is chosen so the heading at the edge is the same as that of a true solution (the shape then runs tangent into the string) */
+    return { side, target, py0, d0, len, c: 2 - L / (1 - Math.exp(-L)), s: 0, travel: 0, pace: 0.86 + Math.random() * 0.28 };
   }
   /* where a dash is, which way it points, and how far (sideways) it still is from its string */
   function dashPose(p, s = p.s) {
     s = Math.min(s, p.len);
-    const py = p.py0 + s, e = Math.exp(-s / PX), k0 = p.d0 / (1 - p.tail), off = k0 * (e - p.tail);
-    const slope = (natural(p.target, py + 1) - natural(p.target, py - 1)) / 2 - k0 * e / PX;   /* sideways px per px down */
+    const py = p.py0 + s, u = s / p.len, w = 1 - u, g = w * w * (1 + p.c * u), gp = w * (p.c - 2 - 3 * p.c * u);
+    const off = p.d0 * g;   /* sideways distance still to go: starts at d0, reaches 0 with zero slope, so the dash runs into its string */
+    const slope = (natural(p.target, py + 1) - natural(p.target, py - 1)) / 2 + p.d0 * gp / p.len;   /* sideways px per px down */
     const k = Math.hypot(1, slope);
     return { px: natural(p.target, py) + off, py, off, tx: slope / k, ty: 1 / k, k };
   }
@@ -328,8 +330,8 @@
   }
   /* opacity: stronger lower on the page, in from the edge, out only over the last FIELD_FADE px into the string, out before the far edge, out around the cursor */
   function dashAlpha(p, pose, cursor) {
-    const farEdge = p.side < 0 ? W - pose.px : pose.px, left = Math.max(0, p.len - p.s) * pose.k;
-    let a = FIELD_PEAK * fieldRamp(pose.py) * smooth(p.travel / 70) * smooth(left / FIELD_FADE) * smooth(farEdge / 90);
+    const farEdge = p.side < 0 ? W - pose.px : pose.px;
+    let a = FIELD_PEAK * fieldRamp(pose.py) * smooth(p.travel / 70) * smooth(Math.abs(pose.off) / FIELD_FADE) * smooth(farEdge / 90);
     if (cursor) a *= Math.min(1, Math.max(0, (Math.hypot(pose.px - cursor.x, pose.py - cursor.y) - 28) / 172));
     return a;
   }
@@ -344,7 +346,7 @@
       while (fieldWait[side] <= 0) {
         fieldWait[side] += -Math.log(1 - Math.random()) / rate;
         fieldPhase[side] = (fieldPhase[side] + 0.6180339887) % 1;
-        const sd = side ? 1 : -1, lo = TOP + 30, hi = Math.max(lo + 60, H - 170);
+        const sd = side ? 1 : -1, lo = TOP + 30, hi = Math.max(lo + 60, H - 52);
         const py0 = Math.min(hi, Math.max(lo, lo + (hi - lo) * fieldPhase[side] + (Math.random() - 0.5) * 14));
         fieldDashes.push(makeDash(sd, py0, Math.floor(Math.random() * st.length)));
       }
@@ -368,7 +370,7 @@
       g.clearRect(0, 0, W, H);
       if (!fieldGo) { fieldRaf = requestAnimationFrame(render); return; }
       emitDashes(dt);
-      g.strokeStyle = fieldInk; g.lineWidth = 0.9; g.lineCap = "round";
+      g.strokeStyle = fieldInk; g.lineWidth = 0.8; g.lineCap = "round";
       const sr = stage.getBoundingClientRect(), cursor = fieldPointer ? { x: fieldPointer.x - sr.left, y: fieldPointer.y - sr.top } : null;
       buckets.forEach(b => { b.length = 0; });
       for (let i = fieldDashes.length - 1; i >= 0; i--) {
