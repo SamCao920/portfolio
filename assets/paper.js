@@ -296,10 +296,10 @@
      string's own x, so it also follows a plucked string. A dash about to reach the far edge fades out first. Speed along the path is
      FIELD_SPEED for every dash while sound is off, and varies a little per dash (pace) while it is on. Nothing is ever removed in
      flight: a dash ends only by reaching its string. */
-  const FIELD_SPEED = 100;            /* px a second along a dash's path */
-  const FIELD_PEAK = 0.15;            /* opacity of a dash where the field is at full strength (low on the page) */
+  const FIELD_SPEED = 65;             /* px a second along a dash's path */
+  const FIELD_PEAK = 0.11;            /* opacity of a dash where the field is at full strength (low on the page) */
   const FIELD_HALF = 6;               /* half the length of a dash, px */
-  const FIELD_RATE = 36;              /* dashes born a second per 1000 px of page height, on each side */
+  const FIELD_RATE = 23;              /* dashes born a second per 1000 px of page height, on each side */
   const FIELD_FADE = 22;              /* a dash fades out as it comes within this many px (sideways) of its string; at full strength until then */
   const FIELD_TOP = 0.25;             /* how strong the field is at the top of the page; it grows to full strength lower down */
   const smooth = t => { t = Math.min(1, Math.max(0, t)); return t * t * (3 - 2 * t); };
