@@ -294,8 +294,6 @@
     const dpr = Math.min(2, devicePixelRatio || 1), g = cv.getContext("2d");
     cv.width = W * dpr; cv.height = H * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0);
     const step = W < 700 ? 30 : 36, half = 6;
-    const boxes = $$(".poem, .aside, .end, .deco:not([hidden])", stage).map(el => { const r = el.getBoundingClientRect(), sr = stage.getBoundingClientRect(); return [r.left - sr.left, r.top - sr.top, r.right - sr.left, r.bottom - sr.top]; });
-    const near = (px, py) => { let d = 1e9; for (const [l, t, r, b] of boxes) d = Math.min(d, Math.hypot(Math.max(l - px, 0, px - r), Math.max(t - py, 0, py - b))); return d; };
     const render = now => {
       const dt = Math.min(0.05, fieldLastT ? (now - fieldLastT) / 1000 : 0); fieldLastT = now;
       g.clearRect(0, 0, W, H);
@@ -321,31 +319,33 @@
           const emitX = xTop + (row + (Math.random() - 0.5) * 0.6) / rows * span;
           const leftSlope = Math.sin(emitX) - leftY, rightSlope = Math.sin(emitX) - rightY;
           const pace = 0.82 + Math.random() * 0.36;
-          if (leftSlope > 0) fieldStreams.push({ x: emitX, y: leftY, side: "left", pace, age: 0 });
-          if (rightSlope < 0) fieldStreams.push({ x: emitX, y: rightY, side: "right", pace, age: 0 });
+          const target = Math.floor(Math.random() * SECTIONS.length);
+          if (leftSlope > 0) fieldStreams.push({ x: emitX, y: leftY, c: (leftY - steady(emitX)) * Math.exp(emitX), target, side: "left", pace, age: 0 });
+          if (rightSlope < 0) fieldStreams.push({ x: emitX, y: rightY, c: (rightY - steady(emitX)) * Math.exp(emitX), target, side: "right", pace, age: 0 });
         }
       }
       if (fieldStreams.length > 1400) fieldStreams.splice(0, fieldStreams.length - 1400);
       for (let i = fieldStreams.length - 1; i >= 0; i--) {
-        const p = fieldStreams[i], speed = (baseSpeed + accel * (p.x - xTop)) * p.pace;
+        const p = fieldStreams[i], speed = (baseSpeed + accel * (p.x - xTop)) * (soundOn ? p.pace : 1);
         p.age += dt;
         p.x += speed * dt;
-        p.y += (Math.sin(p.x) - p.y) * speed * dt;
+        const targetC = SECTIONS[p.target].C;
+        p.c += (targetC - p.c) * (1 - Math.exp(-1.2 * speed * dt));
+        p.y = steady(p.x) + p.c * Math.exp(-p.x);
         const px = ORG + p.y * SY, py = pyAt(p.x);
-        if (p.x >= xBottom || (p.side === "left" && px > W + 12) || (p.side === "right" && px < -12)) { fieldStreams.splice(i, 1); continue; }
+        if (p.x >= xBottom) { fieldStreams.splice(i, 1); continue; }
         if (px < 0 || px >= W || py < TOP || py >= H) continue;
-        const mergeDistance = Math.min(...SECTIONS.map((_, j) => Math.abs(px - pos(j, py))));
-        if (mergeDistance < 2) { fieldStreams.splice(i, 1); continue; }
-        const mergeFade = Math.min(1, Math.max(0, (mergeDistance - 2) / 22));
+        const mergeDistance = Math.abs(px - pos(p.target, py));
+        if (mergeDistance < 1.2) { fieldStreams.splice(i, 1); continue; }
+        const mergeFade = Math.min(1, Math.max(0, (mergeDistance - 1.2) / 12));
         const edgeDistance = p.side === "left" ? W - px : px;
-        const edgeFade = Math.min(1, Math.max(0, edgeDistance / 70));
+        const edgeFade = Math.min(1, Math.max(0, edgeDistance / 300));
         const a = Math.min(0.3, Math.max(0, (p.x - (x0 + 1)) / 5.5) * 0.3); if (a < 0.01) continue;
         const m = (Math.sin(p.x) - p.y) * SY / PX, k = half / Math.hypot(1, m);
-        const t = Math.min(1, Math.max(0, (near(px, py) - 10) / 46)); if (t < 0.02) continue;
         const d = cursor ? Math.hypot(px - cursor.x, py - cursor.y) : Infinity;
         const fade = cursor ? Math.min(1, Math.max(0, (d - 28) / 172)) : 1;
         if (fade < 0.015) continue;
-        g.globalAlpha = a * t * t * (3 - 2 * t) * fade * mergeFade * edgeFade * Math.min(1, p.age / 0.7);
+        g.globalAlpha = a * fade * mergeFade * edgeFade * Math.min(1, p.age / 0.7);
         g.beginPath(); g.moveTo(px - m * k, py - k); g.lineTo(px + m * k, py + k); g.stroke();
       }
       fieldRaf = requestAnimationFrame(render);
