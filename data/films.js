@@ -258,8 +258,10 @@ window.FILMS = {"updated":"2026-11-26","user":"TrueRoman","bio":"I don't watch e
   {"t":"A Brighter Summer Day","y":1991,"r":5,"liked":true,"added":"2026-10-31","cover":"assets/films/a-brighter-summer-day.webp"},
   {"t":"Godzilla Minus Zero","y":2026,"r":2,"liked":false,"added":"2026-11-07","cover":"https://upload.wikimedia.org/wikipedia/en/0/09/Godzilla_Minus_Zero_poster.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"},
   {"t":"Primetime","y":2026,"r":1.5,"liked":false,"added":"2026-11-21","cover":"https://upload.wikimedia.org/wikipedia/en/f/f2/Primetime_poster.jpeg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"},
-  {"t":"Out of the Past","y":1947,"r":4,"liked":false,"added":"2026-11-23","cover":"https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f9/Out_of_the_Past_%281947_poster_-_retouched%29.jpg/500px-Out_of_the_Past_%281947_poster_-_retouched%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"}
+  {"t":"Out of the Past","y":1947,"r":4,"liked":false,"added":"2026-11-23","cover":"https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f9/Out_of_the_Past_%281947_poster_-_retouched%29.jpg/500px-Out_of_the_Past_%281947_poster_-_retouched%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail"},
+  {"t":"Fallen Angels","y":1995,"r":4,"liked":false,"added":"2026-11-26","cover":"https://upload.wikimedia.org/wikipedia/en/0/04/Fallen-Angels-Poster.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled"}
 ],"diary":[
+  {"f":258,"date":"2026-11-26","r":4,"rewatch":false,"review":null},
   {"f":257,"date":"2026-11-23","r":4,"rewatch":false,"review":null},
   {"f":256,"date":"2026-11-21","r":1.5,"rewatch":false,"review":null},
   {"f":255,"date":"2026-11-07","r":2,"rewatch":false,"review":null},
