@@ -7,7 +7,7 @@ Runs automatically before every commit (.git/hooks/pre-commit) and in tools/upda
 import hashlib, os, re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-REF = re.compile(r'((?:src|href)=")((?:\.\./)*(?:assets|data)/[^"?#]+\.(?:js|css))(?:\?v=[0-9a-f]*)?(")')
+REF = re.compile(r'((?:src|href)=")((?:\.\./)*(?:assets|data)/[^"?#]+\.(?:js|css))(?:\?v=[^"]*)?(")')   # any existing ?v= token (a hand-set one such as ?v=dark-mode-2 too) is replaced by the hash
 
 changed = []
 for dirpath, dirnames, filenames in os.walk(ROOT):
